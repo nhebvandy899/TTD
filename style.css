@@ -1,0 +1,98 @@
+/* Styles for the application */
+body {font-family: 'Khmer OS Siemreap', Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; line-height: 1.6;}
+.container {max-width: 950px; margin: 20px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+h1, h2, h3 {color: #333; text-align: center; margin-bottom: 20px;}
+label {display: block; margin-bottom: 5px; font-weight: bold; color: #555;}
+input[type="text"], input[type="password"], input[type="tel"], input[type="date"], input[type="number"], textarea, select {width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: 'Khmer OS Siemreap', Arial, sans-serif;}
+select {background-color: white; appearance: none;}
+textarea {resize: vertical;}
+button {background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-family: 'Khmer OS Siemreap', Arial, sans-serif; transition: background-color 0.3s ease;}
+button:hover {background-color: #0056b3;}
+#logout-button {background-color: #dc3545;}
+#logout-button:hover {background-color: #c82333;}
+.error-message {color: #dc3545; font-size: 0.9em; margin-top: 5px;}
+.success-message {color: #28a745; font-size: 0.9em; margin-top: 5px;}
+a {color: #007bff; text-decoration: none;}
+a:hover {text-decoration: underline;}
+hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
+.dashboard-header {display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;}
+.dashboard-header h1 {margin-bottom: 0; text-align: left;}
+.summary-stats {background-color: #e9f5ff; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #b3d7ff;}
+.summary-stats h3 {margin-top: 0; color: #0056b3; text-align: left;}
+.summary-stats p {margin: 5px 0; font-size: 0.95em;}
+.summary-stats span {font-weight: bold;}
+.admin-summary-stats {background-color: #fff3cd; border-color: #ffeeba;}
+.admin-summary-stats h3 {color: #856404;}
+#family-data-entry-form fieldset, #edit-family-form-admin fieldset {border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px;}
+#family-data-entry-form legend, #edit-family-form-admin legend {font-weight: bold; color: #333; padding: 0 10px;}
+.member-entry {border: 1px dashed #eee; padding: 10px; margin-bottom: 15px; background-color: #f9f9f9; border-radius: 4px; position: relative;}
+.member-entry h4 {margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 5px; text-align: left; display: flex; justify-content: space-between; align-items: center;}
+.member-divider {margin-top: 15px;}
+.remove-member-edit-button {background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 2px 6px; font-size: 0.9em; cursor: pointer; border-radius: 3px;}
+.remove-member-edit-button:hover {background-color: #f1b0b7;}
+#add-member-button, #add-member-to-edit-form-admin {background-color: #28a745; margin-top: 10px; margin-bottom: 10px;}
+#add-member-button:hover, #add-member-to-edit-form-admin:hover {background-color: #218838;}
+#submit-family-data {background-color: #007bff; width: 100%; padding: 12px; font-size: 1.1em;}
+#toggle-form-button {margin-bottom: 15px; background-color: #6c757d; display: block; width: 100%;}
+#toggle-form-button:hover {background-color: #5a6268;}
+.asset-grid {display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;}
+.asset-grid > div {display: flex; flex-direction: column;}
+.asset-grid label {margin-bottom: 3px; font-size: 0.9em;}
+.asset-grid input[type="number"], .asset-grid input[type="text"] {padding: 8px; margin-bottom: 0;}
+#family-list-container, #family-list-container-admin {margin-top: 20px;}
+.family-card {background-color: #fff; border: 1px solid #ddd; border-radius: 5px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);}
+.family-card h3 {margin-top: 0; color: #0056b3; text-align: left; font-size: 1.3em;}
+.family-card-entry-date {font-size: 0.85em; color: #666; margin-bottom: 10px;}
+.family-card h4 {margin-top: 15px; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; text-align: left; font-size: 1.1em;}
+.family-card .members-table {width: 100%; border-collapse: collapse; font-size: 0.85em; margin-bottom: 10px; table-layout: auto;}
+.family-card .members-table th, .family-card .members-table td {border: 1px solid #eee; padding: 5px; text-align: left; vertical-align: top; word-break: break-word;}
+.family-card .members-table th {background-color: #f8f9fa; font-weight: bold; white-space: normal;}
+.family-card .assets-details {font-size: 0.9em; line-height: 1.5;}
+.family-card .assets-details p {margin: 3px 0; padding: 3px 0; border-bottom: 1px dotted #f0f0f0;}
+.family-card .assets-details p:last-child {border-bottom: none;}
+.family-card .assets-details strong {display: inline-block; min-width: 180px; color: #495057;}
+.family-card-actions {margin-top: 15px; text-align: right;}
+.family-card-actions .action-button {margin-left: 10px; padding: 6px 12px; font-size: 0.9em;}
+.family-card .edit-family-button {background-color: #ffc107; color: #212529;}
+.family-card .delete-family-button {background-color: #dc3545;}
+#admin-village-list-section #village-table {width: 100%; border-collapse: collapse; margin-top: 15px;}
+#admin-village-list-section #village-table th, #admin-village-list-section #village-table td {border: 1px solid #ddd; padding: 10px; text-align: left;}
+#admin-village-list-section #village-table th {background-color: #f2f2f2;}
+#admin-village-list-section #village-table button {padding: 5px 10px; font-size: 12px; background-color: #17a2b8; color: white; border: none; border-radius: 3px; cursor: pointer;}
+#admin-village-list-section #village-table button:hover {background-color: #138496;}
+#admin-village-list-section .permission-toggle-button { /* Specific style for permission button */
+    padding: 4px 8px;
+    font-size: 0.85em;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    min-width: 90px; /* Ensure buttons have similar width */
+}
+#selected-village-name-admin {text-align: left; margin-bottom: 10px;}
+.modal {display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); padding-top: 30px;}
+.modal-content {background-color: #fefefe; margin: 2% auto; padding: 25px; border: 1px solid #888; width: 90%; max-width: 750px; border-radius: 8px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19); position: relative;}
+.close-button {color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 20px;}
+.close-button:hover, .close-button:focus {color: black; text-decoration: none; cursor: pointer;}
+#edit-family-modal-admin label {margin-top: 10px;}
+#edit-family-modal-admin textarea, #edit-family-modal-admin input[type="text"], #edit-family-modal-admin input[type="date"], #edit-family-modal-admin input[type="number"], #edit-family-modal-admin select {width: 100%; margin-bottom: 10px;}
+#edit-family-modal-admin button[type="submit"] {width: 100%; background-color: #28a745; margin-top: 15px;}
+#edit-family-modal-admin button[type="submit"]:hover {background-color: #218838;}
+#edit-family-members-container-admin .member-entry div, #edit-family-assets-container-admin > div {margin-bottom: 8px;}
+#edit-family-members-container-admin .member-entry label, #edit-family-assets-container-admin label {font-size: 0.9em; margin-bottom: 2px;}
+#edit-family-members-container-admin .member-entry input, #edit-family-members-container-admin .member-entry select, #edit-family-assets-container-admin input {padding: 8px; margin-bottom: 5px;}
+.daily-report-section, .search-section {background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #eee;}
+.daily-report-section h2, .search-section h2 {text-align: left; margin-top:0; font-size: 1.2em; color: #337ab7;}
+#daily-report-content ul {list-style-type: none; padding-left: 0;}
+#daily-report-content li {padding: 5px 0; border-bottom: 1px dotted #ddd;}
+#daily-report-content li:last-child {border-bottom: none;}
+#search-family-input, #search-village-input {margin-bottom: 10px;}
+/* Styles for Asset Summary Tables */
+.asset-summary-section {background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #dee2e6;}
+.asset-summary-section h3 {margin-top: 0; text-align: left; color: #495057; font-size: 1.1em; margin-bottom: 10px;}
+#village-asset-summary-table, #admin-asset-summary-table {width: 100%; border-collapse: collapse; font-size: 0.9em;}
+#village-asset-summary-table th, #admin-asset-summary-table th, #village-asset-summary-table td, #admin-asset-summary-table td {border: 1px solid #ddd; padding: 8px 10px; text-align: left;}
+#village-asset-summary-table th, #admin-asset-summary-table th {background-color: #e9ecef; font-weight: bold;}
+#village-asset-summary-table tr:nth-child(even), #admin-asset-summary-table tr:nth-child(even) {background-color: #fff;}
+#village-asset-summary-tbody td:last-child, #admin-asset-summary-tbody td:last-child {text-align: right; font-weight: bold;}
+.container::after {content: ""; clear: both; display: table;}

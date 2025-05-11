@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រងទិន្នន័យភូមិ</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Khmer+OS+Siemreap&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>ប្រព័ន្ធគ្រប់គ្រងទិន្នន័យភូមិ</h1>
+
+        <!-- Login Form -->
+        <div id="login-section">
+            <h2>ចូលប្រើប្រព័ន្ធ</h2>
+            <form id="login-form">
+                <label for="login-username-village">ឈ្មោះអ្នកប្រើ (Admin) ឬ ឈ្មោះភូមិ:</label>
+                <input type="text" id="login-username-village" name="usernameOrVillage" required>
+                <label for="login-password">លេខសម្ងាត់:</label>
+                <input type="password" id="login-password" name="password" required>
+                <button type="submit">ចូលប្រើ</button>
+                <p id="login-error" class="error-message"></p>
+            </form>
+            <p>មិនទាន់មានគណនីមេភូមិ? <a href="#" id="show-village-register">ចុះឈ្មោះមេភូមិនៅទីនេះ</a></p>
+            <p id="admin-setup-link-container" style="display:none;">
+                <a href="#" id="show-admin-register">បង្កើតគណនី Admin ដំបូង</a>
+            </p>
+        </div>
+
+        <!-- Village Chief Registration Form -->
+        <div id="village-register-section" style="display: none;">
+            <h2>ចុះឈ្មោះគណនីមេភូមិ</h2>
+            <form id="village-register-form">
+                <label for="register-village-name">ឈ្មោះភូមិ:</label>
+                <input type="text" id="register-village-name" name="villageName" required>
+                <label for="register-village-phone">លេខទូរស័ព្ទមេភូមិ:</label>
+                <input type="tel" id="register-village-phone" name="phone" required>
+                <label for="register-village-password">បង្កើតលេខសម្ងាត់:</label>
+                <input type="password" id="register-village-password" name="password" required>
+                <label for="register-village-confirm-password">បញ្ជាក់លេខសម្ងាត់:</label>
+                <input type="password" id="register-village-confirm-password" name="confirm_password" required>
+                <button type="submit">ចុះឈ្មោះមេភូមិ</button>
+                <p id="village-register-error" class="error-message"></p>
+                <p id="village-register-success" class="success-message"></p>
+            </form>
+            <p>មានគណនីហើយ? <a href="#" id="show-login-from-village">ចូលប្រើវិញ</a></p>
+        </div>
+
+        <!-- Admin Registration Form -->
+        <div id="admin-register-section" style="display: none;">
+            <h2>បង្កើតគណនី Admin ដំបូង</h2>
+            <form id="admin-register-form">
+                <label for="register-admin-username">ឈ្មោះអ្នកប្រើ Admin:</label>
+                <input type="text" id="register-admin-username" name="adminUsername" required>
+                <label for="register-admin-password">បង្កើតលេខសម្ងាត់ Admin:</label>
+                <input type="password" id="register-admin-password" name="adminPassword" required>
+                <label for="register-admin-confirm-password">បញ្ជាក់លេខសម្ងាត់ Admin:</label>
+                <input type="password" id="register-admin-confirm-password" name="adminConfirmPassword" required>
+                <button type="submit">បង្កើតគណនី Admin</button>
+                <p id="admin-register-error" class="error-message"></p>
+                <p id="admin-register-success" class="success-message"></p>
+            </form>
+             <p>មានគណនីហើយ? <a href="#" id="show-login-from-admin">ចូលប្រើវិញ</a></p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

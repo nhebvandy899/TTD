@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ផ្ទាំងគ្រប់គ្រង Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Khmer+OS+Siemreap&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="dashboard-header">
+            <h1>ផ្ទាំងគ្រប់គ្រង Admin</h1>
+            <button id="logout-button">ចាកចេញ</button>
+        </header>
+        <p id="welcome-message">សូមស្វាគមន៍, Admin!</p>
+        <!-- Element សម្រាប់បង្ហាញថ្ងៃខែឆ្នាំ និងម៉ោង -->
+        <p id="admin-current-date-time" class="date-time-display" style="text-align: center; margin-top: 5px; margin-bottom: 20px; font-size: 0.95em; color: #444;"></p>
+
+        <div class="summary-stats admin-summary-stats" id="admin-summary-stats">
+            <h3>ស្ថិតិសរុបគ្រប់ភូមិ</h3>
+            <p>ចំនួនភូមិ: <span id="total-villages-admin">0</span></p>
+            <p>ចំនួនគ្រួសារសរុប: <span id="total-families-admin">0</span></p>
+            <p>ចំនួនប្រជាជនសរុប: <span id="total-people-admin">0</span></p>
+            <p>ចំនួនស្រីសរុប: <span id="total-females-admin">0</span></p>
+            <!-- *** ចាប់ផ្តើមការបន្ថែមសម្រាប់ស្ថិតិចំណាកស្រុក *** -->
+            <p>ចំនួនចំណាកស្រុកក្នុងសរុប: <span id="total-internal-migrants-admin">0</span> នាក់</p>
+            <p>ចំនួនចំណាកស្រុកក្រៅសរុប: <span id="total-external-migrants-admin">0</span> នាក់</p>
+            <!-- *** បញ្ចប់ការបន្ថែមសម្រាប់ស្ថិតិចំណាកស្រុក *** -->
+        </div>
+        <hr>
+
+         <div class="asset-summary-section">
+            <h3>សរុបទ្រព្យសម្បត្តិ និងអាជីវកម្ម (គ្រប់ភូមិ)</h3>
+            <table id="admin-asset-summary-table">
+                <thead><tr><th>ប្រភេទ</th><th>ចំនួនសរុប</th></tr></thead>
+                <tbody id="admin-asset-summary-tbody"><tr><td colspan="2"><em>កំពុងគណនា...</em></td></tr></tbody>
+            </table>
+        </div>
+        <hr>
+
+        <div class="daily-report-section">
+            <h2>របាយការណ៍បញ្ចូលទិន្នន័យថ្ងៃនេះ (<span id="report-date"></span>)</h2>
+            <button id="generate-daily-report">បង្កើតរបាយការណ៍ថ្ងៃនេះ</button>
+            <div id="daily-report-content" style="margin-top: 15px;">
+                <p><em>សូមចុចប៊ូតុងខាងលើដើម្បីបង្កើតរបាយការណ៍។</em></p>
+            </div>
+        </div>
+        <hr>
+
+        <h2>បញ្ជីភូមិដែលបានចុះឈ្មោះ</h2>
+        <div id="admin-village-list-section">
+             <table id="village-table">
+                <thead><tr><th>ឈ្មោះភូមិ</th><th>លេខទូរស័ព្ទមេភូមិ</th><th>សិទ្ធិកែទិន្នន័យ (មេភូមិ)</th><th>សកម្មភាព</th></tr></thead>
+                <tbody id="village-table-body"><tr><td colspan="4">កំពុងទាញយកបញ្ជីភូមិ...</td></tr></tbody>
+            </table>
+        </div>
+        <hr>
+
+        <h2>មើល/ស្វែងរកទិន្នន័យគ្រួសារ</h2>
+         <label for="village-select">ជ្រើសរើសភូមិ (ដើម្បីមើលខាងក្រោម ឬស្វែងរក):</label>
+         <select id="village-select"><option value="">-- ជ្រើសរើសភូមិ --</option></select>
+         <button id="print-village-data-button" style="margin-top:10px; margin-left: 10px; display:none; background-color: #17a2b8;">បោះពុម្ពទិន្នន័យភូមិនេះ</button>
+
+        <div class="search-section" style="margin-top: 20px;">
+            <h2>ស្វែងរកក្នុងភូមិដែលបានជ្រើសរើស</h2>
+            <input type="text" id="search-family-input" placeholder="វាយបញ្ចូលឈ្មោះមេគ្រួសារ, សមាជិក, ឬលេខអត្តសញ្ញាណប័ណ្ណ...">
+            <button id="search-family-button">ស្វែងរកក្នុងភូមិនេះ</button>
+        </div>
+
+        <div id="admin-family-data-display-section" style="margin-top: 20px;">
+            <h3 id="selected-village-name-admin">ទិន្នន័យគ្រួសារ: [មិនបានជ្រើសរើសភូមិ]</h3>
+            <div id="family-list-container-admin"></div>
+            <p id="no-family-data-message-admin" style="display: block;">សូមជ្រើសរើសភូមិដើម្បីបង្ហាញទិន្នន័យ ឬធ្វើការស្វែងរកក្នុងភូមិដែលបានជ្រើសរើស។</p>
+        </div>
+    </div>
+
+    <div id="edit-family-modal-admin" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-edit-family-modal-admin">×</span>
+            <h2>កែសម្រួលទិន្នន័យគ្រួសារ (Admin)</h2>
+            <form id="edit-family-form-admin">
+                <input type="hidden" id="edit-family-id-admin"><input type="hidden" id="edit-family-village-admin">
+                <fieldset>
+                    <legend>ព័ត៌មានគ្រួសារ (កែសម្រួល)</legend>
+                    <label for="edit-family-head-name-admin">ឈ្មោះមេគ្រួសារ:</label>
+                    <input type="text" id="edit-family-head-name-admin" required>
+                    <!-- បន្ថែម input សម្រាប់លេខទូរស័ព្ទ ប្រសិនបើ admin អាចកែបាន -->
+                    <label for="edit-family-head-phone-admin">លេខទូរស័ព្ទមេគ្រួសារ (Admin Edit):</label>
+                    <input type="tel" id="edit-family-head-phone-admin">
+                </fieldset>
+                <fieldset id="edit-family-members-section-admin">
+                    <legend>សមាជិកគ្រួសារ (កែសម្រួល)</legend>
+                    <div id="edit-family-members-container-admin"></div>
+                    <button type="button" id="add-member-to-edit-form-admin">បន្ថែមសមាជិក (កែសម្រួល)</button>
+                </fieldset>
+                <fieldset>
+                    <legend>ទ្រព្យសម្បត្តិ និងអាជីវកម្ម (កែសម្រួល)</legend>
+                    <div id="edit-family-assets-container-admin" class="asset-grid"></div>
+                </fieldset>
+                <button type="submit">រក្សាទុកការផ្លាស់ប្តូរ</button>
+                <p id="edit-family-error-admin" class="error-message"></p>
+                <p id="edit-family-success-admin" class="success-message"></p>
+            </form>
+        </div>
+    </div>
+
+    <template id="family-card-template">
+        <div class="family-card">
+            <h3 class="family-card-name"></h3><p class="family-card-entry-date"></p>
+            <h4>សមាជិក (<span class="family-member-count"></span>)</h4>
+            <table class="members-table">
+                <thead><tr><th>ឈ្មោះ</th><th>ភេទ</th><th>ថ្ងៃខែឆ្នាំកំណើត</th><th>ខេត្តកំណើត</th><th>កម្រិតវប្បធម៌</th><th>មុខរបរ</th><th>លេខ<br>អត្ត-<br>សញ្ញាណ-<br>ប័ណ្ណ</th><th>លេខ<br>ការិយា-<br>ល័យ<br>បោះឆ្នោត</th><th>ចំណាក-<br>ស្រុក-<br>ក្នុង</th><th>ចំណាក-<br>ស្រុក-<br>ក្រៅ</th></tr></thead>
+                <tbody></tbody>
+            </table>
+            <h4>ទ្រព្យសម្បត្តិ និងអាជីវកម្ម</h4>
+            <div class="assets-details"></div>
+            <div class="family-card-actions" style="display:none;">
+                <button class="edit-family-button action-button">កែសម្រួល</button>
+                <button class="delete-family-button action-button">លុប</button>
+            </div>
+        </div>
+    </template>
+
+    <template id="edit-member-template-admin">
+        <div class="member-entry" data-member-id="">
+            <h4>សមាជិក (កែសម្រួល) <button type="button" class="remove-member-edit-button" title="ដកសមាជិកនេះចេញ">×</button></h4>
+            <input type="hidden" class="member-original-id-edit">
+            <div><label>ឈ្មោះ:</label> <input type="text" class="member-name-edit" required></div>
+            <div><label>ភេទ:</label><select class="member-gender-edit"><option value="ប្រុស">ប្រុស</option><option value="ស្រី">ស្រី</option></select></div>
+            <div><label>ថ្ងៃខែឆ្នាំកំណើត:</label> <input type="date" class="member-dob-edit"></div>
+            <div><label>ខេត្តកំណើត:</label> <input type="text" class="member-birthProvince-edit"></div>
+            <div><label>កម្រិតវប្បធម៌:</label> <input type="text" class="member-educationLevel-edit"></div>
+            <div><label>មុខរបរ:</label> <input type="text" class="member-occupation-edit"></div>
+            <div><label>លេខអត្តសញ្ញាណប័ណ្ណ:</label> <input type="text" class="member-nationalId-edit"></div>
+            <div><label>លេខការិយាល័យបោះឆ្នោត:</label> <input type="text" class="member-electionOfficeId-edit"></div>
+            <div><label>ចំណាកស្រុកក្នុង:</label><select class="member-internalMigration-edit"><option value="ទេ">ទេ</option><option value="បាទ">បាទ</option></select></div>
+            <div><label>ចំណាកស្រុកក្រៅ:</label><select class="member-externalMigration-edit"><option value="ទេ">ទេ</option><option value="បាទ">បាទ</option></select></div>
+            <hr class="member-divider">
+        </div>
+    </template>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="admin_script.js"></script>
+</body>
+</html>
