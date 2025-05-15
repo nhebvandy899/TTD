@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Determine User Type and Village to Display ---
     let currentUserType = sessionStorage.getItem('loggedInUserType');
     let villageChiefVillage = sessionStorage.getItem('loggedInVillage');
-    let adminViewingVillage = sessionStorage.getItem('adminViewingVillage'); // For when admin views this dashboard
+    let adminViewingVillage = sessionStorage.getItem('adminViewingVillage');
     let currentAdminUsername = sessionStorage.getItem('loggedInUsername');
 
     let villageToDisplay = '';
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (allRegisteredVillages[villageToDisplay]) {
             villageChiefCanEdit = allRegisteredVillages[villageToDisplay].canEditData === true;
         } else {
-            villageChiefCanEdit = false; // Default if village info missing
+            villageChiefCanEdit = false;
         }
     } else {
         console.error("Invalid access state for dashboard. Redirecting.");
@@ -48,13 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DOM References ---
     const dashboardTitle = document.getElementById('dashboard-title');
     const welcomeMessage = document.getElementById('welcome-message');
-    const currentDateTimeDisplay = document.getElementById('current-date-time'); // For village chief's date/time
+    const currentDateTimeDisplay = document.getElementById('current-date-time');
     const logoutButton = document.getElementById('logout-button');
     const backToAdminButton = document.getElementById('back-to-admin-button');
     const adminViewNotice = document.getElementById('admin-view-notice');
     const villageEditPermissionNotice = document.getElementById('village-edit-permission-notice');
     const dataInputSection = document.getElementById('data-input-section');
     const familyDataEntryForm = document.getElementById('family-data-entry-form');
+    const familyHeadNameInput = document.getElementById('family-head-name');
     const familyHeadPhoneInput = document.getElementById('family-head-phone');
     const dataEntrySuccessMsg = document.getElementById('data-entry-success');
     const dataEntryErrorMsg = document.getElementById('data-entry-error');
@@ -90,20 +91,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const editFamilyErrorAdmin = document.getElementById('edit-family-error-admin');
     const editFamilySuccessAdmin = document.getElementById('edit-family-success-admin');
 
+    // DOM References for Age Group Stats (Village)
+    const ageGroup18_35_VillageSpan = document.getElementById('age-group-18-35-village');
+    const ageGroup36_55_VillageSpan = document.getElementById('age-group-36-55-village');
+    const ageGroup56_65_VillageSpan = document.getElementById('age-group-56-65-village');
+    const ageGroup66Plus_VillageSpan = document.getElementById('age-group-66-plus-village');
 
-    // --- Function to Display Current Date and Time in Khmer (Manual Formatting) ---
+
+    // --- Activity Log Key ---
+    const ACTIVITY_LOG_KEY = 'activityLog_v2';
+
+    // --- Function to Display Current Date and Time in Khmer ---
     const displayCurrentDateTimeInKhmer = () => {
-        if (!currentDateTimeDisplay) {
-            return;
-        }
-
+        if (!currentDateTimeDisplay) return;
         const now = new Date();
         const daysKhmer = ["អាទិត្យ", "ច័ន្ទ", "អង្គារ", "ពុធ", "ព្រហស្បត្តិ៍", "សុក្រ", "សៅរ៍"];
-        const monthsKhmer = [
-            "មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា",
-            "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"
-        ];
-
+        const monthsKhmer = ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"];
         const dayName = daysKhmer[now.getDay()];
         const dayOfMonth = now.getDate();
         const monthName = monthsKhmer[now.getMonth()];
@@ -112,26 +115,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const minutes = now.getMinutes().toString().padStart(2, '0');
         const seconds = now.getSeconds().toString().padStart(2, '0');
         const ampm = hours >= 12 ? 'ល្ងាច' : 'ព្រឹក';
-        hours = hours % 12;
-        hours = hours ? hours : 12;
+        hours = hours % 12; hours = hours ? hours : 12;
         const hoursStr = hours.toString();
-
-        // *** ការកែប្រែដើម្បីបន្ថែមពណ៌ ***
-        const timeString = `ម៉ោង ${hoursStr}:<span style="color: #28a745;">${minutes}</span>:<span style="color: #28a745;">${seconds}</span> ${ampm}`;
-        // ឬពណ៌ខៀវ៖ const timeString = `ម៉ោង ${hoursStr}:<span style="color: #007bff;">${minutes}</span>:<span style="color: #007bff;">${seconds}</span> ${ampm}`;
+        const timeString = `ម៉ោង ${hoursStr}:<span style="color:rgb(42, 40, 167);">${minutes}</span>:<span style="color:rgb(252, 3, 3);">${seconds}</span> ${ampm}`;
         currentDateTimeDisplay.innerHTML = `ថ្ងៃ${dayName} ទី${dayOfMonth} ខែ${monthName} ឆ្នាំ${year} ${timeString}`;
-        // *** បញ្ចប់ការកែប្រែដើម្បីបន្ថែមពណ៌ ***
     };
 
-    // --- Call Time Display Function Immediately and Set Interval ---
-    // Placed early to ensure it starts as soon as the element is available
     if (typeof displayCurrentDateTimeInKhmer === 'function') {
         displayCurrentDateTimeInKhmer();
         setInterval(displayCurrentDateTimeInKhmer, 1000);
-    } else {
-        console.error("Function displayCurrentDateTimeInKhmer is not defined in dashboard.js");
     }
-
 
     // --- Setup UI based on User Type ---
     if (dashboardTitle) dashboardTitle.textContent = `ផ្ទាំងគ្រប់គ្រងទិន្នន័យភូមិ ${villageToDisplay}`;
@@ -148,14 +141,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (backToAdminButton) backToAdminButton.style.display = 'inline-block';
         if (dataInputSection) dataInputSection.style.display = 'none';
         if (villageEditPermissionNotice) villageEditPermissionNotice.style.display = 'none';
-    } else { // Village Chief View
+    } else {
         if (adminViewNotice) adminViewNotice.style.display = 'none';
         if (backToAdminButton) backToAdminButton.style.display = 'none';
         if (dataInputSection) dataInputSection.style.display = 'block';
         if (familyDataEntryForm) familyDataEntryForm.style.display = 'none';
         if (toggleFormButton) toggleFormButton.textContent = 'បង្ហាញទម្រង់បញ្ចូលទិន្នន័យគ្រួសារថ្មី';
         if (villageEditPermissionNotice) {
-            villageEditPermissionNotice.textContent = villageChiefCanEdit ? '✅ Admin បានអនុញ្ញាតឲ្យអ្នកកែសម្រួល និងលុបទិន្នន័យបាន។' : '❌ Admin មិនទាន់អនុញ្ញាតឲ្យអ្នកកែសម្រួល ឬលុបទិន្នន័យទេ។ សូមទាក់ទង Admin។';
+            villageEditPermissionNotice.textContent = villageChiefCanEdit ? '✅ រដ្ឋបាលឃុំទួលពង្រ បានអនុញ្ញាតឲ្យអ្នកកែសម្រួល និងលុបទិន្នន័យបាន។' : '❌ រដ្ឋបាលឃុំទួលពង្រ មិនទាន់អនុញ្ញាតឲ្យអ្នកកែសម្រួល ឬលុបទិន្នន័យទេ។ សូមទាក់ទង រដ្ឋបាលឃុំទួលពង្រ។';
             villageEditPermissionNotice.style.display = 'block';
         }
     }
@@ -179,36 +172,146 @@ document.addEventListener('DOMContentLoaded', () => {
     const assetFieldDefinitions = [
         {id: 'largeTrucks', label: 'រថយន្ដធំ', type: 'number'}, {id: 'smallCars', label: 'រថយន្តតូច', type: 'number'},
         {id: 'modifiedVehicles', label: 'រថយន្ដកែឆ្នៃ', type: 'number'}, {id: 'tractors', label: 'ត្រាក់ទ័រ', type: 'number'},
-        {id: 'kubotas', label: 'គោយន្ដ', type: 'number'}, {id: 'riceHarvesters', label: 'ម៉ាស៊ីនច្រូតស្រូវ', type: 'number'},
+        {id: 'kubotas', label: 'គោយន្ដកន្ត្រៃ', type: 'number'}, {id: 'riceHarvesters', label: 'ម៉ាស៊ីនច្រូតស្រូវ', type: 'number'},
         {id: 'riceMills', label: 'ម៉ាស៊ីនកិនស្រូវ', type: 'number'}, {id: 'waterPumpsWells', label: 'អណ្ដូងស្នប់', type: 'number'},
-        {id: 'ponds', label: 'ស្រះទឹក', type: 'number'}, {id: 'residentialLandSize', label: 'ទំហំដីលំនៅដ្ឋាន', type: 'text', isLandArea: true},
+        {id: 'ponds', label: 'ផ្ទះលក់ថ្នាំពេទ្យ', type: 'number'},
+        {id: 'residentialLandSize', label: 'ទំហំដីលំនៅដ្ឋាន(ម៉ែត្រការ៉ែ)', type: 'text', isLandArea: true},
         {id: 'paddyLandSize', label: 'ទំហំដីស្រែ', type: 'text', isLandArea: true},
         {id: 'plantationLandSize', label: 'ដីចំការ (ផ្សេងៗ)', type: 'text', isLandArea: true},
         {id: 'coconutLandSize', label: 'ដីចំការដូង', type: 'text', isLandArea: true},
         {id: 'mangoLandSize', label: 'ដីចំការស្វាយ', type: 'text', isLandArea: true},
         {id: 'cashewLandSize', label: 'ដីចំការស្វាយចន្ទី', type: 'text', isLandArea: true},
         {id: 'livestockLandSize', label: 'ដីចំការមាន', type: 'text', isLandArea: true},
-        {id: 'vehicleRepairShops', label: 'ជាងជួសជុល', type: 'number'}, {id: 'groceryStores', label: 'លក់ចាប់ហួយ', type: 'number'},
-        {id: 'mobilePhoneShops', label: 'លក់ទូរស័ព្ទ', type: 'number'}, {id: 'constructionMaterialDepots', label: 'លក់គ្រឿងសំណង់', type: 'number'},
-        {id: 'fuelDepots', label: 'ដេប៉ូប្រេង', type: 'number'}, {id: 'beautySalons', label: 'សម្អាងការ', type: 'number'},
-        {id: 'motorcycles', label: 'ម៉ូតូ', type: 'number'}, {id: 'tukTuks', label: 'ម៉ូតូកង់បី', type: 'number'},
-        {id: 'remorques', label: 'ម៉ូតូសណ្ដោងរម៉ក', type: 'number'}
+        {id: 'vehicleRepairShops', label: 'ជាងជួសជុល(ម៉ូតូ,ឡាន)', type: 'number'}, {id: 'groceryStores', label: 'ផ្ទះលក់ចាប់ហួយ', type: 'number'},
+        {id: 'mobilePhoneShops', label: 'ផ្ទះលក់ទូស័ព្ទដៃ', type: 'number'}, {id: 'constructionMaterialDepots', label: 'ដេប៉ូលក់គ្រឿងសំណង់', type: 'number'},
+        {id: 'fuelDepots', label: 'ដេប៉ូប្រេង', type: 'number'}, {id: 'beautySalons', label: 'ផ្ទះសម្អាងការ(សាឡន)', type: 'number'},
+        {id: 'motorcycles', label: 'ម៉ូតូ', type: 'number'}, {id: 'tukTuks', label: 'ម៉ូតូកង់បី+ម៉ូតូសណ្ដោងរម៉ក', type: 'number'},
+        {id: 'remorques', label: 'ផ្ទះលក់គ្រឿងកសិកម្ម', type: 'number'}
     ];
     const memberFieldDefinitionsForEdit = [
-        { classSuffix: 'name-edit', prop: 'name', label: 'ឈ្មោះ', required: true, type: 'text' },
-        { classSuffix: 'gender-edit', prop: 'gender', label: 'ភេទ', type: 'select', options: [{value:'ប្រុស', text:'ប្រុស'}, {value:'ស្រី', text:'ស្រី'}] },
-        { classSuffix: 'dob-edit', prop: 'dob', label: 'ថ្ងៃខែឆ្នាំកំណើត', type: 'date' },
-        { classSuffix: 'birthProvince-edit', prop: 'birthProvince', label: 'ខេត្តកំណើត', type: 'text' },
-        { classSuffix: 'educationLevel-edit', prop: 'educationLevel', label: 'កម្រិតវប្បធម៌', type: 'text' },
-        { classSuffix: 'occupation-edit', prop: 'occupation', label: 'មុខរបរ', type: 'text' },
-        { classSuffix: 'nationalId-edit', prop: 'nationalId', label: 'លេខអត្តសញ្ញាណប័ណ្ណ', type: 'text' },
-        { classSuffix: 'electionOfficeId-edit', prop: 'electionOfficeId', label: 'លេខការិយាល័យបោះឆ្នោត', type: 'text' },
-        { classSuffix: 'internalMigration-edit', prop: 'internalMigration', label: 'ចំណាកស្រុកក្នុង', type: 'select', options: [{value:'ទេ', text:'ទេ'}, {value:'បាទ', text:'បាទ'}] },
-        { classSuffix: 'externalMigration-edit', prop: 'externalMigration', label: 'ចំណាកស្រុកក្រៅ', type: 'select', options: [{value:'ទេ', text:'ទេ'}, {value:'បាទ', text:'បាទ'}] }
+        { classSuffix: 'member-name-edit', prop: 'name', label: 'ឈ្មោះ', required: true, type: 'text' },
+        { classSuffix: 'member-gender-edit', prop: 'gender', label: 'ភេទ', type: 'select', options: [{value:'ប្រុស', text:'ប្រុស'}, {value:'ស្រី', text:'ស្រី'}] },
+        { classSuffix: 'member-dob-edit', prop: 'dob', label: 'ថ្ងៃខែឆ្នាំកំណើត', type: 'date' },
+        { classSuffix: 'member-birthProvince-edit', prop: 'birthProvince', label: 'ខេត្តកំណើត', type: 'text' },
+        { classSuffix: 'member-educationLevel-edit', prop: 'educationLevel', label: 'កម្រិតវប្បធម៌', type: 'text' },
+        { classSuffix: 'member-occupation-edit', prop: 'occupation', label: 'មុខរបរ', type: 'text' },
+        { classSuffix: 'member-nationalId-edit', prop: 'nationalId', label: 'លេខអត្តសញ្ញាណប័ណ្ណ', type: 'text' },
+        { classSuffix: 'member-electionOfficeId-edit', prop: 'electionOfficeId', label: 'លេខការិយាល័យបោះឆ្នោត', type: 'text' },
+        { classSuffix: 'member-internalMigration-edit', prop: 'internalMigration', label: 'ចំណាកស្រុកក្នុង', type: 'select', options: [{value:'ទេ', text:'ទេ'}, {value:'បាទ', text:'បាទ'}] },
+        { classSuffix: 'member-externalMigration-edit', prop: 'externalMigration', label: 'ចំណាកស្រុកក្រៅ', type: 'select', options: [{value:'ទេ', text:'ទេ'}, {value:'បាទ', text:'បាទ'}] }
     ];
 
-    // --- Utility Functions ---
-     const parseLandSize = (textValue) => {
+    // --- Utility function to find changed fields ---
+    const getChangedFields = (oldData, newData) => {
+        if (!oldData || !newData) return "មិនអាចប្រៀបធៀបទិន្នន័យបានទេ (ទិន្នន័យដើមបាត់)។";
+
+        let changes = [];
+        const formatDisplayValue = (val) => (val === undefined || val === null || String(val).trim() === "") ? "N/A" : String(val).trim();
+
+        if (formatDisplayValue(oldData.familyName) !== formatDisplayValue(newData.familyName)) {
+            changes.push(`ឈ្មោះមេគ្រួសារ: "${formatDisplayValue(oldData.familyName)}" -> "${formatDisplayValue(newData.familyName)}"`);
+        }
+        if (formatDisplayValue(oldData.headOfHouseholdPhone) !== formatDisplayValue(newData.headOfHouseholdPhone)) {
+            changes.push(`លេខទូរស័ព្ទមេគ្រួសារ: "${formatDisplayValue(oldData.headOfHouseholdPhone)}" -> "${formatDisplayValue(newData.headOfHouseholdPhone)}"`);
+        }
+
+        const oldMembers = oldData.members || [];
+        const newMembers = newData.members || [];
+        if (oldMembers.length !== newMembers.length) {
+            changes.push(`ចំនួនសមាជិក: ${oldMembers.length} -> ${newMembers.length}`);
+        }
+        newMembers.forEach(newMember => {
+            const oldMember = oldMembers.find(om => om.id === newMember.id);
+            if (oldMember) {
+                memberFieldDefinitionsForEdit.forEach(def => {
+                    const oldVal = formatDisplayValue(oldMember[def.prop]);
+                    const newVal = formatDisplayValue(newMember[def.prop]);
+                    if (oldVal !== newVal) {
+                        changes.push(`សមាជិក (${newMember.name || newMember.id.slice(-5)}): ${def.label} "${oldVal}" -> "${newVal}"`);
+                    }
+                });
+            } else {
+                changes.push(`សមាជិកថ្មី: ${newMember.name || 'N/A'} (ID: ${newMember.id ? newMember.id.slice(-5) : 'New'}) បានបន្ថែម`);
+            }
+        });
+        oldMembers.forEach(oldMember => {
+            if (!newMembers.find(nm => nm.id === oldMember.id)) {
+                changes.push(`សមាជិក: ${oldMember.name || 'N/A'} (ID: ${oldMember.id.slice(-5)}) ត្រូវបានដកចេញ`);
+            }
+        });
+
+        const oldAssets = oldData.assets || {};
+        const newAssets = newData.assets || {};
+        const allAssetKeys = new Set([...Object.keys(oldAssets), ...Object.keys(newAssets)]);
+        allAssetKeys.forEach(key => {
+            const assetDef = assetFieldDefinitions.find(def => def.id === key);
+            const oldValDisplay = formatDisplayValue(oldAssets[key]);
+            const newValDisplay = formatDisplayValue(newAssets[key]);
+            let oldValForCompare = oldAssets[key];
+            let newValForCompare = newAssets[key];
+            if (assetDef && (assetDef.type === 'number' || assetDef.isLandArea)) {
+                oldValForCompare = String(oldValForCompare || "0").trim();
+                newValForCompare = String(newValForCompare || "0").trim();
+            } else {
+                oldValForCompare = String(oldValForCompare || "").trim();
+                newValForCompare = String(newValForCompare || "").trim();
+            }
+            if (oldValForCompare !== newValForCompare) {
+                const assetLabel = assetDef?.label || key;
+                changes.push(`${assetLabel}: "${oldValDisplay}" -> "${newValDisplay}"`);
+            }
+        });
+        if (changes.length === 0) {
+            return "មិនមានការផ្លាស់ប្តូរជាក់លាក់ណាមួយត្រូវបានកត់ត្រា (អាចជាការរក្សាទុកឡើងវិញដោយគ្មានការកែប្រែ)។";
+        }
+        return changes.join('; \n');
+    };
+
+    // --- Add Activity Log Entry Function ---
+    const addActivityLogEntry = (action, villageName, familyId, familyName = '', oldFamilyData = null, newFamilyData = null) => {
+        if (isAdminViewing || !villageChiefCanEdit) return;
+        let log = [];
+        const storedLog = localStorage.getItem(ACTIVITY_LOG_KEY);
+        if (storedLog) {
+            try {
+                log = JSON.parse(storedLog);
+                if (!Array.isArray(log)) log = [];
+            } catch (e) { console.error("Error parsing activity log:", e); log = []; }
+        }
+        let details = '';
+        if (action === "EDITED_FAMILY") {
+            if (oldFamilyData && newFamilyData) {
+                details = getChangedFields(oldFamilyData, newFamilyData);
+            } else {
+                details = "ព័ត៌មានលម្អិតអំពីការកែប្រែមិនអាចបង្កើតបាន (ខ្វះទិន្នន័យដើម ឬថ្មី)។";
+            }
+        } else if (action === "DELETED_FAMILY") {
+            details = `គ្រួសារ "${familyName || familyId}" ត្រូវបានលុប។`;
+        }
+        const logEntry = {
+            timestamp: new Date().toISOString(), action: action, villageName: villageName, familyId: familyId,
+            familyName: familyName || (newFamilyData ? newFamilyData.familyName : (oldFamilyData ? oldFamilyData.familyName : 'N/A')),
+            modifiedBy: `មេភូមិ:${villageName}`, details: details, userAgent: navigator.userAgent
+        };
+        log.unshift(logEntry);
+        if (log.length > 100) log = log.slice(0, 100);
+        localStorage.setItem(ACTIVITY_LOG_KEY, JSON.stringify(log));
+    };
+
+    // --- Utility Functions (calculateAge, parseLandSize, convertToHectares) ---
+    const calculateAge = (dobString) => {
+        if (!dobString) return null;
+        const birthDate = new Date(dobString);
+        if (isNaN(birthDate.valueOf())) return null;
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDifference = today.getMonth() - birthDate.getMonth();
+        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
+    const parseLandSize = (textValue) => {
         if (!textValue || typeof textValue !== 'string') return null;
         const cleanedValue = textValue.trim().toLowerCase();
         const numberMatch = cleanedValue.match(/(\d+(\.\d+)?)/);
@@ -232,6 +335,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // --- Input Validation for New Family Data Entry ---
+    const restrictInput = (inputElement, regexToRemove, maxLength) => {
+        if (!inputElement) return;
+        const originalValue = inputElement.value;
+        let newValue = originalValue.replace(regexToRemove, '');
+        if (maxLength && newValue.length > maxLength) {
+            newValue = newValue.slice(0, maxLength);
+        }
+        if (newValue !== originalValue) {
+            inputElement.value = newValue;
+        }
+    };
+
+    if (!isAdminViewing) {
+        if (familyHeadNameInput) {
+            familyHeadNameInput.addEventListener('input', () => {
+                restrictInput(familyHeadNameInput, /[^a-zA-Z\u1780-\u17FF\s]/g);
+            });
+        }
+        if (familyHeadPhoneInput) {
+            familyHeadPhoneInput.addEventListener('input', () => {
+                restrictInput(familyHeadPhoneInput, /[^0-9]/g);
+            });
+        }
+        if (memberFieldsContainer) {
+            memberFieldsContainer.addEventListener('input', (e) => {
+                const target = e.target;
+                if (target.matches('.member-name') || target.matches('.member-birthProvince') || target.matches('.member-occupation')) {
+                    restrictInput(target, /[^a-zA-Z\u1780-\u17FF\s]/g);
+                } else if (target.matches('.member-nationalId')) {
+                    restrictInput(target, /[^0-9]/g, 9);
+                } else if (target.matches('.member-electionOfficeId')) {
+                    restrictInput(target, /[^0-9]/g, 4);
+                }
+            });
+        }
+    }
+
     // --- Data Input Form (New Family) Logic ---
     if (toggleFormButton && !isAdminViewing) {
         toggleFormButton.addEventListener('click', () => {
@@ -246,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (newFamilyMemberCount < MAX_MEMBERS) {
                 newFamilyMemberCount++;
                 const firstMemberEntry = memberFieldsContainer.querySelector('.member-entry');
-                if (!firstMemberEntry) { console.error("Default member entry template for new form not found."); return; }
+                if (!firstMemberEntry) { console.error("Default member entry template not found."); return; }
                 const newMemberEntry = firstMemberEntry.cloneNode(true);
                 newMemberEntry.dataset.memberIndex = newFamilyMemberCount - 1;
                 const titleElement = newMemberEntry.querySelector('h4');
@@ -312,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const totalCell = row.insertCell();
             if (assetTotals.hasOwnProperty(def.id)) {
                 const totalValue = assetTotals[def.id];
-                if (totalValue > 0 || (def.isLandArea && totalValue !== undefined)) hasAnyAssetsData = true;
+                if (totalValue > 0 || (def.isLandArea && totalValue !== undefined && totalValue !== null && totalValue !== 0)) hasAnyAssetsData = true;
 
                  if (def.isLandArea) {
                     const formattedHectares = parseFloat(totalValue.toFixed(4));
@@ -333,10 +474,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Render Single Family Card ---
     const renderSingleFamilyCard = (family, containerElement, currentVillageForActions) => {
-         if (!familyCardTemplate) { console.error("Family card template not found!"); return; }
+         if (!familyCardTemplate || !familyCardTemplate.content) { console.error("Dashboard: Family card template or its content is missing!"); return; }
          const cardClone = familyCardTemplate.content.cloneNode(true);
          const familyCard = cardClone.querySelector('.family-card');
-         if (!familyCard) { console.error("Family card element not found in template!"); return;}
+         if (!familyCard) { console.error("Dashboard: '.family-card' element not found in template!"); return;}
 
          familyCard.dataset.familyId = family.familyId;
          const cardNameEl = familyCard.querySelector('.family-card-name');
@@ -377,13 +518,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.insertCell().textContent = member.externalMigration || 'N/A';
                 });
              } else {
-                const row = membersTableBody.insertRow();
-                const cell = row.insertCell();
-                cell.colSpan = 10;
-                cell.textContent = "មិនមានសមាជិកគ្រួសារ។";
-                cell.style.textAlign = "center";
+                membersTableBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">មិនមានសមាជិកគ្រួសារ។</td></tr>';
              }
+         } else if (membersTableBody) {
+            membersTableBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">មិនមានព័ត៌មានសមាជិក។</td></tr>';
          }
+
          const memberCountEl = familyCard.querySelector('.family-member-count');
          if(memberCountEl) memberCountEl.textContent = familyMemberCount;
 
@@ -391,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
          if (assetsDiv) {
              assetsDiv.innerHTML = '';
              let hasReportedAssetsInCard = false;
-             if (family.assets) {
+             if (family.assets && typeof family.assets === 'object') {
                  assetFieldDefinitions.forEach(def => {
                      const assetValue = family.assets[def.id];
                      if (assetValue !== undefined && assetValue !== null && String(assetValue).trim() !== "" && String(assetValue).trim() !== "0") {
@@ -414,7 +554,9 @@ document.addEventListener('DOMContentLoaded', () => {
                  const editBtn = actionsDiv.querySelector('.edit-family-button');
                  const deleteBtn = actionsDiv.querySelector('.delete-family-button');
                  if (editBtn) editBtn.onclick = () => openEditFamilyModal(currentVillageForActions, family.familyId, family);
-                 if (deleteBtn) deleteBtn.onclick = () => deleteFamilyData(currentVillageForActions, family.familyId);
+                 else console.warn("Dashboard: '.edit-family-button' not found.");
+                 if (deleteBtn) deleteBtn.onclick = () => deleteFamilyData(currentVillageForActions, family.familyId, family.familyName);
+                 else console.warn("Dashboard: '.delete-family-button' not found.");
              } else {
                  actionsDiv.style.display = 'none';
              }
@@ -422,9 +564,12 @@ document.addEventListener('DOMContentLoaded', () => {
          containerElement.appendChild(cardClone);
     };
 
-    // --- Load Village Family Data (from localStorage) ---
+    // --- Load Village Family Data ---
     const loadVillageFamilyData = (searchTerm = '') => {
-        if (!familyListContainer || !familyCardTemplate) return;
+        if (!familyListContainer || !familyCardTemplate) {
+             console.warn("Dashboard: Family list container or card template missing.");
+            return;
+        }
         if (searchVillageInput && !searchTerm) searchVillageInput.value = '';
 
         const allVillageData = getVillageDataStorage();
@@ -464,12 +609,11 @@ document.addEventListener('DOMContentLoaded', () => {
              }
         }
 
-        let totalPeople = 0;
-        let totalFemales = 0;
-        let todayEntriesCount = 0;
-        let totalInternalMigrants = 0;
-        let totalExternalMigrants = 0;
+        // Calculate and Display Village Summary Stats (including Age Groups)
+        let totalPeople = 0, totalFemales = 0, todayEntriesCount = 0;
+        let totalInternalMigrants = 0, totalExternalMigrants = 0;
         const todayDateString = new Date().toISOString().split('T')[0];
+        let count18_35_Village = 0, count36_55_Village = 0, count56_65_Village = 0, count66Plus_Village = 0;
 
         const fullDataForStats = (allVillageData.hasOwnProperty(villageToDisplay) && Array.isArray(allVillageData[villageToDisplay]))
                                 ? allVillageData[villageToDisplay] : [];
@@ -481,6 +625,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (member.gender === 'ស្រី') totalFemales++;
                     if (member.internalMigration === 'បាទ') totalInternalMigrants++;
                     if (member.externalMigration === 'បាទ') totalExternalMigrants++;
+                    const age = calculateAge(member.dob);
+                    if (age !== null) {
+                        if (age >= 18 && age <= 35) count18_35_Village++;
+                        else if (age >= 36 && age <= 55) count36_55_Village++;
+                        else if (age >= 56 && age <= 65) count56_65_Village++;
+                        else if (age >= 66) count66Plus_Village++;
+                    }
                 });
             }
             if (family.entryDate && typeof family.entryDate === 'string' && family.entryDate.startsWith(todayDateString)) {
@@ -494,7 +645,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if(todayEntriesVillageSpan) todayEntriesVillageSpan.textContent = todayEntriesCount;
         if(totalInternalMigrantsVillageSpan) totalInternalMigrantsVillageSpan.textContent = totalInternalMigrants;
         if(totalExternalMigrantsVillageSpan) totalExternalMigrantsVillageSpan.textContent = totalExternalMigrants;
-
+        if(ageGroup18_35_VillageSpan) ageGroup18_35_VillageSpan.textContent = count18_35_Village;
+        if(ageGroup36_55_VillageSpan) ageGroup36_55_VillageSpan.textContent = count36_55_Village;
+        if(ageGroup56_65_VillageSpan) ageGroup56_65_VillageSpan.textContent = count56_65_Village;
+        if(ageGroup66Plus_VillageSpan) ageGroup66Plus_VillageSpan.textContent = count66Plus_Village;
         displayVillageAssetSummary(fullDataForStats);
     };
 
@@ -504,28 +658,44 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             if(dataEntrySuccessMsg) dataEntrySuccessMsg.textContent = '';
             if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = '';
-            const familyHeadNameValue = document.getElementById('family-head-name').value.trim();
+            const familyHeadNameValue = familyHeadNameInput ? familyHeadNameInput.value.trim() : "";
             const headOfHouseholdPhoneValue = familyHeadPhoneInput ? familyHeadPhoneInput.value.trim() : "";
 
-            if (!familyHeadNameValue) { if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = 'សូមបញ្ចូលឈ្មោះមេគ្រួសារ។'; return; }
+            if (!familyHeadNameValue) { if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = 'សូមបញ្ចូលឈ្មោះមេគ្រួសារ។'; familyHeadNameInput.focus(); return; }
+
+            const memberEntries = memberFieldsContainer.querySelectorAll('.member-entry');
+            for (let i = 0; i < memberEntries.length; i++) {
+                const entry = memberEntries[i];
+                const memberNameInput = entry.querySelector('.member-name');
+                const nationalIdInput = entry.querySelector('.member-nationalId');
+                const electionOfficeIdInput = entry.querySelector('.member-electionOfficeId');
+                const memberName = memberNameInput ? memberNameInput.value.trim() : '';
+                if (memberName) {
+                    const nationalIdValue = nationalIdInput ? nationalIdInput.value.trim() : '';
+                    if (nationalIdValue !== "" && nationalIdValue.length !== 9) {
+                        if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = `សមាជិក "${memberName}"៖ លេខអត្តសញ្ញាណប័ណ្ណត្រូវតែមាន 9 ខ្ទង់ (បើមានបញ្ចូល)។`;
+                        nationalIdInput.focus(); return;
+                    }
+                    const electionOfficeIdValue = electionOfficeIdInput ? electionOfficeIdInput.value.trim() : '';
+                    if (electionOfficeIdValue !== "" && electionOfficeIdValue.length !== 4) {
+                        if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = `សមាជិក "${memberName}"៖ លេខការិយាល័យបោះឆ្នោតត្រូវតែមាន 4 ខ្ទង់ (បើមានបញ្ចូល)។`;
+                        electionOfficeIdInput.focus(); return;
+                    }
+                }
+            }
 
             const newFamilyData = {
                 familyId: `fam_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-                familyName: familyHeadNameValue,
-                headOfHouseholdPhone: headOfHouseholdPhoneValue,
-                entryDate: new Date().toISOString(),
-                members: [], assets: {}
+                familyName: familyHeadNameValue, headOfHouseholdPhone: headOfHouseholdPhoneValue,
+                entryDate: new Date().toISOString(), members: [], assets: {}
             };
-
-            const memberEntries = memberFieldsContainer.querySelectorAll('.member-entry');
             let hasAtLeastOneValidMember = false;
             memberEntries.forEach(entry => {
                 const name = entry.querySelector('.member-name')?.value.trim();
                 if (name) {
                     hasAtLeastOneValidMember = true;
                     newFamilyData.members.push({
-                        id: `mem_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-                        name: name,
+                        id: `mem_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, name: name,
                         gender: entry.querySelector('.member-gender')?.value || 'ប្រុស',
                         dob: entry.querySelector('.member-dob')?.value || null,
                         birthProvince: entry.querySelector('.member-birthProvince')?.value.trim() || null,
@@ -538,17 +708,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             });
-
             if (!hasAtLeastOneValidMember && newFamilyData.members.length === 0) {
                  if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = 'សូមបញ្ចូលព័ត៌មានសម្រាប់សមាជិកគ្រួសារយ៉ាងតិចម្នាក់ (ត្រូវមានឈ្មោះ)។';
-                 return;
+                 const firstMemberNameInput = memberFieldsContainer.querySelector('.member-name');
+                 if(firstMemberNameInput) firstMemberNameInput.focus(); return;
             }
-
             const assetInputs = familyDataEntryForm.querySelectorAll('.asset-grid input');
             assetInputs.forEach(input => {
-                const value = input.type === 'number'
-                    ? (parseInt(input.value, 10) || 0)
-                    : (input.value.trim() || (input.id.toLowerCase().includes('landsize') ? "0" : ""));
+                const assetDef = assetFieldDefinitions.find(def => def.id === input.id);
+                let value;
+                if (assetDef?.isLandArea) { value = input.value.trim() || "0"; }
+                else if (input.type === 'number') { value = parseInt(input.value, 10) || 0; }
+                else { value = input.value.trim() || ""; }
                 newFamilyData.assets[input.id] = value;
             });
 
@@ -560,9 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
             saveVillageDataStorage(allVillageData);
 
             if(dataEntrySuccessMsg) dataEntrySuccessMsg.textContent = 'ទិន្នន័យគ្រួសារត្រូវបានបញ្ចូលដោយជោគជ័យ!';
-            familyDataEntryForm.reset();
-            resetNewFamilyFormMemberFields();
-            loadVillageFamilyData();
+            familyDataEntryForm.reset(); resetNewFamilyFormMemberFields(); loadVillageFamilyData();
             setTimeout(() => { if(dataEntrySuccessMsg) dataEntrySuccessMsg.textContent = ''; }, 4000);
         });
     }
@@ -576,82 +745,77 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchVillageButton) searchVillageButton.addEventListener('click', performVillageSearch);
     if (searchVillageInput) {
         searchVillageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performVillageSearch(); });
-        searchVillageInput.addEventListener('input', (e) => {
-            if (e.target.value === '') {
-                loadVillageFamilyData();
-            }
-        });
+        searchVillageInput.addEventListener('input', (e) => { if (e.target.value === '') loadVillageFamilyData(); });
     }
 
     // --- Edit Family Modal Logic ---
     const openEditFamilyModal = (villageNameContext, familyId, familyData) => {
          if (!isAdminViewing && !villageChiefCanEdit) { alert("អ្នកមិនមានសិទ្ធិកែសម្រួលទិន្នន័យនេះទេ។"); return; }
-         if (!editFamilyModal || !editFamilyIdInput || !editFamilyVillageInput || !editFamilyHeadNameInput || !editFamilyMembersContainer || !editFamilyAssetsContainer || !editMemberTemplateAdmin) {
-             console.error("One or more edit modal elements are missing from the DOM."); return;
+         if (!editFamilyModal || !editFamilyIdInput || !editFamilyVillageInput || !editFamilyHeadNameInput ||
+             !editFamilyHeadPhoneAdminInput || !editFamilyMembersContainer || !editFamilyAssetsContainer ||
+             !editMemberTemplateAdmin || !editMemberTemplateAdmin.content) {
+             console.error("Dashboard: Essential modal DOM elements or member template content are missing for edit.");
+             alert("មានបញ្ហាក្នុងការបើកទម្រង់កែសម្រួល (Elements/Template ខ្វះ)។ សូមពិនិត្យ Console។"); return;
          }
-         editFamilyIdInput.value = familyId;
-         editFamilyVillageInput.value = villageNameContext;
+         editFamilyIdInput.value = familyId; editFamilyVillageInput.value = villageNameContext;
          editFamilyHeadNameInput.value = familyData.familyName || "";
-         if (editFamilyHeadPhoneAdminInput) editFamilyHeadPhoneAdminInput.value = familyData.headOfHouseholdPhone || "";
-
+         editFamilyHeadPhoneAdminInput.value = familyData.headOfHouseholdPhone || "";
          editFamilyMembersContainer.innerHTML = '';
          if (familyData.members && Array.isArray(familyData.members)) {
-             familyData.members.forEach((member, index) => {
+             familyData.members.forEach((memberData, index) => {
                  const memberClone = editMemberTemplateAdmin.content.cloneNode(true);
-                 const memberEntry = memberClone.querySelector('.member-entry');
-                 if (!memberEntry) return;
+                 const memberEntryDiv = memberClone.querySelector('.member-entry');
+                 if (!memberEntryDiv) { console.warn(`Dashboard Edit: '.member-entry' not in template for member ${index}.`); return; }
+                 memberEntryDiv.dataset.originalMemberId = memberData.id || `temp_edit_member_${Date.now()}_${index}`;
+                 const originalIdHiddenInput = memberEntryDiv.querySelector('.member-original-id-edit');
+                 if (originalIdHiddenInput) originalIdHiddenInput.value = memberEntryDiv.dataset.originalMemberId;
+                 else console.warn("Dashboard Edit: '.member-original-id-edit' hidden input not found.");
 
-                 const originalIdInput = memberEntry.querySelector('.member-original-id-edit');
-                 if (originalIdInput) originalIdInput.value = member.id || `temp_id_${index}`;
-
-                 const titleElement = memberEntry.querySelector('h4');
+                 const titleElement = memberEntryDiv.querySelector('h4');
                  if (titleElement) {
-                     titleElement.innerHTML = `សមាជិកទី ${index + 1} (កែសម្រួល) <button type="button" class="remove-member-edit-button" title="ដកសមាជិកនេះចេញ">×</button>`;
+                     const memberNameDisplay = memberData.name ? ` (${memberData.name.substring(0,15)}${memberData.name.length > 15 ? '...' : ''})` : '';
+                     titleElement.innerHTML = `សមាជិក${memberNameDisplay} (កែសម្រួល) <button type="button" class="remove-member-edit-button" title="ដកសមាជិកនេះចេញ">×</button>`;
                      const removeBtn = titleElement.querySelector('.remove-member-edit-button');
-                     if (removeBtn) removeBtn.onclick = (e) => { e.preventDefault(); memberEntry.remove(); };
+                     if (removeBtn) removeBtn.onclick = (e) => { e.preventDefault(); memberEntryDiv.remove(); };
                  }
-
                  memberFieldDefinitionsForEdit.forEach(def => {
-                     const inputEl = memberEntry.querySelector(`.${def.classSuffix}`);
+                     const inputEl = memberEntryDiv.querySelector(`.${def.classSuffix}`);
                      if (inputEl) {
-                         const valueFromData = member[def.prop];
+                         const valueFromData = memberData[def.prop];
                          if (valueFromData !== undefined && valueFromData !== null) {
                             if (def.type === 'date' && valueFromData) {
-                                try { inputEl.value = new Date(valueFromData).toISOString().split('T')[0]; }
-                                catch (e) { inputEl.value = valueFromData; }
-                            } else {
-                                inputEl.value = valueFromData;
-                            }
+                                try {
+                                    const dateObj = new Date(valueFromData);
+                                    inputEl.value = !isNaN(dateObj.valueOf()) ? dateObj.toISOString().split('T')[0] : valueFromData;
+                                } catch (e) { inputEl.value = valueFromData; }
+                            } else { inputEl.value = valueFromData; }
                          } else {
-                             if (inputEl.tagName === 'SELECT' && def.options && def.options.length > 0) inputEl.value = def.options[0].value;
-                             else inputEl.value = '';
+                             inputEl.value = (inputEl.tagName === 'SELECT' && def.options && def.options.length > 0) ? def.options[0].value : '';
                          }
-                     }
+                     } else { console.warn(`Dashboard Edit: Input .${def.classSuffix} for ${def.prop} NOT FOUND.`); }
                  });
                  editFamilyMembersContainer.appendChild(memberClone);
              });
          }
-
          editFamilyAssetsContainer.innerHTML = '';
          assetFieldDefinitions.forEach(fieldDef => {
-             const div = document.createElement('div');
+             const assetDiv = document.createElement('div');
              const label = document.createElement('label');
-             label.htmlFor = `edit-${fieldDef.id}`; label.textContent = fieldDef.label + ':';
+             label.htmlFor = `edit-modal-asset-${fieldDef.id}`; label.textContent = `${fieldDef.label}:`;
              const input = document.createElement('input');
-             input.type = fieldDef.type; input.id = `edit-${fieldDef.id}`; input.name = fieldDef.id;
-             const existingValue = (familyData.assets && familyData.assets[fieldDef.id] !== undefined)
-                ? familyData.assets[fieldDef.id]
-                : (input.type === 'number' ? '0' : (fieldDef.isLandArea ? "0" : ""));
-             input.value = existingValue;
-             if(input.type === 'number') input.min = "0";
-             if(input.type === 'text' && (input.value === '0' || input.value === '') && fieldDef.id.toLowerCase().includes('landsize')) {
+             input.type = fieldDef.type; input.id = `edit-modal-asset-${fieldDef.id}`; input.name = fieldDef.id;
+             const existingValueString = (familyData.assets && familyData.assets[fieldDef.id] !== undefined && familyData.assets[fieldDef.id] !== null)
+                ? String(familyData.assets[fieldDef.id])
+                : (fieldDef.type === 'number' ? '0' : (fieldDef.isLandArea ? "" : ""));
+             input.value = existingValueString;
+             if (fieldDef.type === 'number') input.min = "0";
+             if (fieldDef.isLandArea && input.type === 'text') {
                  input.placeholder = "0";
-                 input.value = "";
+                 if (existingValueString === "0") input.value = "";
              }
-             div.appendChild(label); div.appendChild(input);
-             editFamilyAssetsContainer.appendChild(div);
+             assetDiv.appendChild(label); assetDiv.appendChild(input);
+             editFamilyAssetsContainer.appendChild(assetDiv);
          });
-
          if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = '';
          if(editFamilySuccessAdmin) editFamilySuccessAdmin.textContent = '';
          editFamilyModal.style.display = 'block';
@@ -662,30 +826,32 @@ document.addEventListener('DOMContentLoaded', () => {
          addMemberToEditFormButton.onclick = () => {
              if (!isAdminViewing && !villageChiefCanEdit) return;
              if (editFamilyMembersContainer.children.length < MAX_MEMBERS_EDIT) {
+                 if(!editMemberTemplateAdmin.content) { console.error("Dashboard Edit: Template content missing for new member."); return;}
                  const memberClone = editMemberTemplateAdmin.content.cloneNode(true);
-                 const memberEntry = memberClone.querySelector('.member-entry'); if(!memberEntry) return;
-                 const originalIdInput = memberEntry.querySelector('.member-original-id-edit');
-                 if (originalIdInput) originalIdInput.value = `new_${Date.now()}`;
-                 const titleElement = memberEntry.querySelector('h4');
+                 const memberEntryDiv = memberClone.querySelector('.member-entry');
+                 if(!memberEntryDiv) { console.warn("Dashboard Edit: '.member-entry' not found in cloned template for new member."); return; }
+                 const newMemberOriginalId = `new_edit_form_${Date.now()}`;
+                 memberEntryDiv.dataset.originalMemberId = newMemberOriginalId;
+                 const originalIdHiddenInput = memberEntryDiv.querySelector('.member-original-id-edit');
+                 if(originalIdHiddenInput) originalIdHiddenInput.value = newMemberOriginalId;
+                 else console.warn("Dashboard Edit: '.member-original-id-edit' hidden input not found in new member template.");
+
+                 const titleElement = memberEntryDiv.querySelector('h4');
                  if(titleElement) {
                      titleElement.innerHTML = `សមាជិកថ្មី (កែសម្រួល) <button type="button" class="remove-member-edit-button" title="ដកសមាជិកនេះចេញ">×</button>`;
                      const removeBtn = titleElement.querySelector('.remove-member-edit-button');
-                     if(removeBtn) removeBtn.onclick = (e) => {e.preventDefault(); memberEntry.remove();};
+                     if(removeBtn) removeBtn.onclick = (e) => {e.preventDefault(); memberEntryDiv.remove();};
                  }
-                 memberEntry.querySelectorAll('input[type="text"], input[type="date"]').forEach(input => input.value = '');
-                 memberEntry.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+                 memberEntryDiv.querySelectorAll('input[type="text"], input[type="date"], input[type="tel"]').forEach(input => input.value = '');
+                 memberEntryDiv.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
                  editFamilyMembersContainer.appendChild(memberClone);
-             } else {
-                 alert(`មិនអាចបន្ថែមសមាជិកលើសពី ${MAX_MEMBERS_EDIT} នាក់បានទេ។`);
-             }
+             } else { alert(`មិនអាចបន្ថែមសមាជិកលើសពី ${MAX_MEMBERS_EDIT} នាក់បានទេ។`); }
          };
     }
     if (closeEditFamilyModalButton && editFamilyModal) {
         closeEditFamilyModalButton.onclick = () => { editFamilyModal.style.display = 'none'; };
     }
-    window.onclick = (event) => {
-        if (event.target == editFamilyModal && editFamilyModal) editFamilyModal.style.display = 'none';
-    };
+    window.onclick = (event) => { if (event.target == editFamilyModal && editFamilyModal) editFamilyModal.style.display = 'none'; };
 
     if (editFamilyForm) {
         editFamilyForm.addEventListener('submit', (e) => {
@@ -704,93 +870,147 @@ document.addEventListener('DOMContentLoaded', () => {
 
              if (!updatedFamilyHeadNameValue) {
                  if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = "ឈ្មោះមេគ្រួសារមិនអាចនៅទទេបានទេ។";
-                 return;
+                 editFamilyHeadNameInput.focus(); return;
              }
 
+             const allDataForComparison = getVillageDataStorage();
+             const originalFamilyDataForLog = JSON.parse(JSON.stringify(
+                (allDataForComparison[villageOfFamily] || []).find(f => f.familyId === familyIdToUpdate) || null
+             ));
+
              const updatedFamilyPayload = {
-                 familyId: familyIdToUpdate,
-                 familyName: updatedFamilyHeadNameValue,
-                 headOfHouseholdPhone: updatedHeadPhoneValue,
-                 members: [],
-                 assets: {},
-                 lastModifiedBy: isAdminViewing ? (currentAdminUsername || 'Admin') : villageToDisplay,
-                 lastModifiedDate: new Date().toISOString()
+                 familyId: familyIdToUpdate, familyName: updatedFamilyHeadNameValue,
+                 headOfHouseholdPhone: updatedHeadPhoneValue, members: [], assets: {},
+                 lastModifiedBy: isAdminViewing ? (currentAdminUsername || 'Admin') : `មេភូមិ:${villageToDisplay}`,
+                 lastModifiedDate: new Date().toISOString(),
+                 entryDate: originalFamilyDataForLog ? originalFamilyDataForLog.entryDate : new Date().toISOString()
              };
 
              const memberEditEntries = editFamilyMembersContainer.querySelectorAll('.member-entry');
-             memberEditEntries.forEach(entry => {
+             let editFormValidationError = false;
+             for (const entry of memberEditEntries) {
                  const nameInput = entry.querySelector('.member-name-edit');
                  const name = nameInput ? nameInput.value.trim() : '';
+                 const nationalIdInput = entry.querySelector('.member-nationalId-edit');
+                 const electionOfficeIdInput = entry.querySelector('.member-electionOfficeId-edit');
                  if (name) {
-                     const memberObj = {
-                         id: entry.querySelector('.member-original-id-edit')?.value || ''
-                     };
-                     if (memberObj.id.startsWith('new_')) {
+                     const nationalIdValue = nationalIdInput ? nationalIdInput.value.trim() : '';
+                     if (nationalIdValue !== "" && nationalIdValue.length !== 9) {
+                         if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = `សមាជិក "${name}"៖ លេខអត្តសញ្ញាណប័ណ្ណត្រូវតែមាន 9 ខ្ទង់ (បើមានបញ្ចូល)។`;
+                         nationalIdInput.focus(); editFormValidationError = true; break;
+                     }
+                     const electionOfficeIdValue = electionOfficeIdInput ? electionOfficeIdInput.value.trim() : '';
+                     if (electionOfficeIdValue !== "" && electionOfficeIdValue.length !== 4) {
+                         if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = `សមាជិក "${name}"៖ លេខការិយាល័យបោះឆ្នោតត្រូវតែមាន 4 ខ្ទង់ (បើមានបញ្ចូល)។`;
+                         electionOfficeIdInput.focus(); editFormValidationError = true; break;
+                     }
+                     const memberObj = {};
+                     let originalId = entry.dataset.originalMemberId;
+                     const hiddenIdInput = entry.querySelector('.member-original-id-edit');
+                     if (hiddenIdInput && hiddenIdInput.value) originalId = hiddenIdInput.value;
+                     memberObj.id = originalId || `mem_edited_${Date.now()}_${Math.random().toString(36).substr(2,3)}`;
+                     if (memberObj.id.startsWith('new_edit_form_')) {
                         memberObj.id = `mem_${Date.now()}_${Math.random().toString(36).substr(2,5)}`;
                      }
                      memberFieldDefinitionsForEdit.forEach(def => {
                          const inputEl = entry.querySelector(`.${def.classSuffix}`);
                          if (inputEl) {
-                            memberObj[def.prop] = inputEl.value.trim() || (inputEl.tagName === 'SELECT' && def.options && def.options.length > 0 ? def.options[0].value : '');
+                            memberObj[def.prop] = (inputEl.value || "").trim();
+                            if (def.type === 'select' && !memberObj[def.prop] && def.options && def.options.length > 0) {
+                                memberObj[def.prop] = def.options[0].value;
+                            }
                          }
                      });
                      updatedFamilyPayload.members.push(memberObj);
                  }
-             });
+             }
+             if(editFormValidationError) return;
 
             const assetEditInputs = editFamilyAssetsContainer.querySelectorAll('input[name]');
             assetEditInputs.forEach(input => {
                 const assetKey = input.name;
+                const assetDef = assetFieldDefinitions.find(def => def.id === assetKey);
                 if (assetKey) {
-                    updatedFamilyPayload.assets[assetKey] = input.type === 'number'
-                        ? (parseInt(input.value, 10) || 0)
-                        : (input.value.trim() || (input.id.toLowerCase().includes('landsize') ? "0" : ""));
+                    let value;
+                    if (assetDef?.isLandArea) { value = input.value.trim() || "0"; }
+                    else if (input.type === 'number') { value = parseInt(input.value, 10) || 0; }
+                    else { value = input.value.trim(); }
+                    updatedFamilyPayload.assets[assetKey] = value;
                 }
             });
+            if (originalFamilyDataForLog && originalFamilyDataForLog.entryDate) { // Ensure entryDate is preserved
+                updatedFamilyPayload.entryDate = originalFamilyDataForLog.entryDate;
+            }
 
-             const allData = getVillageDataStorage();
-             if (allData.hasOwnProperty(villageOfFamily) && Array.isArray(allData[villageOfFamily])) {
-                 const familyIndex = allData[villageOfFamily].findIndex(f => f.familyId === familyIdToUpdate);
+             const allDataToSave = getVillageDataStorage();
+             if (allDataToSave.hasOwnProperty(villageOfFamily) && Array.isArray(allDataToSave[villageOfFamily])) {
+                 const familyIndex = allDataToSave[villageOfFamily].findIndex(f => f.familyId === familyIdToUpdate);
                  if (familyIndex > -1) {
-                     updatedFamilyPayload.entryDate = allData[villageOfFamily][familyIndex].entryDate;
-                     allData[villageOfFamily][familyIndex] = updatedFamilyPayload;
-                     saveVillageDataStorage(allData);
+                     updatedFamilyPayload.entryDate = allDataToSave[villageOfFamily][familyIndex].entryDate; // Final check to preserve
+                     allDataToSave[villageOfFamily][familyIndex] = updatedFamilyPayload;
+                     saveVillageDataStorage(allDataToSave);
+
+                     if (originalFamilyDataForLog) {
+                        addActivityLogEntry(
+                            "EDITED_FAMILY", villageOfFamily, familyIdToUpdate,
+                            updatedFamilyPayload.familyName, originalFamilyDataForLog, updatedFamilyPayload
+                        );
+                     } else {
+                        addActivityLogEntry(
+                            "EDITED_FAMILY", villageOfFamily, familyIdToUpdate,
+                            updatedFamilyPayload.familyName, null, updatedFamilyPayload
+                        );
+                     }
+
                      if(editFamilySuccessAdmin) editFamilySuccessAdmin.textContent = 'ទិន្នន័យគ្រួសារបានកែសម្រួលជោគជ័យ!';
-                     loadVillageFamilyData();
+                     loadVillageFamilyData(searchVillageInput ? searchVillageInput.value : '');
                      setTimeout(() => {
                          if(editFamilyModal) editFamilyModal.style.display = 'none';
                          if(editFamilySuccessAdmin) editFamilySuccessAdmin.textContent = '';
                      }, 2000);
                  } else {
-                     if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = 'រកមិនឃើញទិន្នន័យគ្រួសារដើមដើម្បីកែសម្រួល។';
+                     if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = `រកមិនឃើញទិន្នន័យគ្រួសារដើម ID ${familyIdToUpdate} ក្នុងភូមិ ${villageOfFamily}។`;
                  }
              } else {
-                 if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = 'មានបញ្ហាក្នុងការទាញយកទិន្នន័យភូមិ។';
+                 if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = `មិនមានទិន្នន័យសម្រាប់ភូមិ ${villageOfFamily} ក្នុងការកែសម្រួល។`;
              }
          });
     }
 
     // --- Delete Family Data ---
-    const deleteFamilyData = (villageNameContext, familyIdToDelete) => {
+    const deleteFamilyData = (villageNameContext, familyIdToDelete, familyNameToConfirmForDialog = '') => {
          if (!isAdminViewing && !villageChiefCanEdit) { alert("អ្នកមិនមានសិទ្ធិលុបទិន្នន័យនេះទេ។"); return; }
+         const familyNameForConfirm = familyNameToConfirmForDialog || `ID ${familyIdToDelete}`;
+         if (!confirm(`តើអ្នកពិតជាចង់លុបទិន្នន័យគ្រួសារ "${familyNameForConfirm}" ក្នុងភូមិ "${villageNameContext}" មែនទេ?`)) return;
+
          const allVillageData = getVillageDataStorage();
-         const familyDataForDeletion = allVillageData[villageNameContext]?.find(f => f.familyId === familyIdToDelete);
-         const familyNameToConfirm = familyDataForDeletion?.familyName || `ID ${familyIdToDelete}`;
-
-         if (!confirm(`តើអ្នកពិតជាចង់លុបទិន្នន័យគ្រួសារ "${familyNameToConfirm}" ក្នុងភូមិ "${villageNameContext}" មែនទេ?`)) return;
-
          if (allVillageData.hasOwnProperty(villageNameContext) && Array.isArray(allVillageData[villageNameContext])) {
+             const familyToDeleteData = JSON.parse(JSON.stringify(
+                allVillageData[villageNameContext].find(f => f.familyId === familyIdToDelete) || null
+             ));
              const initialLength = allVillageData[villageNameContext].length;
              allVillageData[villageNameContext] = allVillageData[villageNameContext].filter(family => family.familyId !== familyIdToDelete);
+
              if (allVillageData[villageNameContext].length < initialLength) {
                  saveVillageDataStorage(allVillageData);
-                 loadVillageFamilyData();
-                 alert(`ទិន្នន័យគ្រួសារ "${familyNameToConfirm}" ត្រូវបានលុប។`);
+                 if (familyToDeleteData) {
+                    addActivityLogEntry(
+                        "DELETED_FAMILY", villageNameContext, familyIdToDelete,
+                        familyToDeleteData.familyName, familyToDeleteData, null
+                    );
+                 } else {
+                     addActivityLogEntry(
+                        "DELETED_FAMILY", villageNameContext, familyIdToDelete,
+                        familyNameForConfirm, null, null
+                    );
+                 }
+                 loadVillageFamilyData(searchVillageInput ? searchVillageInput.value : '');
+                 alert(`ទិន្នន័យគ្រួសារ "${familyNameForConfirm}" ត្រូវបានលុប។`);
              } else {
                  alert('រកមិនឃើញទិន្នន័យគ្រួសារដែលត្រូវលុប។');
              }
          } else {
-             alert('មានបញ្ហាក្នុងការទាញយកទិន្នន័យភូមិដើម្បីលុប។');
+             alert(`មានបញ្ហាក្នុងការទាញយកទិន្នន័យភូមិ "${villageNameContext}" ដើម្បីលុប។`);
          }
     };
 
@@ -809,6 +1029,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Initial Calls ---
-    loadVillageFamilyData(); // Load family data for the current village
-    // The time display and interval are already set up near the top of DOMContentLoaded
+    loadVillageFamilyData();
 });
