@@ -25,6 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const ageGroup36_55_AdminSpan = document.getElementById('age-group-36-55-admin');
     const ageGroup56_65_AdminSpan = document.getElementById('age-group-56-65-admin');
     const ageGroup66Plus_AdminSpan = document.getElementById('age-group-66-plus-admin');
+    // New DOM references for female counts in age groups for Admin
+    const ageGroup18_35_Female_AdminSpan = document.getElementById('age-group-18-35-female-admin');
+    const ageGroup36_55_Female_AdminSpan = document.getElementById('age-group-36-55-female-admin');
+    const ageGroup56_65_Female_AdminSpan = document.getElementById('age-group-56-65-female-admin');
+    const ageGroup66Plus_Female_AdminSpan = document.getElementById('age-group-66-plus-female-admin');
+
     const adminAssetSummaryTbody = document.getElementById('admin-asset-summary-tbody');
     const selectedVillageNameH3 = document.getElementById('selected-village-name-admin');
     const familyListContainerAdmin = document.getElementById('family-list-container-admin');
@@ -48,10 +54,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const dailyReportContentDiv = document.getElementById('daily-report-content');
     const searchFamilyInput = document.getElementById('search-family-input');
     const searchFamilyButton = document.getElementById('search-family-button');
-    const printVillageDataButton = document.getElementById('print-village-data-button');
     const activityLogTbody = document.getElementById('activity-log-tbody');
 
     const MAX_MEMBERS_EDIT = 9;
+    const { jsPDF } = window.jspdf;
+
+    // --- Font Embedding for Khmer OS Battambang ---
+    const khmerOSBattambangBase64 = 'YOUR_KHMER_OS_BATTAMBANG_BASE64_STRING_HERE'; // <- **PASTE YOUR BASE64 STRING HERE**
+    const FONT_FILENAME_VFS = "KhmerOSBattambang-Regular.ttf"; // Make sure this matches the font you encoded
+    const FONT_NAME_JSPDF = "KhmerOSBattambang"; // The name you'll use with doc.setFont()
+    let khmerFontForAdminPDFLoaded = false;
+
+    async function loadKhmerFont(doc) {
+        if (khmerFontForAdminPDFLoaded && doc.getFont().fontName.toLowerCase() === FONT_NAME_JSPDF.toLowerCase()) {
+            doc.setFont(FONT_NAME_JSPDF); // Re-set if on a new page or new doc instance
+            return;
+        }
+        try {
+            const isValidBase64 = khmerOSBattambangBase64 &&
+                                  khmerOSBattambangBase64 !== 'YOUR_KHMER_OS_BATTAMBANG_BASE64_STRING_HERE' &&
+                                  khmerOSBattambangBase64.length > 1000;
+            if (isValidBase64) {
+                if (!doc.getFileFromVFS(FONT_FILENAME_VFS)) {
+                    doc.addFileToVFS(FONT_FILENAME_VFS, khmerOSBattambangBase64);
+                }
+                const fontList = doc.getFontList();
+                if (!fontList[FONT_NAME_JSPDF]) {
+                    doc.addFont(FONT_FILENAME_VFS, FONT_NAME_JSPDF, "normal", "UTF-8");
+                }
+                doc.setFont(FONT_NAME_JSPDF);
+                khmerFontForAdminPDFLoaded = true; // Set flag for this session after first successful load
+            } else {
+                console.warn("Admin PDF: Khmer OS Battambang font Base64 string is missing, placeholder, or too short. PDF text might not render Khmer correctly. Falling back to helvetica.");
+                doc.setFont("helvetica", "normal");
+                khmerFontForAdminPDFLoaded = false;
+            }
+        } catch (e) {
+            console.error("Admin PDF: Error loading/setting Khmer font:", e);
+            doc.setFont("helvetica", "normal");
+            khmerFontForAdminPDFLoaded = false;
+        }
+    }
 
     // --- Welcome Message & Time Display ---
     if (welcomeMessage) {
@@ -93,21 +136,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const assetFieldDefinitions = [
         {id: 'largeTrucks', label: 'រថយន្ដធំ', type: 'number'}, {id: 'smallCars', label: 'រថយន្តតូច', type: 'number'},
         {id: 'modifiedVehicles', label: 'រថយន្ដកែឆ្នៃ', type: 'number'}, {id: 'tractors', label: 'ត្រាក់ទ័រ', type: 'number'},
-        {id: 'kubotas', label: 'គោយន្ដកន្ត្រៃ', type: 'number'}, {id: 'riceHarvesters', label: 'ម៉ាស៊ីនច្រូតស្រូវ', type: 'number'},
+        {id: 'kubotas', label: 'គោយន្ដ', type: 'number'}, {id: 'riceHarvesters', label: 'ម៉ាស៊ីនច្រូតស្រូវ', type: 'number'},
         {id: 'riceMills', label: 'ម៉ាស៊ីនកិនស្រូវ', type: 'number'}, {id: 'waterPumpsWells', label: 'អណ្ដូងស្នប់', type: 'number'},
-        {id: 'ponds', label: 'ផ្ទះលក់ថ្នាំពេទ្យ', type: 'number'},
-        {id: 'residentialLandSize', label: 'ទំហំដីលំនៅដ្ឋាន(ម៉ែត្រការ៉េ)', type: 'text', isLandArea: true},
+        {id: 'ponds', label: 'ស្រះទឹក', type: 'number'},
+        {id: 'residentialLandSize', label: 'ទំហំដីលំនៅដ្ឋាន', type: 'text', isLandArea: true},
         {id: 'paddyLandSize', label: 'ទំហំដីស្រែ', type: 'text', isLandArea: true},
         {id: 'plantationLandSize', label: 'ដីចំការ (ផ្សេងៗ)', type: 'text', isLandArea: true},
         {id: 'coconutLandSize', label: 'ដីចំការដូង', type: 'text', isLandArea: true},
         {id: 'mangoLandSize', label: 'ដីចំការស្វាយ', type: 'text', isLandArea: true},
         {id: 'cashewLandSize', label: 'ដីចំការស្វាយចន្ទី', type: 'text', isLandArea: true},
-        {id: 'livestockLandSize', label: 'ដីចំការមាន', type: 'text', isLandArea: true},
-        {id: 'vehicleRepairShops', label: 'ជាងជួសជុល(ម៉ូតូ,ឡាន)', type: 'number'}, {id: 'groceryStores', label: 'លក់ចាប់ហួយ', type: 'number'},
+        {id: 'livestockLandSize', label: 'ដីចិញ្ចឹមសត្វ', type: 'text', isLandArea: true},
+        {id: 'vehicleRepairShops', label: 'ជាងជួសជុល', type: 'number'}, {id: 'groceryStores', label: 'លក់ចាប់ហួយ', type: 'number'},
         {id: 'mobilePhoneShops', label: 'លក់ទូរស័ព្ទ', type: 'number'}, {id: 'constructionMaterialDepots', label: 'លក់គ្រឿងសំណង់', type: 'number'},
-        {id: 'fuelDepots', label: 'ដេប៉ូប្រេង', type: 'number'}, {id: 'beautySalons', label: 'សម្អាងការ(សាឡន)', type: 'number'},
-        {id: 'motorcycles', label: 'ម៉ូតូ', type: 'number'}, {id: 'tukTuks', label: 'ម៉ូតូកង់បី+ម៉ូតូសណ្ដោងរម៉ក', type: 'number'},
-        {id: 'remorques', label: 'ផ្ទះលក់គ្រឿងកសិកម្ម', type: 'number'}
+        {id: 'fuelDepots', label: 'ដេប៉ូប្រេង', type: 'number'}, {id: 'beautySalons', label: 'សម្អាងការ', type: 'number'},
+        {id: 'motorcycles', label: 'ម៉ូតូ', type: 'number'}, {id: 'tukTuks', label: 'ម៉ូតូកង់បី', type: 'number'},
+        {id: 'remorques', label: 'ម៉ូតូសណ្ដោងរម៉ក', type: 'number'}
     ];
     const memberFieldDefinitionsForEdit = [
         { classSuffix: 'name-edit', prop: 'name', label: 'ឈ្មោះ', required: true, type: 'text' },
@@ -206,17 +249,122 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const printSingleFamilyDataToPDF = async (familyData, villageName) => {
+        if (!familyData) {
+            alert("មិនមានទិន្នន័យគ្រួសារសម្រាប់បោះពុម្ពទេ។");
+            return;
+        }
+        khmerFontForAdminPDFLoaded = false; // Reset for each new PDF generation
+
+        const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+        await loadKhmerFont(doc);
+
+        let yPosition = 20;
+        const lineHeight = 8;
+        const indent = 15;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const contentWidth = pageWidth - (indent * 2);
+
+        doc.setFontSize(16);
+        doc.text(`ទិន្នន័យគ្រួសារ: ${familyData.familyName || 'N/A'}`, pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += lineHeight * 1.5;
+
+        doc.setFontSize(11);
+        doc.text(`ភូមិ: ${villageName || 'N/A'}`, indent, yPosition); yPosition += lineHeight;
+        try {
+            doc.text(`កាលបរិច្ឆេទបញ្ចូល: ${new Date(familyData.entryDate).toLocaleDateString('km-KH', { day: '2-digit', month: 'long', year: 'numeric' })}`, indent, yPosition);
+        } catch { doc.text(`កាលបរិច្ឆេទបញ្ចូល: មិនត្រឹមត្រូវ`, indent, yPosition); }
+        yPosition += lineHeight;
+        if (familyData.headOfHouseholdPhone) {
+            doc.text(`លេខទូរស័ព្ទមេគ្រួសារ: ${familyData.headOfHouseholdPhone}`, indent, yPosition); yPosition += lineHeight;
+        }
+        yPosition += lineHeight * 0.5;
+
+        doc.setFontSize(13);
+        doc.text("សមាជិកគ្រួសារ:", indent, yPosition); yPosition += lineHeight * 1.2;
+        doc.setFontSize(10);
+
+        if (familyData.members && familyData.members.length > 0) {
+            for (const [index, member] of familyData.members.entries()) {
+                if (yPosition > doc.internal.pageSize.getHeight() - 30) {
+                    doc.addPage(); yPosition = 20;
+                    await loadKhmerFont(doc);
+                    doc.setFontSize(13); doc.text("សមាជិកគ្រួសារ (ត):", indent, yPosition); yPosition += lineHeight * 1.2;
+                    doc.setFontSize(10);
+                }
+                doc.text(`${index + 1}. ឈ្មោះ: ${member.name || 'N/A'}`, indent + 5, yPosition); yPosition += lineHeight;
+                doc.text(`   ភេទ: ${member.gender || 'N/A'}`, indent + 8, yPosition); yPosition += lineHeight;
+                doc.text(`   ថ្ងៃខែឆ្នាំកំណើត: ${member.dob ? new Date(member.dob).toLocaleDateString('km-KH', {day:'2-digit', month:'2-digit', year:'numeric'}) : 'N/A'}`, indent + 8, yPosition); yPosition += lineHeight;
+                if(member.birthProvince) { doc.text(`   ខេត្តកំណើត: ${member.birthProvince}`, indent + 8, yPosition); yPosition += lineHeight; }
+                if(member.educationLevel) { doc.text(`   កម្រិតវប្បធម៌: ${member.educationLevel}`, indent + 8, yPosition); yPosition += lineHeight; }
+                if(member.occupation) { doc.text(`   មុខរបរ: ${member.occupation}`, indent + 8, yPosition); yPosition += lineHeight; }
+                if(member.nationalId) { doc.text(`   អត្តសញ្ញាណប័ណ្ណ: ${member.nationalId}`, indent + 8, yPosition); yPosition += lineHeight; }
+                if(member.electionOfficeId) { doc.text(`   ការិយាល័យបោះឆ្នោត: ${member.electionOfficeId}`, indent + 8, yPosition); yPosition += lineHeight; }
+                if(member.internalMigration && member.internalMigration !== 'ទេ') { doc.text(`   ចំណាកស្រុកក្នុង: ${member.internalMigration}`, indent + 8, yPosition); yPosition += lineHeight; }
+                if(member.externalMigration && member.externalMigration !== 'ទេ') { doc.text(`   ចំណាកស្រុកក្រៅ: ${member.externalMigration}`, indent + 8, yPosition); yPosition += lineHeight; }
+                yPosition += lineHeight * 0.3;
+            }
+        } else {
+            doc.text("មិនមានសមាជិកគ្រួសារ។", indent + 5, yPosition); yPosition += lineHeight;
+        }
+        yPosition += lineHeight;
+
+        doc.setFontSize(13);
+        doc.text("ទ្រព្យសម្បត្តិ និងអាជីវកម្ម:", indent, yPosition); yPosition += lineHeight * 1.2;
+        doc.setFontSize(10);
+        let hasAssets = false;
+        if (familyData.assets && typeof familyData.assets === 'object' && Object.keys(familyData.assets).length > 0) {
+            for (const def of assetFieldDefinitions) {
+                const assetValue = familyData.assets[def.id];
+                if (assetValue !== undefined && assetValue !== null && String(assetValue).trim() !== "" && String(assetValue).trim() !== "0") {
+                    if (yPosition > doc.internal.pageSize.getHeight() - 20) {
+                        doc.addPage(); yPosition = 20;
+                        await loadKhmerFont(doc);
+                        doc.setFontSize(13); doc.text("ទ្រព្យសម្បត្តិ និងអាជីវកម្ម (ត):", indent, yPosition); yPosition += lineHeight * 1.2;
+                        doc.setFontSize(10);
+                    }
+                    const textToPrint = `${def.label}: ${assetValue}`;
+                    const textLines = doc.splitTextToSize(textToPrint, contentWidth - 8);
+                    doc.text(textLines, indent + 5, yPosition);
+                    yPosition += lineHeight * textLines.length;
+                    hasAssets = true;
+                }
+            }
+        }
+        if (!hasAssets) {
+            if (yPosition > doc.internal.pageSize.getHeight() - 20) {
+                doc.addPage(); yPosition = 20;
+                await loadKhmerFont(doc); doc.setFontSize(10);
+            }
+            doc.text("មិនមានទ្រព្យសម្បត្តិ/អាជីវកម្ម។", indent + 5, yPosition); yPosition += lineHeight;
+        }
+
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            await loadKhmerFont(doc);
+            doc.setFontSize(9);
+            doc.text(`ទំព័រ ${i} នៃ ${pageCount}`, pageWidth - indent, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
+            doc.text(`បោះពុម្ពថ្ងៃទី: ${new Date().toLocaleDateString('km-KH', {day:'2-digit', month:'long', year:'numeric'})}`, indent, doc.internal.pageSize.getHeight() - 10);
+        }
+
+        doc.save(`ទិន្នន័យគ្រួសារ-${familyData.familyName || familyData.familyId}.pdf`);
+        alert("ការបង្កើត PDF បានបញ្ចប់។ សូមពិនិត្យមើលឯកសារដែលបានទាញយក។");
+    };
+
     const renderFamilyCardForAdmin = (familyData, containerElement, villageContextName) => {
          if (!familyCardTemplate || !familyCardTemplate.content) {console.error("Admin: Family card template or content missing"); return;}
          const cardClone = familyCardTemplate.content.cloneNode(true);
          const familyCard = cardClone.querySelector('.family-card');
          if (!familyCard) {console.error("Admin: '.family-card' missing in template"); return;}
+
          familyCard.dataset.familyId = familyData.familyId;
          familyCard.dataset.village = villageContextName;
          familyCard.querySelector('.family-card-name').textContent = `${familyData.familyName || 'N/A'} (ភូមិ ${villageContextName})`;
          try {
             familyCard.querySelector('.family-card-entry-date').textContent = `កាលបរិច្ឆេទបញ្ចូល: ${new Date(familyData.entryDate).toLocaleDateString('km-KH', { day: '2-digit', month: 'short', year: 'numeric' })}`;
          } catch { familyCard.querySelector('.family-card-entry-date').textContent = `កាលបរិច្ឆេទបញ្ចូល: មិនត្រឹមត្រូវ`; }
+
          const membersTableBody = familyCard.querySelector('.members-table tbody');
          let familyMemberCount = 0;
          if (familyData.members && Array.isArray(familyData.members)) {
@@ -244,7 +392,6 @@ document.addEventListener('DOMContentLoaded', () => {
          }
          const memberCountEl = familyCard.querySelector('.family-member-count');
          if(memberCountEl) memberCountEl.textContent = familyMemberCount;
-         else console.warn("Admin: '.family-member-count' not found.");
 
          const assetsDiv = familyCard.querySelector('.assets-details');
          if (assetsDiv) {
@@ -262,8 +409,6 @@ document.addEventListener('DOMContentLoaded', () => {
                  });
              }
              if (!hasAssets) assetsDiv.innerHTML = '<p><em>មិនមានទ្រព្យសម្បត្តិ/អាជីវកម្ម។</em></p>';
-         } else {
-            console.warn("Admin: '.assets-details' not found.");
          }
 
          const actionsDiv = familyCard.querySelector('.family-card-actions');
@@ -271,10 +416,17 @@ document.addEventListener('DOMContentLoaded', () => {
              actionsDiv.style.display = 'block';
              const editBtn = actionsDiv.querySelector('.edit-family-button');
              const deleteBtn = actionsDiv.querySelector('.delete-family-button');
+             const printBtn = actionsDiv.querySelector('.print-family-button');
+
              if (editBtn) editBtn.onclick = () => openEditFamilyModalForAdmin(villageContextName, familyData.familyId, familyData);
              else console.warn("Admin: '.edit-family-button' not found.");
              if (deleteBtn) deleteBtn.onclick = () => deleteFamilyDataForAdmin(villageContextName, familyData.familyId, familyData.familyName);
              else console.warn("Admin: '.delete-family-button' not found.");
+             if (printBtn) {
+                 printBtn.onclick = () => printSingleFamilyDataToPDF(familyData, villageContextName);
+             } else {
+                 console.warn("Admin: '.print-family-button' not found in family card template.");
+             }
          } else {
             console.warn("Admin: '.family-card-actions' not found.");
          }
@@ -288,7 +440,6 @@ document.addEventListener('DOMContentLoaded', () => {
          }
          familyListContainerAdmin.innerHTML = '';
          noFamilyDataMessageAdmin.style.display = 'none';
-         checkAndShowPrintButton(null);
 
          if (!villageName && !searchTerm) {
             selectedVillageNameH3.textContent = 'ទិន្នន័យគ្រួសារ: [មិនបានជ្រើសរើសភូមិ]';
@@ -301,7 +452,6 @@ document.addEventListener('DOMContentLoaded', () => {
          if (villageName && !searchTerm) {
             selectedVillageNameH3.textContent = `ទិន្នន័យគ្រួសារសម្រាប់ភូមិ: ${villageName}`;
             familiesToDisplay = (allVillageData[villageName] && Array.isArray(allVillageData[villageName])) ? [...allVillageData[villageName]] : [];
-            checkAndShowPrintButton(villageName);
          } else if (villageName && searchTerm) {
             selectedVillageNameH3.textContent = `លទ្ធផលស្វែងរកក្នុងភូមិ ${villageName} សម្រាប់: "${searchTerm}"`;
             const familiesInSelectedVillage = (allVillageData[villageName] && Array.isArray(allVillageData[villageName])) ? allVillageData[villageName] : [];
@@ -313,7 +463,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     (mem.nationalId && mem.nationalId.includes(searchTermLower))
                 ))
             );
-            checkAndShowPrintButton(villageName);
          } else if (!villageName && searchTerm) {
             selectedVillageNameH3.textContent = `លទ្ធផលស្វែងរកសកលសម្រាប់: "${searchTerm}"`;
             const searchTermLower = searchTerm.toLowerCase();
@@ -393,15 +542,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const calculateAdminSummary = () => {
         if (!totalVillagesAdminSpan || !totalFamiliesAdminSpan || !totalPeopleAdminSpan || !totalFemalesAdminSpan ||
             !totalInternalMigrantsAdminSpan || !totalExternalMigrantsAdminSpan ||
-            !ageGroup18_35_AdminSpan || !ageGroup36_55_AdminSpan || !ageGroup56_65_AdminSpan || !ageGroup66Plus_AdminSpan) {
-            console.warn("Admin: One or more summary span elements are missing.");
+            !ageGroup18_35_AdminSpan || !ageGroup36_55_AdminSpan || !ageGroup56_65_AdminSpan || !ageGroup66Plus_AdminSpan ||
+            !ageGroup18_35_Female_AdminSpan || !ageGroup36_55_Female_AdminSpan || !ageGroup56_65_Female_AdminSpan || !ageGroup66Plus_Female_AdminSpan
+        ) {
+            console.warn("Admin Dashboard: One or more summary span elements are missing from the DOM.");
             return;
         }
+
         const allVillageData = getVillageDataStorage();
         let totalFamiliesAll = 0, totalPeopleAll = 0, totalFemalesAll = 0;
         let totalInternalMigrantsAll = 0, totalExternalMigrantsAll = 0;
         let villageCount = Object.keys(getRegisteredVillages()).length;
         let count18_35_All = 0, count36_55_All = 0, count56_65_All = 0, count66Plus_All = 0;
+        let count18_35_Female_All = 0, count36_55_Female_All = 0, count56_65_Female_All = 0, count66Plus_Female_All = 0;
 
         for (const villageNameKey in allVillageData) {
             if (allVillageData.hasOwnProperty(villageNameKey) && Array.isArray(allVillageData[villageNameKey])) {
@@ -416,10 +569,19 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (member.externalMigration === 'បាទ') totalExternalMigrantsAll++;
                             const age = calculateAge(member.dob);
                             if (age !== null) {
-                                if (age >= 18 && age <= 35) count18_35_All++;
-                                else if (age >= 36 && age <= 55) count36_55_All++;
-                                else if (age >= 56 && age <= 65) count56_65_All++;
-                                else if (age >= 66) count66Plus_All++;
+                                if (age >= 18 && age <= 35) {
+                                    count18_35_All++;
+                                    if (member.gender === 'ស្រី') count18_35_Female_All++;
+                                } else if (age >= 36 && age <= 55) {
+                                    count36_55_All++;
+                                    if (member.gender === 'ស្រី') count36_55_Female_All++;
+                                } else if (age >= 56 && age <= 65) {
+                                    count56_65_All++;
+                                    if (member.gender === 'ស្រី') count56_65_Female_All++;
+                                } else if (age >= 66) {
+                                    count66Plus_All++;
+                                    if (member.gender === 'ស្រី') count66Plus_Female_All++;
+                                }
                             }
                         });
                     }
@@ -436,6 +598,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ageGroup36_55_AdminSpan.textContent = count36_55_All;
         ageGroup56_65_AdminSpan.textContent = count56_65_All;
         ageGroup66Plus_AdminSpan.textContent = count66Plus_All;
+        ageGroup18_35_Female_AdminSpan.textContent = count18_35_Female_All;
+        ageGroup36_55_Female_AdminSpan.textContent = count36_55_Female_All;
+        ageGroup56_65_Female_AdminSpan.textContent = count56_65_Female_All;
+        ageGroup66Plus_Female_AdminSpan.textContent = count66Plus_Female_All;
         displayGlobalAssetSummary(allVillageData);
     };
 
@@ -545,8 +711,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = "មិនអាចកំណត់ភូមិសម្រាប់កែប្រែបានទេ។"; return;
             }
 
-            const allDataForComparison = getVillageDataStorage(); // Get before modification for logging
-            const originalFamilyDataForLog = JSON.parse(JSON.stringify( // Deep clone
+            const allDataForComparison = getVillageDataStorage();
+            const originalFamilyDataForLog = JSON.parse(JSON.stringify(
                 (allDataForComparison[villageOfFamily] || []).find(f => f.familyId === familyIdToUpdate) || null
             ));
 
@@ -554,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 familyId: familyIdToUpdate, familyName: updatedHeadName, headOfHouseholdPhone: updatedPhone,
                 members: [], assets: {},
                 lastModifiedByAdmin: adminUsernameFromSession, lastModifiedDate: new Date().toISOString(),
-                entryDate: originalFamilyDataForLog ? originalFamilyDataForLog.entryDate : new Date().toISOString() // Preserve or set new
+                entryDate: originalFamilyDataForLog ? originalFamilyDataForLog.entryDate : new Date().toISOString()
             };
 
             const memberEntriesFromForm = editFamilyMembersContainer.querySelectorAll('.member-entry');
@@ -599,18 +765,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? (parseInt(assetInput.value, 10) || 0)
                     : (assetInput.value.trim() || (assetDef?.isLandArea ? "0" : ""));
             });
-
-            // Preserve original entryDate if it exists
             if (originalFamilyDataForLog && originalFamilyDataForLog.entryDate) {
                 updatedFamilyPayload.entryDate = originalFamilyDataForLog.entryDate;
             }
 
-
-            const allDataToSave = getVillageDataStorage(); // Get fresh data again before saving
+            const allDataToSave = getVillageDataStorage();
             if (allDataToSave.hasOwnProperty(villageOfFamily) && Array.isArray(allDataToSave[villageOfFamily])) {
                 const familyIndex = allDataToSave[villageOfFamily].findIndex(f => f.familyId === familyIdToUpdate);
                 if (familyIndex > -1) {
-                    // Ensure entryDate is preserved from the actual data in storage
                     updatedFamilyPayload.entryDate = allDataToSave[villageOfFamily][familyIndex].entryDate;
                     allDataToSave[villageOfFamily][familyIndex] = updatedFamilyPayload;
                     saveVillageDataStorage(allDataToSave);
@@ -620,7 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const currentSearchTerm = searchFamilyInput ? searchFamilyInput.value : '';
                     loadFamilyDataForSelectedVillageAdmin(currentSelectedVillage, currentSearchTerm);
                     calculateAdminSummary();
-                    loadAndDisplayActivityLog(); // Refresh activity log as admin might have edited data originating from village chief
+                    loadAndDisplayActivityLog();
 
                     setTimeout(() => {
                         if(editFamilyModal) editFamilyModal.style.display = 'none';
@@ -690,7 +852,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveVillageDataStorage(allVillageData);
                 loadFamilyDataForSelectedVillageAdmin(villageSelect.value, searchFamilyInput.value);
                 calculateAdminSummary();
-                loadAndDisplayActivityLog(); // Refresh activity log
+                loadAndDisplayActivityLog();
                 alert(`ទិន្នន័យគ្រួសារ "${familyNameToConfirm || familyIdToDelete}" ត្រូវបានលុប។`);
             } else { alert('រកមិនឃើញទិន្នន័យគ្រួសារដែលត្រូវលុប។'); }
         } else { alert(`មិនមានទិន្នន័យសម្រាប់ភូមិ ${villageOfFamily} ដើម្បីលុប។`); }
@@ -740,25 +902,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const printCurrentVillageDataToPDF = () => {
-        const villageToPrint = villageSelect.value;
-        if (!villageToPrint) { alert("សូមជ្រើសរើសភូមិដើម្បីបោះពុម្ព។"); return; }
-        alert(`ការបោះពុម្ពទិន្នន័យសម្រាប់ភូមិ ${villageToPrint} មិនទាន់បានអនុវត្តនៅឡើយទេ។`);
-    };
-    if (printVillageDataButton) {
-        printVillageDataButton.addEventListener('click', printCurrentVillageDataToPDF);
-    }
     const checkAndShowPrintButton = (villageName) => {
-        if (printVillageDataButton) printVillageDataButton.style.display = villageName ? 'inline-block' : 'none';
+        // This function is no longer relevant for a global print button.
+        // If you had a global print button with id 'print-village-data-button', it's removed from HTML.
     };
+    checkAndShowPrintButton(); // Call to hide any potential old global print button if its ID still exists
 
-    // --- Function to load and display activity log (Updated for details) ---
+
     const loadAndDisplayActivityLog = () => {
         if (!activityLogTbody) {
             console.warn("Admin: Activity log tbody element not found.");
             return;
         }
-
         activityLogTbody.innerHTML = '';
         let log = [];
         const storedLog = localStorage.getItem(ACTIVITY_LOG_KEY);
@@ -766,44 +921,32 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 log = JSON.parse(storedLog);
                 if (!Array.isArray(log)) log = [];
-            } catch (e) {
-                console.error("Admin: Error parsing activity log:", e);
-                log = [];
-            }
+            } catch (e) { console.error("Admin: Error parsing activity log:", e); log = []; }
         }
-
         if (log.length === 0) {
             const row = activityLogTbody.insertRow();
             const cell = row.insertCell();
-            cell.colSpan = 6; // Adjusted for the new "Details" column
+            cell.colSpan = 6;
             cell.textContent = 'មិនទាន់មានសកម្មភាពកត់ត្រាទេ។';
             cell.style.textAlign = 'center';
             return;
         }
-
         log.forEach(entry => {
             const row = activityLogTbody.insertRow();
             const timestamp = new Date(entry.timestamp);
             const formattedTime = `${timestamp.toLocaleDateString('km-KH', {day: '2-digit', month: '2-digit', year: 'numeric'})} ${timestamp.toLocaleTimeString('km-KH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}`;
-
             row.insertCell().textContent = formattedTime;
             row.insertCell().textContent = entry.villageName || 'N/A';
-
             let actionText = entry.action || 'N/A';
             if (entry.action === 'EDITED_FAMILY') actionText = 'កែសម្រួលគ្រួសារ';
             else if (entry.action === 'DELETED_FAMILY') actionText = 'លុបគ្រួសារ';
             row.insertCell().textContent = actionText;
-
             row.insertCell().textContent = entry.familyName ? `${entry.familyName} (ID: ${entry.familyId ? entry.familyId.slice(-6) : 'N/A'})` : (entry.familyId || 'N/A');
-            
             const detailsCell = row.insertCell();
-            // Replace semicolons with newlines for better readability in the cell
-            detailsCell.innerHTML = (entry.details || 'N/A').replace(/;\s*/g, '<br>');
+            detailsCell.innerHTML = (entry.details || 'N/A').replace(/;\s*\n?/g, '<br>');
             detailsCell.style.fontSize = '0.85em';
-            detailsCell.style.maxWidth = '350px'; // Adjust as needed
+            detailsCell.style.maxWidth = '350px';
             detailsCell.style.wordBreak = 'break-word';
-
-
             row.insertCell().textContent = entry.modifiedBy || 'N/A';
         });
     };
