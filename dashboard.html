@@ -31,14 +31,12 @@
             <p>ចំនួនចំណាកស្រុកក្នុង : <span id="total-internal-migrants-village">0</span> នាក់</p>
             <p>ចំនួនចំណាកស្រុកក្រៅ : <span id="total-external-migrants-village">0</span> នាក់</p>
             <p>ទិន្នន័យបញ្ចូលថ្ងៃនេះ: <span id="today-entries-village">0</span> គ្រួសារ</p>
-            <!-- BEGIN: Age Group Stats for Village Chief -->
             <hr style="margin: 10px 0; border-color: #cce5ff;">
             <p style="font-weight:bold; color: #004085; margin-top:10px;">ស្ថិតិតាមក្រុមអាយុ (ក្នុងភូមិ):</p>
-            <p>  អាយុ 18 - 35 ឆ្នាំ: <span id="age-group-18-35-village">0</span> នាក់</p>
-            <p>  អាយុ 36 - 55 ឆ្នាំ: <span id="age-group-36-55-village">0</span> នាក់</p>
-            <p>  អាយុ 56 - 65 ឆ្នាំ: <span id="age-group-56-65-village">0</span> នាក់</p>
-            <p>  អាយុ 66+ ឆ្នាំ: <span id="age-group-66-plus-village">0</span> នាក់</p>
-            <!-- END: Age Group Stats for Village Chief -->
+            <p>  អាយុ 18 - 35 ឆ្នាំ: <span id="age-group-18-35-village">0</span> នាក់ (ស្រី: <span id="age-group-18-35-female-village">0</span>)</p>
+            <p>  អាយុ 36 - 55 ឆ្នាំ: <span id="age-group-36-55-village">0</span> នាក់ (ស្រី: <span id="age-group-36-55-female-village">0</span>)</p>
+            <p>  អាយុ 56 - 65 ឆ្នាំ: <span id="age-group-56-65-village">0</span> នាក់ (ស្រី: <span id="age-group-56-65-female-village">0</span>)</p>
+            <p>  អាយុ 66+ ឆ្នាំ: <span id="age-group-66-plus-village">0</span> នាក់ (ស្រី: <span id="age-group-66-plus-female-village">0</span>)</p>
         </div>
         <hr>
 
@@ -89,7 +87,7 @@
                           <div><label for="smallCars">រថយន្តតូច:</label> <input type="number" id="smallCars" value="0" min="0"></div>
                           <div><label for="modifiedVehicles">រថយន្ដកែឆ្នៃ:</label> <input type="number" id="modifiedVehicles" value="0" min="0"></div>
                           <div><label for="tractors">ត្រាក់ទ័រ:</label> <input type="number" id="tractors" value="0" min="0"></div>
-                          <div><label for="kubotas">គោយន្ដ:</label> <input type="number" id="kubotas" value="0" min="0"></div>
+                          <div><label for="kubotas">គោយន្ដកន្ត្រៃ:</label> <input type="number" id="kubotas" value="0" min="0"></div>
                           <div><label for="riceHarvesters">ម៉ាស៊ីនច្រូតស្រូវ:</label> <input type="number" id="riceHarvesters" value="0" min="0"></div>
                           <div><label for="riceMills">ម៉ាស៊ីនកិនស្រូវ:</label> <input type="number" id="riceMills" value="0" min="0"></div>
                           <div><label for="waterPumpsWells">អណ្ដូងស្នប់:</label> <input type="number" id="waterPumpsWells" value="0" min="0"></div>
@@ -101,12 +99,12 @@
                           <div><label for="mangoLandSize">ដីចំការស្វាយ:</label> <input type="text" id="mangoLandSize" placeholder="0"></div>
                           <div><label for="cashewLandSize">ដីចំការស្វាយចន្ទី:</label> <input type="text" id="cashewLandSize" placeholder="0"></div>
                           <div><label for="livestockLandSize">ដីចំការមាន:</label> <input type="text" id="livestockLandSize" placeholder="0"></div>
-                          <div><label for="vehicleRepairShops">ជាងជួសជុល(ម៉ូតូ,ឡាន):</label> <input type="number" id="vehicleRepairShops" value="0" min="0"></div>
+                          <div><label for="vehicleRepairShops">ជាងជួសជុល(ម៉ូតូ+ឡាន):</label> <input type="number" id="vehicleRepairShops" value="0" min="0"></div>
                           <div><label for="groceryStores">ផ្ទះលក់ចាប់ហួយ:</label> <input type="number" id="groceryStores" value="0" min="0"></div>
                           <div><label for="mobilePhoneShops">ផ្ទះលក់ទូស័ព្ទដៃ:</label> <input type="number" id="mobilePhoneShops" value="0" min="0"></div>
                           <div><label for="constructionMaterialDepots">ដេប៉ូលក់គ្រឿងសំណង់:</label> <input type="number" id="constructionMaterialDepots" value="0" min="0"></div>
                           <div><label for="fuelDepots">ដេប៉ូប្រេង:</label> <input type="number" id="fuelDepots" value="0" min="0"></div>
-                          <div><label for="beautySalons">ផ្ទះសម្អាងការ(សាឡន):</label> <input type="number" id="beautySalons" value="0" min="0"></div>
+                          <div><label for="beautySalons">សម្អាងការ(សាឡន):</label> <input type="number" id="beautySalons" value="0" min="0"></div>
                           <div><label for="motorcycles">ម៉ូតូ:</label> <input type="number" id="motorcycles" value="0" min="0"></div>
                           <div><label for="tukTuks">ម៉ូតូកង់បី+ម៉ូតូសណ្ដោងរម៉ក:</label> <input type="number" id="tukTuks" value="0" min="0"></div>
                           <div><label for="remorques">ផ្ទះលក់គ្រឿងកសិកម្ម:</label> <input type="number" id="remorques" value="0" min="0"></div>
@@ -174,6 +172,7 @@
             <div class="family-card-actions" style="display:none;">
                 <button class="edit-family-button action-button">កែសម្រួល</button>
                 <button class="delete-family-button action-button">លុប</button>
+                <button class="print-family-button-village action-button" style="background-color: #17a2b8;">បោះពុម្ពគ្រួសារនេះ</button>
             </div>
         </div>
     </template>
@@ -196,6 +195,7 @@
         </div>
     </template>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="dashboard.js"></script>
 </body>
 </html>
