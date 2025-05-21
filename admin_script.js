@@ -25,11 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const ageGroup36_55_AdminSpan = document.getElementById('age-group-36-55-admin');
     const ageGroup56_65_AdminSpan = document.getElementById('age-group-56-65-admin');
     const ageGroup66Plus_AdminSpan = document.getElementById('age-group-66-plus-admin');
-    // New DOM references for female counts in age groups for Admin
     const ageGroup18_35_Female_AdminSpan = document.getElementById('age-group-18-35-female-admin');
     const ageGroup36_55_Female_AdminSpan = document.getElementById('age-group-36-55-female-admin');
     const ageGroup56_65_Female_AdminSpan = document.getElementById('age-group-56-65-female-admin');
     const ageGroup66Plus_Female_AdminSpan = document.getElementById('age-group-66-plus-female-admin');
+    const totalInternalMigrantsFemaleAdminSpan = document.getElementById('total-internal-migrants-female-admin');
+    const totalExternalMigrantsFemaleAdminSpan = document.getElementById('total-external-migrants-female-admin');
 
     const adminAssetSummaryTbody = document.getElementById('admin-asset-summary-tbody');
     const selectedVillageNameH3 = document.getElementById('selected-village-name-admin');
@@ -61,13 +62,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Font Embedding for Khmer OS Battambang ---
     const khmerOSBattambangBase64 = 'YOUR_KHMER_OS_BATTAMBANG_BASE64_STRING_HERE'; // <- **PASTE YOUR BASE64 STRING HERE**
-    const FONT_FILENAME_VFS = "KhmerOSBattambang-Regular.ttf"; // Make sure this matches the font you encoded
-    const FONT_NAME_JSPDF = "KhmerOSBattambang"; // The name you'll use with doc.setFont()
+    const FONT_FILENAME_VFS = "KhmerOSBattambang-Regular.ttf";
+    const FONT_NAME_JSPDF = "KhmerOSBattambang";
     let khmerFontForAdminPDFLoaded = false;
 
     async function loadKhmerFont(doc) {
         if (khmerFontForAdminPDFLoaded && doc.getFont().fontName.toLowerCase() === FONT_NAME_JSPDF.toLowerCase()) {
-            doc.setFont(FONT_NAME_JSPDF); // Re-set if on a new page or new doc instance
+            doc.setFont(FONT_NAME_JSPDF);
             return;
         }
         try {
@@ -83,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     doc.addFont(FONT_FILENAME_VFS, FONT_NAME_JSPDF, "normal", "UTF-8");
                 }
                 doc.setFont(FONT_NAME_JSPDF);
-                khmerFontForAdminPDFLoaded = true; // Set flag for this session after first successful load
+                khmerFontForAdminPDFLoaded = true;
             } else {
                 console.warn("Admin PDF: Khmer OS Battambang font Base64 string is missing, placeholder, or too short. PDF text might not render Khmer correctly. Falling back to helvetica.");
                 doc.setFont("helvetica", "normal");
@@ -138,8 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
         {id: 'modifiedVehicles', label: 'រថយន្ដកែឆ្នៃ', type: 'number'}, {id: 'tractors', label: 'ត្រាក់ទ័រ', type: 'number'},
         {id: 'kubotas', label: 'គោយន្ដកន្ត្រៃ', type: 'number'}, {id: 'riceHarvesters', label: 'ម៉ាស៊ីនច្រូតស្រូវ', type: 'number'},
         {id: 'riceMills', label: 'ម៉ាស៊ីនកិនស្រូវ', type: 'number'}, {id: 'waterPumpsWells', label: 'អណ្ដូងស្នប់', type: 'number'},
-        {id: 'ponds', label: 'ផ្ទះលក់ថ្នាំពេទ្យ', type: 'number'},
-        {id: 'residentialLandSize', label: 'ទំហំដីលំនៅដ្ឋាន(ម៉ែត្រការ៉េ)', type: 'text', isLandArea: true},
+        {id: 'ponds', label: 'ផ្ទះលក់ថ្នាំពេទ្យ(ពេទ្យ)', type: 'number'},
+        {id: 'residentialLandSize', label: 'ទំហំដីលំនៅដ្ឋាន(ម៉េត្រការ៉េ)', type: 'text', isLandArea: true},
         {id: 'paddyLandSize', label: 'ទំហំដីស្រែ', type: 'text', isLandArea: true},
         {id: 'plantationLandSize', label: 'ដីចំការ (ផ្សេងៗ)', type: 'text', isLandArea: true},
         {id: 'coconutLandSize', label: 'ដីចំការដូង', type: 'text', isLandArea: true},
@@ -147,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {id: 'cashewLandSize', label: 'ដីចំការស្វាយចន្ទី', type: 'text', isLandArea: true},
         {id: 'livestockLandSize', label: 'ដីចំការមាន', type: 'text', isLandArea: true},
         {id: 'vehicleRepairShops', label: 'ជាងជួសជុល(ម៉ូតូ+ឡាន)', type: 'number'}, {id: 'groceryStores', label: 'លក់ចាប់ហួយ', type: 'number'},
-        {id: 'mobilePhoneShops', label: 'លក់ទូរស័ព្ទដៃ', type: 'number'}, {id: 'constructionMaterialDepots', label: 'លក់គ្រឿងសំណង់', type: 'number'},
+        {id: 'mobilePhoneShops', label: 'លក់ទូរស័ព្ទ', type: 'number'}, {id: 'constructionMaterialDepots', label: 'លក់គ្រឿងសំណង់', type: 'number'},
         {id: 'fuelDepots', label: 'ដេប៉ូប្រេង', type: 'number'}, {id: 'beautySalons', label: 'សម្អាងការ(សាឡន)', type: 'number'},
         {id: 'motorcycles', label: 'ម៉ូតូ', type: 'number'}, {id: 'tukTuks', label: 'ម៉ូតូកង់បី+ម៉ូតូសណ្ដោងរម៉ក', type: 'number'},
         {id: 'remorques', label: 'ផ្ទះលក់គ្រឿងកសិកម្ម', type: 'number'}
@@ -254,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("មិនមានទិន្នន័យគ្រួសារសម្រាប់បោះពុម្ពទេ។");
             return;
         }
-        khmerFontForAdminPDFLoaded = false; // Reset for each new PDF generation
+        khmerFontForAdminPDFLoaded = false; // Reset for each new PDF
 
         const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
         await loadKhmerFont(doc);
@@ -542,6 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const calculateAdminSummary = () => {
         if (!totalVillagesAdminSpan || !totalFamiliesAdminSpan || !totalPeopleAdminSpan || !totalFemalesAdminSpan ||
             !totalInternalMigrantsAdminSpan || !totalExternalMigrantsAdminSpan ||
+            !totalInternalMigrantsFemaleAdminSpan || !totalExternalMigrantsFemaleAdminSpan ||
             !ageGroup18_35_AdminSpan || !ageGroup36_55_AdminSpan || !ageGroup56_65_AdminSpan || !ageGroup66Plus_AdminSpan ||
             !ageGroup18_35_Female_AdminSpan || !ageGroup36_55_Female_AdminSpan || !ageGroup56_65_Female_AdminSpan || !ageGroup66Plus_Female_AdminSpan
         ) {
@@ -552,6 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const allVillageData = getVillageDataStorage();
         let totalFamiliesAll = 0, totalPeopleAll = 0, totalFemalesAll = 0;
         let totalInternalMigrantsAll = 0, totalExternalMigrantsAll = 0;
+        let femaleInternalMigrantsAll = 0, femaleExternalMigrantsAll = 0;
         let villageCount = Object.keys(getRegisteredVillages()).length;
         let count18_35_All = 0, count36_55_All = 0, count56_65_All = 0, count66Plus_All = 0;
         let count18_35_Female_All = 0, count36_55_Female_All = 0, count56_65_Female_All = 0, count66Plus_Female_All = 0;
@@ -564,9 +567,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (family.members && Array.isArray(family.members)) {
                         totalPeopleAll += family.members.length;
                         family.members.forEach(member => {
-                            if (member.gender === 'ស្រី') totalFemalesAll++;
-                            if (member.internalMigration === 'បាទ') totalInternalMigrantsAll++;
-                            if (member.externalMigration === 'បាទ') totalExternalMigrantsAll++;
+                            if (member.gender === 'ស្រី') {
+                                totalFemalesAll++;
+                            }
+                            if (member.internalMigration === 'បាទ') {
+                                totalInternalMigrantsAll++;
+                                if (member.gender === 'ស្រី') femaleInternalMigrantsAll++;
+                            }
+                            if (member.externalMigration === 'បាទ') {
+                                totalExternalMigrantsAll++;
+                                if (member.gender === 'ស្រី') femaleExternalMigrantsAll++;
+                            }
                             const age = calculateAge(member.dob);
                             if (age !== null) {
                                 if (age >= 18 && age <= 35) {
@@ -593,7 +604,9 @@ document.addEventListener('DOMContentLoaded', () => {
         totalPeopleAdminSpan.textContent = totalPeopleAll;
         totalFemalesAdminSpan.textContent = totalFemalesAll;
         totalInternalMigrantsAdminSpan.textContent = totalInternalMigrantsAll;
+        if(totalInternalMigrantsFemaleAdminSpan) totalInternalMigrantsFemaleAdminSpan.textContent = femaleInternalMigrantsAll;
         totalExternalMigrantsAdminSpan.textContent = totalExternalMigrantsAll;
+        if(totalExternalMigrantsFemaleAdminSpan) totalExternalMigrantsFemaleAdminSpan.textContent = femaleExternalMigrantsAll;
         ageGroup18_35_AdminSpan.textContent = count18_35_All;
         ageGroup36_55_AdminSpan.textContent = count36_55_All;
         ageGroup56_65_AdminSpan.textContent = count56_65_All;
@@ -904,9 +917,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const checkAndShowPrintButton = (villageName) => {
         // This function is no longer relevant for a global print button.
-        // If you had a global print button with id 'print-village-data-button', it's removed from HTML.
     };
-    checkAndShowPrintButton(); // Call to hide any potential old global print button if its ID still exists
+    checkAndShowPrintButton(); // Call to potentially hide any old global print button if its ID still exists in HTML
 
 
     const loadAndDisplayActivityLog = () => {
