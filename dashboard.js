@@ -99,15 +99,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const ageGroup56_65_Female_VillageSpan = document.getElementById('age-group-56-65-female-village');
     const ageGroup66Plus_VillageSpan = document.getElementById('age-group-66-plus-village');
     const ageGroup66Plus_Female_VillageSpan = document.getElementById('age-group-66-plus-female-village');
+    const totalInternalMigrantsFemaleVillageSpan = document.getElementById('total-internal-migrants-female-village');
+    const totalExternalMigrantsFemaleVillageSpan = document.getElementById('total-external-migrants-female-village');
+
 
     const { jsPDF } = window.jspdf;
     const ACTIVITY_LOG_KEY = 'activityLog_v2';
 
     // --- Font Embedding for Khmer OS (e.g., Battambang) for Village Chief PDF ---
     const khmerOSFontBase64_Village = 'YOUR_KHMER_OS_FONT_BASE64_STRING_HERE'; // <- **PASTE YOUR ACTUAL BASE64 STRING HERE**
-    const FONT_FILENAME_VFS_VILLAGE = "KhmerOSBattambang-Regular.ttf"; // Adjust if your font file is different
+    const FONT_FILENAME_VFS_VILLAGE = "KhmerOSBattambang-Regular.ttf";
     const FONT_NAME_JSPDF_VILLAGE = "KhmerOSVillageFont";
-
     let khmerFontLoadedSuccessfully_Village = false;
 
     async function loadKhmerFontForVillagePDF(doc) {
@@ -214,8 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
         {id: 'modifiedVehicles', label: 'រថយន្ដកែឆ្នៃ', type: 'number'}, {id: 'tractors', label: 'ត្រាក់ទ័រ', type: 'number'},
         {id: 'kubotas', label: 'គោយន្ដកន្ត្រៃ', type: 'number'}, {id: 'riceHarvesters', label: 'ម៉ាស៊ីនច្រូតស្រូវ', type: 'number'},
         {id: 'riceMills', label: 'ម៉ាស៊ីនកិនស្រូវ', type: 'number'}, {id: 'waterPumpsWells', label: 'អណ្ដូងស្នប់', type: 'number'},
-        {id: 'ponds', label: 'ផ្ទះលក់ថ្នាំពេទ្យ', type: 'number'},
-        {id: 'residentialLandSize', label: 'ទំហំដីលំនៅដ្ឋាន(មែត្រការ៉េ)', type: 'text', isLandArea: true},
+        {id: 'ponds', label: 'ផ្ទះលក់ថ្នាំពេទ្យ(ពេទ្យ)', type: 'number'},
+        {id: 'residentialLandSize', label: 'ទំហំដីលំនៅដ្ឋាន(ម៉ែត្រការ៉េ)', type: 'text', isLandArea: true},
         {id: 'paddyLandSize', label: 'ទំហំដីស្រែ', type: 'text', isLandArea: true},
         {id: 'plantationLandSize', label: 'ដីចំការ (ផ្សេងៗ)', type: 'text', isLandArea: true},
         {id: 'coconutLandSize', label: 'ដីចំការដូង', type: 'text', isLandArea: true},
@@ -515,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("មិនមានទិន្នន័យគ្រួសារសម្រាប់បោះពុម្ពទេ។");
             return;
         }
-        khmerFontLoadedSuccessfully_Village = false; // Reset flag for each new PDF generation
+        khmerFontLoadedSuccessfully_Village = false;
 
         const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
         await loadKhmerFontForVillagePDF(doc);
@@ -685,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
          const actionsDiv = familyCard.querySelector('.family-card-actions');
          if (actionsDiv) {
             const canPerformEditDelete = isAdminViewing || (!isAdminViewing && villageChiefCanEdit);
-            const canVillageChiefPrint = !isAdminViewing && villageChiefCanEdit; // Print only if chief AND has edit permission
+            const canVillageChiefPrint = !isAdminViewing && villageChiefCanEdit;
 
             if (canPerformEditDelete || canVillageChiefPrint) {
                  actionsDiv.style.display = 'block';
@@ -708,7 +710,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  }
 
                  if (printBtnVillage) {
-                    printBtnVillage.style.display = canVillageChiefPrint ? 'inline-block' : 'none'; // Only show if village chief can edit/print
+                    printBtnVillage.style.display = canVillageChiefPrint ? 'inline-block' : 'none';
                     if (canVillageChiefPrint) {
                         printBtnVillage.onclick = () => printSingleFamilyDataForVillagePDF(family, currentVillageForActions);
                     }
@@ -765,13 +767,13 @@ document.addEventListener('DOMContentLoaded', () => {
              }
         }
 
-        // Calculate and Display Village Summary Stats (including Age Groups)
+        // Calculate and Display Village Summary Stats (including Age Groups and Female counts within age groups)
         let totalPeople = 0, totalFemales = 0, todayEntriesCount = 0;
         let totalInternalMigrants = 0, totalExternalMigrants = 0;
+        let femaleInternalMigrants = 0, femaleExternalMigrants = 0;
         const todayDateString = new Date().toISOString().split('T')[0];
         let count18_35_Village = 0, count36_55_Village = 0, count56_65_Village = 0, count66Plus_Village = 0;
         let count18_35_Female_Village = 0, count36_55_Female_Village = 0, count56_65_Female_Village = 0, count66Plus_Female_Village = 0;
-
 
         const fullDataForStats = (allVillageData.hasOwnProperty(villageToDisplay) && Array.isArray(allVillageData[villageToDisplay]))
                                 ? allVillageData[villageToDisplay] : [];
@@ -780,9 +782,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (family.members && Array.isArray(family.members)) {
                 totalPeople += family.members.length;
                 family.members.forEach(member => {
-                    if (member.gender === 'ស្រី') totalFemales++;
-                    if (member.internalMigration === 'បាទ') totalInternalMigrants++;
-                    if (member.externalMigration === 'បាទ') totalExternalMigrants++;
+                    if (member.gender === 'ស្រី') {
+                        totalFemales++;
+                    }
+                    if (member.internalMigration === 'បាទ') {
+                        totalInternalMigrants++;
+                        if (member.gender === 'ស្រី') femaleInternalMigrants++;
+                    }
+                    if (member.externalMigration === 'បាទ') {
+                        totalExternalMigrants++;
+                        if (member.gender === 'ស្រី') femaleExternalMigrants++;
+                    }
                     const age = calculateAge(member.dob);
                     if (age !== null) {
                         if (age >= 18 && age <= 35) {
@@ -811,8 +821,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if(totalFemalesVillageSpan) totalFemalesVillageSpan.textContent = totalFemales;
         if(todayEntriesVillageSpan) todayEntriesVillageSpan.textContent = todayEntriesCount;
         if(totalInternalMigrantsVillageSpan) totalInternalMigrantsVillageSpan.textContent = totalInternalMigrants;
+        if(totalInternalMigrantsFemaleVillageSpan) totalInternalMigrantsFemaleVillageSpan.textContent = femaleInternalMigrants;
         if(totalExternalMigrantsVillageSpan) totalExternalMigrantsVillageSpan.textContent = totalExternalMigrants;
-
+        if(totalExternalMigrantsFemaleVillageSpan) totalExternalMigrantsFemaleVillageSpan.textContent = femaleExternalMigrants;
         if(ageGroup18_35_VillageSpan) ageGroup18_35_VillageSpan.textContent = count18_35_Village;
         if(ageGroup18_35_Female_VillageSpan) ageGroup18_35_Female_VillageSpan.textContent = count18_35_Female_Village;
         if(ageGroup36_55_VillageSpan) ageGroup36_55_VillageSpan.textContent = count36_55_Village;
@@ -821,7 +832,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if(ageGroup56_65_Female_VillageSpan) ageGroup56_65_Female_VillageSpan.textContent = count56_65_Female_Village;
         if(ageGroup66Plus_VillageSpan) ageGroup66Plus_VillageSpan.textContent = count66Plus_Village;
         if(ageGroup66Plus_Female_VillageSpan) ageGroup66Plus_Female_VillageSpan.textContent = count66Plus_Female_Village;
-
         displayVillageAssetSummary(fullDataForStats);
     };
 
