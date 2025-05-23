@@ -91,16 +91,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const editFamilyErrorAdmin = document.getElementById('edit-family-error-admin');
     const editFamilySuccessAdmin = document.getElementById('edit-family-success-admin');
 
-    const ageGroup18_35_VillageSpan = document.getElementById('age-group-18-35-village');
-    const ageGroup18_35_Female_VillageSpan = document.getElementById('age-group-18-35-female-village');
-    const ageGroup36_55_VillageSpan = document.getElementById('age-group-36-55-village');
-    const ageGroup36_55_Female_VillageSpan = document.getElementById('age-group-36-55-female-village');
-    const ageGroup56_65_VillageSpan = document.getElementById('age-group-56-65-village');
-    const ageGroup56_65_Female_VillageSpan = document.getElementById('age-group-56-65-female-village');
-    const ageGroup66Plus_VillageSpan = document.getElementById('age-group-66-plus-village');
-    const ageGroup66Plus_Female_VillageSpan = document.getElementById('age-group-66-plus-female-village');
+    // DOM References for NEW Age Group Stats (Village) - INCLUDING FEMALE COUNTS
+    const ageGroup0_2_VillageSpan = document.getElementById('age-group-0-2-village');
+    const ageGroup0_2_Female_VillageSpan = document.getElementById('age-group-0-2-female-village');
+    const ageGroup3_4_VillageSpan = document.getElementById('age-group-3-4-village');
+    const ageGroup3_4_Female_VillageSpan = document.getElementById('age-group-3-4-female-village');
+    const ageGroup5_5_VillageSpan = document.getElementById('age-group-5-5-village');
+    const ageGroup5_5_Female_VillageSpan = document.getElementById('age-group-5-5-female-village');
+    const ageGroup6_6_VillageSpan = document.getElementById('age-group-6-6-village');
+    const ageGroup6_6_Female_VillageSpan = document.getElementById('age-group-6-6-female-village');
+    const ageGroup7_11_VillageSpan = document.getElementById('age-group-7-11-village');
+    const ageGroup7_11_Female_VillageSpan = document.getElementById('age-group-7-11-female-village');
+    const ageGroup12_14_VillageSpan = document.getElementById('age-group-12-14-village');
+    const ageGroup12_14_Female_VillageSpan = document.getElementById('age-group-12-14-female-village');
+    const ageGroup15_17_VillageSpan = document.getElementById('age-group-15-17-village');
+    const ageGroup15_17_Female_VillageSpan = document.getElementById('age-group-15-17-female-village');
+    const ageGroup18_24_VillageSpan = document.getElementById('age-group-18-24-village');
+    const ageGroup18_24_Female_VillageSpan = document.getElementById('age-group-18-24-female-village');
+    const ageGroup25_35_VillageSpan = document.getElementById('age-group-25-35-village');
+    const ageGroup25_35_Female_VillageSpan = document.getElementById('age-group-25-35-female-village');
+    const ageGroup36_45_VillageSpan = document.getElementById('age-group-36-45-village');
+    const ageGroup36_45_Female_VillageSpan = document.getElementById('age-group-36-45-female-village');
+    const ageGroup46_60_VillageSpan = document.getElementById('age-group-46-60-village');
+    const ageGroup46_60_Female_VillageSpan = document.getElementById('age-group-46-60-female-village');
+    const ageGroup61_Plus_VillageSpan = document.getElementById('age-group-61-plus-village');
+    const ageGroup61_Plus_Female_VillageSpan = document.getElementById('age-group-61-plus-female-village');
     const totalInternalMigrantsFemaleVillageSpan = document.getElementById('total-internal-migrants-female-village');
     const totalExternalMigrantsFemaleVillageSpan = document.getElementById('total-external-migrants-female-village');
+
+    // DOM References for Education Level Spans (as per updated dashboard.html)
+    const eduLevelUneducatedVillageSpan = document.getElementById('edu-level-uneducated-village');
+    const eduLevelUneducatedFemaleVillageSpan = document.getElementById('edu-level-uneducated-female-village');
+    const eduLevelPrimaryVillageSpan = document.getElementById('edu-level-primary-village');
+    const eduLevelPrimaryFemaleVillageSpan = document.getElementById('edu-level-primary-female-village');
+    const eduLevelLowerSecondaryVillageSpan = document.getElementById('edu-level-lower-secondary-village');
+    const eduLevelLowerSecondaryFemaleVillageSpan = document.getElementById('edu-level-lower-secondary-female-village');
+    const eduLevelHighSchoolVillageSpan = document.getElementById('edu-level-high-school-village');
+    const eduLevelHighSchoolFemaleVillageSpan = document.getElementById('edu-level-high-school-female-village');
+    const eduLevelBachelorVillageSpan = document.getElementById('edu-level-bachelor-village');
+    const eduLevelBachelorFemaleVillageSpan = document.getElementById('edu-level-bachelor-female-village');
+    const eduLevelSkillVillageSpan = document.getElementById('edu-level-skill-village');
+    const eduLevelSkillFemaleVillageSpan = document.getElementById('edu-level-skill-female-village');
+    const eduLevelPostgraduateVillageSpan = document.getElementById('edu-level-postgraduate-village');
+    const eduLevelPostgraduateFemaleVillageSpan = document.getElementById('edu-level-postgraduate-female-village');
+    const eduLevelOtherVillageSpan = document.getElementById('edu-level-other-village');
+    const eduLevelOtherFemaleVillageSpan = document.getElementById('edu-level-other-female-village');
 
 
     const { jsPDF } = window.jspdf;
@@ -108,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Font Embedding for Khmer OS (e.g., Battambang) for Village Chief PDF ---
     const khmerOSFontBase64_Village = 'YOUR_KHMER_OS_FONT_BASE64_STRING_HERE'; // <- **PASTE YOUR ACTUAL BASE64 STRING HERE**
-    const FONT_FILENAME_VFS_VILLAGE = "KhmerOSBattambang-Regular.ttf";
+    const FONT_FILENAME_VFS_VILLAGE = "KhmerOSBattambang-Regular.ttf"; // Adjust if your font file is different
     const FONT_NAME_JSPDF_VILLAGE = "KhmerOSVillageFont";
     let khmerFontLoadedSuccessfully_Village = false;
 
@@ -216,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {id: 'modifiedVehicles', label: 'រថយន្ដកែឆ្នៃ', type: 'number'}, {id: 'tractors', label: 'ត្រាក់ទ័រ', type: 'number'},
         {id: 'kubotas', label: 'គោយន្ដកន្ត្រៃ', type: 'number'}, {id: 'riceHarvesters', label: 'ម៉ាស៊ីនច្រូតស្រូវ', type: 'number'},
         {id: 'riceMills', label: 'ម៉ាស៊ីនកិនស្រូវ', type: 'number'}, {id: 'waterPumpsWells', label: 'អណ្ដូងស្នប់', type: 'number'},
-        {id: 'ponds', label: 'ផ្ទះលក់ថ្នាំពេទ្យ(ពេទ្យ)', type: 'number'},
+        {id: 'ponds', label: 'ផ្ទះលក់ថ្នាំពេទ្យ(គ្រូពេទ្យ)', type: 'number'},
         {id: 'residentialLandSize', label: 'ទំហំដីលំនៅដ្ឋាន(ម៉ែត្រការ៉េ)', type: 'text', isLandArea: true},
         {id: 'paddyLandSize', label: 'ទំហំដីស្រែ', type: 'text', isLandArea: true},
         {id: 'plantationLandSize', label: 'ដីចំការ (ផ្សេងៗ)', type: 'text', isLandArea: true},
@@ -227,23 +262,73 @@ document.addEventListener('DOMContentLoaded', () => {
         {id: 'vehicleRepairShops', label: 'ជាងជួសជុល(ម៉ូតូ+ឡាន)', type: 'number'}, {id: 'groceryStores', label: 'ផ្ទះលក់ចាប់ហួយ', type: 'number'},
         {id: 'mobilePhoneShops', label: 'ផ្ទះលក់ទូស័ព្ទដៃ', type: 'number'}, {id: 'constructionMaterialDepots', label: 'ដេប៉ូលក់គ្រឿងសំណង់', type: 'number'},
         {id: 'fuelDepots', label: 'ដេប៉ូប្រេង', type: 'number'}, {id: 'beautySalons', label: 'ផ្ទះសម្អាងការ(សាឡន)', type: 'number'},
-        {id: 'motorcycles', label: 'ម៉ូតូ', type: 'number'}, {id: 'tukTuks', label: 'ម៉ូតូកង់បី+ម៉ូតូសណ្ដោងរម៉ក', type: 'number'},
+        {id: 'motorcycles', label: 'ម៉ូតូ', type: 'number'}, {id: 'tukTuks', label: 'ម៉ូតូកង់បី+ម៉ូតូសណ្ដោងរម៉ក់', type: 'number'},
         {id: 'remorques', label: 'ផ្ទះលក់គ្រឿងកសិកម្ម', type: 'number'}
     ];
-    const memberFieldDefinitionsForEdit = [
+    const memberFieldDefinitionsForEdit = [ // Used for the edit modal AND getChangedFields
         { classSuffix: 'member-name-edit', prop: 'name', label: 'ឈ្មោះ', required: true, type: 'text' },
         { classSuffix: 'member-gender-edit', prop: 'gender', label: 'ភេទ', type: 'select', options: [{value:'ប្រុស', text:'ប្រុស'}, {value:'ស្រី', text:'ស្រី'}] },
         { classSuffix: 'member-dob-edit', prop: 'dob', label: 'ថ្ងៃខែឆ្នាំកំណើត', type: 'date' },
         { classSuffix: 'member-birthProvince-edit', prop: 'birthProvince', label: 'ខេត្តកំណើត', type: 'text' },
         { classSuffix: 'member-educationLevel-edit', prop: 'educationLevel', label: 'កម្រិតវប្បធម៌', type: 'text' },
-        { classSuffix: 'member-occupation-edit', prop: 'occupation', label: 'មុខរបរ', type: 'text' },
+        { classSuffix: 'member-occupation-edit', prop: 'occupation', label: 'មុខរបរ', type: 'text' }, // Kept for edit modal consistency, though not in summary stats
         { classSuffix: 'member-nationalId-edit', prop: 'nationalId', label: 'លេខអត្តសញ្ញាណប័ណ្ណ', type: 'text' },
         { classSuffix: 'member-electionOfficeId-edit', prop: 'electionOfficeId', label: 'លេខការិយាល័យបោះឆ្នោត', type: 'text' },
         { classSuffix: 'member-internalMigration-edit', prop: 'internalMigration', label: 'ចំណាកស្រុកក្នុង', type: 'select', options: [{value:'ទេ', text:'ទេ'}, {value:'បាទ', text:'បាទ'}] },
         { classSuffix: 'member-externalMigration-edit', prop: 'externalMigration', label: 'ចំណាកស្រុកក្រៅ', type: 'select', options: [{value:'ទេ', text:'ទេ'}, {value:'បាទ', text:'បាទ'}] }
     ];
 
-    // --- Utility function to find changed fields ---
+    const trackedEducationLevels = {
+        "មិនបានសិក្សា": "មិនបានសិក្សា",
+        "បឋមសិក្សា": "បឋមសិក្សា (ថ្នាក់ទី ១-៦)",
+        "អនុវិទ្យាល័យ": "អនុវិទ្យាល័យ (ថ្នាក់ទី ៧-៩)",
+        "វិទ្យាល័យ": "វិទ្យាល័យ (ថ្នាក់ទី ១០-១២)",
+        "បរិញ្ញាបត្រ": "បរិញ្ញាបត្រ",
+        "ជំនាញ": "ជំនាញ",
+        "លើសបរិញ្ញាបត្រ": "លើសបរិញ្ញាបត្រ",
+        "ផ្សេងៗ": "ផ្សេងៗ"
+    };
+
+    const categorizeEducation = (levelText) => {
+        if (!levelText || typeof levelText !== 'string') return "ផ្សេងៗ";
+        const text = levelText.toLowerCase().trim();
+        const normalizedText = text.replace(/១/g, '1').replace(/២/g, '2').replace(/៣/g, '3')
+                                 .replace(/៤/g, '4').replace(/៥/g, '5').replace(/៦/g, '6')
+                                 .replace(/៧/g, '7').replace(/៨/g, '8').replace(/៩/g, '9')
+                                 .replace(/១០/g, '10').replace(/១១/g, '11').replace(/១២/g, '12');
+
+        if (normalizedText.includes("ជំនាញ") || normalizedText.includes("skill") || normalizedText.includes("vocational") || normalizedText.includes("វិជ្ជាជីវៈ")) return "ជំនាញ";
+        if (normalizedText.includes("បរិញ្ញាបត្ររង") || normalizedText.includes("បរិញ្ញាប័ត្ររង") || normalizedText.includes("อนุปริญญา")) return "បរិញ្ញាបត្រ";
+        if (normalizedText.includes("បរិញ្ញាបត្រ") || normalizedText.includes("បរិញ្ញាប័ត្រ") || normalizedText.includes("ปริญญาตรี")) return "បរិញ្ញាបត្រ";
+        if (normalizedText.includes("អនុបណ្ឌិត") || normalizedText.includes("ปริญญาโท")) return "លើសបរិញ្ញាបត្រ";
+        if (normalizedText.includes("បណ្ឌិត") || normalizedText.includes("ปริญญาเอก")) return "លើសបរិញ្ញាបត្រ";
+
+        // Updated logic for High School (Grades 10-12)
+        for (let i = 10; i <= 12; i++) {
+            if (normalizedText.includes(`ថ្នាក់ទី${i}`) || normalizedText.includes(`ទី${i}`) || normalizedText.includes(`ថ្នាក់${i}`) || normalizedText.includes(`grade ${i}`)) return "វិទ្យាល័យ";
+        }
+        if (normalizedText.includes("វិទ្យាល័យ") || normalizedText.includes("high school") || normalizedText.includes("បាក់ឌុប")) return "វិទ្យាល័យ";
+
+        // Lower Secondary School (Grades 7-9)
+        for (let i = 7; i <= 9; i++) {
+            if (normalizedText.includes(`ថ្នាក់ទី${i}`) || normalizedText.includes(`ទី${i}`) || normalizedText.includes(`ថ្នាក់${i}`) || normalizedText.includes(`grade ${i}`)) return "អនុវិទ្យាល័យ";
+        }
+        if (normalizedText.includes("អនុវិទ្យាល័យ") || normalizedText.includes("lower secondary") || normalizedText.includes("middle school")) return "អនុវិទ្យាល័យ";
+
+        // Primary School (Grades 1-6)
+        for (let i = 1; i <= 6; i++) {
+            if (normalizedText.includes(`ថ្នាក់ទី${i}`) || normalizedText.includes(`ទី${i}`) || normalizedText.includes(`ថ្នាក់${i}`) || normalizedText.includes(`grade ${i}`)) return "បឋមសិក្សា";
+        }
+        if (normalizedText.includes("បឋម") || normalizedText.includes("primary") || normalizedText.includes("elementary")) return "បឋមសិក្សា";
+
+
+        if (normalizedText.includes("មិនបាន") || normalizedText.includes("អត់") || normalizedText.includes("none") || normalizedText.includes("no formal")) return "មិនបានសិក្សា";
+
+        return "ផ្សេងៗ";
+    };
+
+
+    // --- Utility function to find changed fields for activity log ---
     const getChangedFields = (oldData, newData) => {
         if (!oldData || !newData) return "មិនអាចប្រៀបធៀបទិន្នន័យបានទេ (ទិន្នន័យដើមបាត់)។";
         let changes = [];
@@ -767,13 +852,26 @@ document.addEventListener('DOMContentLoaded', () => {
              }
         }
 
-        // Calculate and Display Village Summary Stats (including Age Groups and Female counts within age groups)
+        // Calculate and Display Village Summary Stats
         let totalPeople = 0, totalFemales = 0, todayEntriesCount = 0;
         let totalInternalMigrants = 0, totalExternalMigrants = 0;
         let femaleInternalMigrants = 0, femaleExternalMigrants = 0;
         const todayDateString = new Date().toISOString().split('T')[0];
-        let count18_35_Village = 0, count36_55_Village = 0, count56_65_Village = 0, count66Plus_Village = 0;
-        let count18_35_Female_Village = 0, count36_55_Female_Village = 0, count56_65_Female_Village = 0, count66Plus_Female_Village = 0;
+        let count0_2_Village = 0, count0_2_Female_Village = 0;
+        let count3_4_Village = 0, count3_4_Female_Village = 0;
+        let count5_5_Village = 0, count5_5_Female_Village = 0;
+        let count6_6_Village = 0, count6_6_Female_Village = 0;
+        let count7_11_Village = 0, count7_11_Female_Village = 0;
+        let count12_14_Village = 0, count12_14_Female_Village = 0;
+        let count15_17_Village = 0, count15_17_Female_Village = 0;
+        let count18_24_Village = 0, count18_24_Female_Village = 0;
+        let count25_35_Village = 0, count25_35_Female_Village = 0;
+        let count36_45_Village = 0, count36_45_Female_Village = 0;
+        let count46_60_Village = 0, count46_60_Female_Village = 0;
+        let count61_Plus_Village = 0, count61_Plus_Female_Village = 0;
+
+        const educationStats = {};
+        Object.keys(trackedEducationLevels).forEach(eduKey => { educationStats[eduKey] = { total: 0, female: 0 }; });
 
         const fullDataForStats = (allVillageData.hasOwnProperty(villageToDisplay) && Array.isArray(allVillageData[villageToDisplay]))
                                 ? allVillageData[villageToDisplay] : [];
@@ -795,19 +893,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     const age = calculateAge(member.dob);
                     if (age !== null) {
-                        if (age >= 18 && age <= 35) {
-                            count18_35_Village++;
-                            if(member.gender === 'ស្រី') count18_35_Female_Village++;
-                        } else if (age >= 36 && age <= 55) {
-                            count36_55_Village++;
-                            if(member.gender === 'ស្រី') count36_55_Female_Village++;
-                        } else if (age >= 56 && age <= 65) {
-                            count56_65_Village++;
-                            if(member.gender === 'ស្រី') count56_65_Female_Village++;
-                        } else if (age >= 66) {
-                            count66Plus_Village++;
-                            if(member.gender === 'ស្រី') count66Plus_Female_Village++;
-                        }
+                        if (age >= 0 && age <= 2) { count0_2_Village++; if(member.gender === 'ស្រី') count0_2_Female_Village++; }
+                        else if (age >= 3 && age <= 4) { count3_4_Village++; if(member.gender === 'ស្រី') count3_4_Female_Village++; }
+                        else if (age === 5) { count5_5_Village++; if(member.gender === 'ស្រី') count5_5_Female_Village++; }
+                        else if (age === 6) { count6_6_Village++; if(member.gender === 'ស្រី') count6_6_Female_Village++; }
+                        else if (age >= 7 && age <= 11) { count7_11_Village++; if(member.gender === 'ស្រី') count7_11_Female_Village++; }
+                        else if (age >= 12 && age <= 14) { count12_14_Village++; if(member.gender === 'ស្រី') count12_14_Female_Village++; }
+                        else if (age >= 15 && age <= 17) { count15_17_Village++; if(member.gender === 'ស្រី') count15_17_Female_Village++; }
+                        else if (age >= 18 && age <= 24) { count18_24_Village++; if(member.gender === 'ស្រី') count18_24_Female_Village++; }
+                        else if (age >= 25 && age <= 35) { count25_35_Village++; if(member.gender === 'ស្រី') count25_35_Female_Village++; }
+                        else if (age >= 36 && age <= 45) { count36_45_Village++; if(member.gender === 'ស្រី') count36_45_Female_Village++; }
+                        else if (age >= 46 && age <= 60) { count46_60_Village++; if(member.gender === 'ស្រី') count46_60_Female_Village++; }
+                        else if (age >= 61) { count61_Plus_Village++; if(member.gender === 'ស្រី') count61_Plus_Female_Village++; }
+                    }
+
+                    // Education stats
+                    const educationLevelText = member.educationLevel || "";
+                    const categorizedEdu = categorizeEducation(educationLevelText);
+                    if (educationStats[categorizedEdu]) {
+                        educationStats[categorizedEdu].total++;
+                        if (member.gender === 'ស្រី') educationStats[categorizedEdu].female++;
+                    } else {
+                        educationStats["ផ្សេងៗ"].total++;
+                        if (member.gender === 'ស្រី') educationStats["ផ្សេងៗ"].female++;
                     }
                 });
             }
@@ -824,14 +932,50 @@ document.addEventListener('DOMContentLoaded', () => {
         if(totalInternalMigrantsFemaleVillageSpan) totalInternalMigrantsFemaleVillageSpan.textContent = femaleInternalMigrants;
         if(totalExternalMigrantsVillageSpan) totalExternalMigrantsVillageSpan.textContent = totalExternalMigrants;
         if(totalExternalMigrantsFemaleVillageSpan) totalExternalMigrantsFemaleVillageSpan.textContent = femaleExternalMigrants;
-        if(ageGroup18_35_VillageSpan) ageGroup18_35_VillageSpan.textContent = count18_35_Village;
-        if(ageGroup18_35_Female_VillageSpan) ageGroup18_35_Female_VillageSpan.textContent = count18_35_Female_Village;
-        if(ageGroup36_55_VillageSpan) ageGroup36_55_VillageSpan.textContent = count36_55_Village;
-        if(ageGroup36_55_Female_VillageSpan) ageGroup36_55_Female_VillageSpan.textContent = count36_55_Female_Village;
-        if(ageGroup56_65_VillageSpan) ageGroup56_65_VillageSpan.textContent = count56_65_Village;
-        if(ageGroup56_65_Female_VillageSpan) ageGroup56_65_Female_VillageSpan.textContent = count56_65_Female_Village;
-        if(ageGroup66Plus_VillageSpan) ageGroup66Plus_VillageSpan.textContent = count66Plus_Village;
-        if(ageGroup66Plus_Female_VillageSpan) ageGroup66Plus_Female_VillageSpan.textContent = count66Plus_Female_Village;
+
+        if(ageGroup0_2_VillageSpan) ageGroup0_2_VillageSpan.textContent = count0_2_Village;
+        if(ageGroup0_2_Female_VillageSpan) ageGroup0_2_Female_VillageSpan.textContent = count0_2_Female_Village;
+        if(ageGroup3_4_VillageSpan) ageGroup3_4_VillageSpan.textContent = count3_4_Village;
+        if(ageGroup3_4_Female_VillageSpan) ageGroup3_4_Female_VillageSpan.textContent = count3_4_Female_Village;
+        if(ageGroup5_5_VillageSpan) ageGroup5_5_VillageSpan.textContent = count5_5_Village;
+        if(ageGroup5_5_Female_VillageSpan) ageGroup5_5_Female_VillageSpan.textContent = count5_5_Female_Village;
+        if(ageGroup6_6_VillageSpan) ageGroup6_6_VillageSpan.textContent = count6_6_Village;
+        if(ageGroup6_6_Female_VillageSpan) ageGroup6_6_Female_VillageSpan.textContent = count6_6_Female_Village;
+        if(ageGroup7_11_VillageSpan) ageGroup7_11_VillageSpan.textContent = count7_11_Village;
+        if(ageGroup7_11_Female_VillageSpan) ageGroup7_11_Female_VillageSpan.textContent = count7_11_Female_Village;
+        if(ageGroup12_14_VillageSpan) ageGroup12_14_VillageSpan.textContent = count12_14_Village;
+        if(ageGroup12_14_Female_VillageSpan) ageGroup12_14_Female_VillageSpan.textContent = count12_14_Female_Village;
+        if(ageGroup15_17_VillageSpan) ageGroup15_17_VillageSpan.textContent = count15_17_Village;
+        if(ageGroup15_17_Female_VillageSpan) ageGroup15_17_Female_VillageSpan.textContent = count15_17_Female_Village;
+        if(ageGroup18_24_VillageSpan) ageGroup18_24_VillageSpan.textContent = count18_24_Village;
+        if(ageGroup18_24_Female_VillageSpan) ageGroup18_24_Female_VillageSpan.textContent = count18_24_Female_Village;
+        if(ageGroup25_35_VillageSpan) ageGroup25_35_VillageSpan.textContent = count25_35_Village;
+        if(ageGroup25_35_Female_VillageSpan) ageGroup25_35_Female_VillageSpan.textContent = count25_35_Female_Village;
+        if(ageGroup36_45_VillageSpan) ageGroup36_45_VillageSpan.textContent = count36_45_Village;
+        if(ageGroup36_45_Female_VillageSpan) ageGroup36_45_Female_VillageSpan.textContent = count36_45_Female_Village;
+        if(ageGroup46_60_VillageSpan) ageGroup46_60_VillageSpan.textContent = count46_60_Village;
+        if(ageGroup46_60_Female_VillageSpan) ageGroup46_60_Female_VillageSpan.textContent = count46_60_Female_Village;
+        if(ageGroup61_Plus_VillageSpan) ageGroup61_Plus_VillageSpan.textContent = count61_Plus_Village;
+        if(ageGroup61_Plus_Female_VillageSpan) ageGroup61_Plus_Female_VillageSpan.textContent = count61_Plus_Female_Village;
+
+        // Populate Education Stats Spans
+        if(eduLevelUneducatedVillageSpan) eduLevelUneducatedVillageSpan.textContent = educationStats["មិនបានសិក្សា"].total;
+        if(eduLevelUneducatedFemaleVillageSpan) eduLevelUneducatedFemaleVillageSpan.textContent = educationStats["មិនបានសិក្សា"].female;
+        if(eduLevelPrimaryVillageSpan) eduLevelPrimaryVillageSpan.textContent = educationStats["បឋមសិក្សា"].total;
+        if(eduLevelPrimaryFemaleVillageSpan) eduLevelPrimaryFemaleVillageSpan.textContent = educationStats["បឋមសិក្សា"].female;
+        if(eduLevelLowerSecondaryVillageSpan) eduLevelLowerSecondaryVillageSpan.textContent = educationStats["អនុវិទ្យាល័យ"].total;
+        if(eduLevelLowerSecondaryFemaleVillageSpan) eduLevelLowerSecondaryFemaleVillageSpan.textContent = educationStats["អនុវិទ្យាល័យ"].female;
+        if(eduLevelHighSchoolVillageSpan) eduLevelHighSchoolVillageSpan.textContent = educationStats["វិទ្យាល័យ"].total;
+        if(eduLevelHighSchoolFemaleVillageSpan) eduLevelHighSchoolFemaleVillageSpan.textContent = educationStats["វិទ្យាល័យ"].female;
+        if(eduLevelBachelorVillageSpan) eduLevelBachelorVillageSpan.textContent = educationStats["បរិញ្ញាបត្រ"].total;
+        if(eduLevelBachelorFemaleVillageSpan) eduLevelBachelorFemaleVillageSpan.textContent = educationStats["បរិញ្ញាបត្រ"].female;
+        if(eduLevelSkillVillageSpan) eduLevelSkillVillageSpan.textContent = educationStats["ជំនាញ"].total;
+        if(eduLevelSkillFemaleVillageSpan) eduLevelSkillFemaleVillageSpan.textContent = educationStats["ជំនាញ"].female;
+        if(eduLevelPostgraduateVillageSpan) eduLevelPostgraduateVillageSpan.textContent = educationStats["លើសបរិញ្ញាបត្រ"].total;
+        if(eduLevelPostgraduateFemaleVillageSpan) eduLevelPostgraduateFemaleVillageSpan.textContent = educationStats["លើសបរិញ្ញាបត្រ"].female;
+        if(eduLevelOtherVillageSpan) eduLevelOtherVillageSpan.textContent = educationStats["ផ្សេងៗ"].total;
+        if(eduLevelOtherFemaleVillageSpan) eduLevelOtherFemaleVillageSpan.textContent = educationStats["ផ្សេងៗ"].female;
+
         displayVillageAssetSummary(fullDataForStats);
     };
 
@@ -883,7 +1027,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         dob: entry.querySelector('.member-dob')?.value || null,
                         birthProvince: entry.querySelector('.member-birthProvince')?.value.trim() || null,
                         educationLevel: entry.querySelector('.member-educationLevel')?.value.trim() || null,
-                        occupation: entry.querySelector('.member-occupation')?.value.trim() || null,
+                        occupation: entry.querySelector('.member-occupation')?.value.trim() || null, // Kept occupation for data entry
                         nationalId: entry.querySelector('.member-nationalId')?.value.trim() || null,
                         electionOfficeId: entry.querySelector('.member-electionOfficeId')?.value.trim() || null,
                         internalMigration: entry.querySelector('.member-internalMigration')?.value || 'ទេ',
