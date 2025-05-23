@@ -21,16 +21,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalVillagesAdminSpan = document.getElementById('total-villages-admin');
     const totalInternalMigrantsAdminSpan = document.getElementById('total-internal-migrants-admin');
     const totalExternalMigrantsAdminSpan = document.getElementById('total-external-migrants-admin');
-    const ageGroup18_35_AdminSpan = document.getElementById('age-group-18-35-admin');
-    const ageGroup36_55_AdminSpan = document.getElementById('age-group-36-55-admin');
-    const ageGroup56_65_AdminSpan = document.getElementById('age-group-56-65-admin');
-    const ageGroup66Plus_AdminSpan = document.getElementById('age-group-66-plus-admin');
-    const ageGroup18_35_Female_AdminSpan = document.getElementById('age-group-18-35-female-admin');
-    const ageGroup36_55_Female_AdminSpan = document.getElementById('age-group-36-55-female-admin');
-    const ageGroup56_65_Female_AdminSpan = document.getElementById('age-group-56-65-female-admin');
-    const ageGroup66Plus_Female_AdminSpan = document.getElementById('age-group-66-plus-female-admin');
     const totalInternalMigrantsFemaleAdminSpan = document.getElementById('total-internal-migrants-female-admin');
     const totalExternalMigrantsFemaleAdminSpan = document.getElementById('total-external-migrants-female-admin');
+
+    // New age group spans for Admin
+    const ageGroup0_2_AdminSpan = document.getElementById('age-group-0-2-admin');
+    const ageGroup0_2_Female_AdminSpan = document.getElementById('age-group-0-2-female-admin');
+    const ageGroup3_4_AdminSpan = document.getElementById('age-group-3-4-admin');
+    const ageGroup3_4_Female_AdminSpan = document.getElementById('age-group-3-4-female-admin');
+    const ageGroup5_5_AdminSpan = document.getElementById('age-group-5-5-admin');
+    const ageGroup5_5_Female_AdminSpan = document.getElementById('age-group-5-5-female-admin');
+    const ageGroup6_6_AdminSpan = document.getElementById('age-group-6-6-admin');
+    const ageGroup6_6_Female_AdminSpan = document.getElementById('age-group-6-6-female-admin');
+    const ageGroup7_11_AdminSpan = document.getElementById('age-group-7-11-admin');
+    const ageGroup7_11_Female_AdminSpan = document.getElementById('age-group-7-11-female-admin');
+    const ageGroup12_14_AdminSpan = document.getElementById('age-group-12-14-admin');
+    const ageGroup12_14_Female_AdminSpan = document.getElementById('age-group-12-14-female-admin');
+    const ageGroup15_17_AdminSpan = document.getElementById('age-group-15-17-admin');
+    const ageGroup15_17_Female_AdminSpan = document.getElementById('age-group-15-17-female-admin');
+    const ageGroup18_24_AdminSpan = document.getElementById('age-group-18-24-admin');
+    const ageGroup18_24_Female_AdminSpan = document.getElementById('age-group-18-24-female-admin');
+    const ageGroup25_35_AdminSpan = document.getElementById('age-group-25-35-admin');
+    const ageGroup25_35_Female_AdminSpan = document.getElementById('age-group-25-35-female-admin');
+    const ageGroup36_45_AdminSpan = document.getElementById('age-group-36-45-admin');
+    const ageGroup36_45_Female_AdminSpan = document.getElementById('age-group-36-45-female-admin');
+    const ageGroup46_60_AdminSpan = document.getElementById('age-group-46-60-admin');
+    const ageGroup46_60_Female_AdminSpan = document.getElementById('age-group-46-60-female-admin');
+    const ageGroup61_Plus_AdminSpan = document.getElementById('age-group-61-plus-admin');
+    const ageGroup61_Plus_Female_AdminSpan = document.getElementById('age-group-61-plus-female-admin');
+
+    // DOM References for Education Level Spans for Admin
+    const eduLevelUneducatedAdminSpan = document.getElementById('edu-level-uneducated-admin');
+    const eduLevelUneducatedFemaleAdminSpan = document.getElementById('edu-level-uneducated-female-admin');
+    const eduLevelPrimaryAdminSpan = document.getElementById('edu-level-primary-admin');
+    const eduLevelPrimaryFemaleAdminSpan = document.getElementById('edu-level-primary-female-admin');
+    const eduLevelLowerSecondaryAdminSpan = document.getElementById('edu-level-lower-secondary-admin');
+    const eduLevelLowerSecondaryFemaleAdminSpan = document.getElementById('edu-level-lower-secondary-female-admin');
+    const eduLevelHighSchoolAdminSpan = document.getElementById('edu-level-high-school-admin');
+    const eduLevelHighSchoolFemaleAdminSpan = document.getElementById('edu-level-high-school-female-admin');
+    const eduLevelBachelorAdminSpan = document.getElementById('edu-level-bachelor-admin');
+    const eduLevelBachelorFemaleAdminSpan = document.getElementById('edu-level-bachelor-female-admin');
+    const eduLevelSkillAdminSpan = document.getElementById('edu-level-skill-admin');
+    const eduLevelSkillFemaleAdminSpan = document.getElementById('edu-level-skill-female-admin');
+    const eduLevelPostgraduateAdminSpan = document.getElementById('edu-level-postgraduate-admin');
+    const eduLevelPostgraduateFemaleAdminSpan = document.getElementById('edu-level-postgraduate-female-admin');
+    const eduLevelOtherAdminSpan = document.getElementById('edu-level-other-admin');
+    const eduLevelOtherFemaleAdminSpan = document.getElementById('edu-level-other-female-admin');
+
 
     const adminAssetSummaryTbody = document.getElementById('admin-asset-summary-tbody');
     const selectedVillageNameH3 = document.getElementById('selected-village-name-admin');
@@ -139,18 +176,18 @@ document.addEventListener('DOMContentLoaded', () => {
         {id: 'modifiedVehicles', label: 'រថយន្ដកែឆ្នៃ', type: 'number'}, {id: 'tractors', label: 'ត្រាក់ទ័រ', type: 'number'},
         {id: 'kubotas', label: 'គោយន្ដកន្ត្រៃ', type: 'number'}, {id: 'riceHarvesters', label: 'ម៉ាស៊ីនច្រូតស្រូវ', type: 'number'},
         {id: 'riceMills', label: 'ម៉ាស៊ីនកិនស្រូវ', type: 'number'}, {id: 'waterPumpsWells', label: 'អណ្ដូងស្នប់', type: 'number'},
-        {id: 'ponds', label: 'ផ្ទះលក់ថ្នាំពេទ្យ(ពេទ្យ)', type: 'number'},
-        {id: 'residentialLandSize', label: 'ទំហំដីលំនៅដ្ឋាន(ម៉េត្រការ៉េ)', type: 'text', isLandArea: true},
+        {id: 'ponds', label: 'ផ្ទះលក់ថ្នាំពេទ្យ(គ្រូពេទ្យ)', type: 'number'},
+        {id: 'residentialLandSize', label: 'ទំហំដីលំនៅដ្ឋាន(ម៉ែត្រការ៉េ)', type: 'text', isLandArea: true},
         {id: 'paddyLandSize', label: 'ទំហំដីស្រែ', type: 'text', isLandArea: true},
         {id: 'plantationLandSize', label: 'ដីចំការ (ផ្សេងៗ)', type: 'text', isLandArea: true},
         {id: 'coconutLandSize', label: 'ដីចំការដូង', type: 'text', isLandArea: true},
         {id: 'mangoLandSize', label: 'ដីចំការស្វាយ', type: 'text', isLandArea: true},
         {id: 'cashewLandSize', label: 'ដីចំការស្វាយចន្ទី', type: 'text', isLandArea: true},
         {id: 'livestockLandSize', label: 'ដីចំការមាន', type: 'text', isLandArea: true},
-        {id: 'vehicleRepairShops', label: 'ជាងជួសជុល(ម៉ូតូ+ឡាន)', type: 'number'}, {id: 'groceryStores', label: 'លក់ចាប់ហួយ', type: 'number'},
+        {id: 'vehicleRepairShops', label: 'ជាងជួសជុល', type: 'number'}, {id: 'groceryStores', label: 'លក់ចាប់ហួយ', type: 'number'},
         {id: 'mobilePhoneShops', label: 'លក់ទូរស័ព្ទ', type: 'number'}, {id: 'constructionMaterialDepots', label: 'លក់គ្រឿងសំណង់', type: 'number'},
         {id: 'fuelDepots', label: 'ដេប៉ូប្រេង', type: 'number'}, {id: 'beautySalons', label: 'សម្អាងការ(សាឡន)', type: 'number'},
-        {id: 'motorcycles', label: 'ម៉ូតូ', type: 'number'}, {id: 'tukTuks', label: 'ម៉ូតូកង់បី+ម៉ូតូសណ្ដោងរម៉ក', type: 'number'},
+        {id: 'motorcycles', label: 'ម៉ូតូ', type: 'number'}, {id: 'tukTuks', label: 'ម៉ូតូកង់បី+ម៉ូតូសណ្ដោងរម៉ក់', type: 'number'},
         {id: 'remorques', label: 'ផ្ទះលក់គ្រឿងកសិកម្ម', type: 'number'}
     ];
     const memberFieldDefinitionsForEdit = [
@@ -165,6 +202,38 @@ document.addEventListener('DOMContentLoaded', () => {
         { classSuffix: 'internalMigration-edit', prop: 'internalMigration', label: 'ចំណាកស្រុកក្នុង', type: 'select', options: [{value:'ទេ', text:'ទេ'}, {value:'បាទ', text:'បាទ'}] },
         { classSuffix: 'externalMigration-edit', prop: 'externalMigration', label: 'ចំណាកស្រុកក្រៅ', type: 'select', options: [{value:'ទេ', text:'ទេ'}, {value:'បាទ', text:'បាទ'}] }
     ];
+    // Definitions for Education Level Stats (consistent with dashboard.js)
+    const trackedEducationLevels = {
+        "មិនបានសិក្សា": "មិនបានសិក្សា",
+        "បឋមសិក្សា": "បឋមសិក្សា (ថ្នាក់ទី ១-៦)",
+        "អនុវិទ្យាល័យ": "អនុវិទ្យាល័យ (ថ្នាក់ទី ៧-៩)",
+        "វិទ្យាល័យ": "វិទ្យាល័យ (ថ្នាក់ទី ១០-១២)",
+        "បរិញ្ញាបត្រ": "បរិញ្ញាបត្រ",
+        "ជំនាញ": "ជំនាញ",
+        "លើសបរិញ្ញាបត្រ": "លើសបរិញ្ញាបត្រ",
+        "ផ្សេងៗ": "ផ្សេងៗ"
+    };
+    const categorizeEducation = (levelText) => { // Identical categorization logic
+        if (!levelText || typeof levelText !== 'string') return "ផ្សេងៗ";
+        const text = levelText.toLowerCase().trim();
+        const normalizedText = text.replace(/១/g, '1').replace(/២/g, '2').replace(/៣/g, '3')
+                                 .replace(/៤/g, '4').replace(/៥/g, '5').replace(/៦/g, '6')
+                                 .replace(/៧/g, '7').replace(/៨/g, '8').replace(/៩/g, '9')
+                                 .replace(/១០/g, '10').replace(/១១/g, '11').replace(/១២/g, '12');
+        if (normalizedText.includes("ជំនាញ") || normalizedText.includes("skill") || normalizedText.includes("vocational") || normalizedText.includes("វិជ្ជាជីវៈ")) return "ជំនាញ";
+        if (normalizedText.includes("បរិញ្ញាបត្ររង") || normalizedText.includes("បរិញ្ញាប័ត្ររង") || normalizedText.includes("อนุปริญญา")) return "បរិញ្ញាបត្រ";
+        if (normalizedText.includes("បរិញ្ញាបត្រ") || normalizedText.includes("បរិញ្ញាប័ត្រ") || normalizedText.includes("ปริญญาตรี")) return "បរិញ្ញាបត្រ";
+        if (normalizedText.includes("អនុបណ្ឌិត") || normalizedText.includes("ปริญญาโท")) return "លើសបរិញ្ញាបត្រ";
+        if (normalizedText.includes("បណ្ឌិត") || normalizedText.includes("ปริญญาเอก")) return "លើសបរិញ្ញាបត្រ";
+        for (let i = 10; i <= 12; i++) { if (normalizedText.includes(`ថ្នាក់ទី${i}`) || normalizedText.includes(`ទី${i}`) || normalizedText.includes(`ថ្នាក់${i}`) || normalizedText.includes(`grade ${i}`)) return "វិទ្យាល័យ"; }
+        if (normalizedText.includes("វិទ្យាល័យ") || normalizedText.includes("high school") || normalizedText.includes("បាក់ឌុប")) return "វិទ្យាល័យ";
+        for (let i = 7; i <= 9; i++) { if (normalizedText.includes(`ថ្នាក់ទី${i}`) || normalizedText.includes(`ទី${i}`) || normalizedText.includes(`ថ្នាក់${i}`) || normalizedText.includes(`grade ${i}`)) return "អនុវិទ្យាល័យ"; }
+        if (normalizedText.includes("អនុវិទ្យាល័យ") || normalizedText.includes("lower secondary") || normalizedText.includes("middle school")) return "អនុវិទ្យាល័យ";
+        for (let i = 1; i <= 6; i++) { if (normalizedText.includes(`ថ្នាក់ទី${i}`) || normalizedText.includes(`ទី${i}`) || normalizedText.includes(`ថ្នាក់${i}`)) return "បឋមសិក្សា"; }
+        if (normalizedText.includes("បឋម") || normalizedText.includes("primary") || normalizedText.includes("elementary")) return "បឋមសិក្សា";
+        if (normalizedText.includes("មិនបាន") || normalizedText.includes("អត់") || normalizedText.includes("none") || normalizedText.includes("no formal")) return "មិនបានសិក្សា";
+        return "ផ្សេងៗ";
+    };
 
     // --- Utility Functions ---
     const calculateAge = (dobString) => {
@@ -255,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("មិនមានទិន្នន័យគ្រួសារសម្រាប់បោះពុម្ពទេ។");
             return;
         }
-        khmerFontForAdminPDFLoaded = false; // Reset for each new PDF
+        khmerFontForAdminPDFLoaded = false;
 
         const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
         await loadKhmerFont(doc);
@@ -544,8 +613,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!totalVillagesAdminSpan || !totalFamiliesAdminSpan || !totalPeopleAdminSpan || !totalFemalesAdminSpan ||
             !totalInternalMigrantsAdminSpan || !totalExternalMigrantsAdminSpan ||
             !totalInternalMigrantsFemaleAdminSpan || !totalExternalMigrantsFemaleAdminSpan ||
-            !ageGroup18_35_AdminSpan || !ageGroup36_55_AdminSpan || !ageGroup56_65_AdminSpan || !ageGroup66Plus_AdminSpan ||
-            !ageGroup18_35_Female_AdminSpan || !ageGroup36_55_Female_AdminSpan || !ageGroup56_65_Female_AdminSpan || !ageGroup66Plus_Female_AdminSpan
+            !ageGroup0_2_AdminSpan || !ageGroup0_2_Female_AdminSpan ||
+            !ageGroup3_4_AdminSpan || !ageGroup3_4_Female_AdminSpan ||
+            !ageGroup5_5_AdminSpan || !ageGroup5_5_Female_AdminSpan ||
+            !ageGroup6_6_AdminSpan || !ageGroup6_6_Female_AdminSpan ||
+            !ageGroup7_11_AdminSpan || !ageGroup7_11_Female_AdminSpan ||
+            !ageGroup12_14_AdminSpan || !ageGroup12_14_Female_AdminSpan ||
+            !ageGroup15_17_AdminSpan || !ageGroup15_17_Female_AdminSpan ||
+            !ageGroup18_24_AdminSpan || !ageGroup18_24_Female_AdminSpan ||
+            !ageGroup25_35_AdminSpan || !ageGroup25_35_Female_AdminSpan ||
+            !ageGroup36_45_AdminSpan || !ageGroup36_45_Female_AdminSpan ||
+            !ageGroup46_60_AdminSpan || !ageGroup46_60_Female_AdminSpan ||
+            !ageGroup61_Plus_AdminSpan || !ageGroup61_Plus_Female_AdminSpan ||
+            !eduLevelUneducatedAdminSpan || !eduLevelUneducatedFemaleAdminSpan ||
+            !eduLevelPrimaryAdminSpan || !eduLevelPrimaryFemaleAdminSpan ||
+            !eduLevelLowerSecondaryAdminSpan || !eduLevelLowerSecondaryFemaleAdminSpan ||
+            !eduLevelHighSchoolAdminSpan || !eduLevelHighSchoolFemaleAdminSpan ||
+            !eduLevelBachelorAdminSpan || !eduLevelBachelorFemaleAdminSpan ||
+            !eduLevelSkillAdminSpan || !eduLevelSkillFemaleAdminSpan ||
+            !eduLevelPostgraduateAdminSpan || !eduLevelPostgraduateFemaleAdminSpan ||
+            !eduLevelOtherAdminSpan || !eduLevelOtherFemaleAdminSpan
         ) {
             console.warn("Admin Dashboard: One or more summary span elements are missing from the DOM.");
             return;
@@ -556,8 +643,24 @@ document.addEventListener('DOMContentLoaded', () => {
         let totalInternalMigrantsAll = 0, totalExternalMigrantsAll = 0;
         let femaleInternalMigrantsAll = 0, femaleExternalMigrantsAll = 0;
         let villageCount = Object.keys(getRegisteredVillages()).length;
-        let count18_35_All = 0, count36_55_All = 0, count56_65_All = 0, count66Plus_All = 0;
-        let count18_35_Female_All = 0, count36_55_Female_All = 0, count56_65_Female_All = 0, count66Plus_Female_All = 0;
+
+        let count0_2_All = 0, count0_2_Female_All = 0;
+        let count3_4_All = 0, count3_4_Female_All = 0;
+        let count5_5_All = 0, count5_5_Female_All = 0;
+        let count6_6_All = 0, count6_6_Female_All = 0;
+        let count7_11_All = 0, count7_11_Female_All = 0;
+        let count12_14_All = 0, count12_14_Female_All = 0;
+        let count15_17_All = 0, count15_17_Female_All = 0;
+        let count18_24_All = 0, count18_24_Female_All = 0;
+        let count25_35_All = 0, count25_35_Female_All = 0;
+        let count36_45_All = 0, count36_45_Female_All = 0;
+        let count46_60_All = 0, count46_60_Female_All = 0;
+        let count61_Plus_All = 0, count61_Plus_Female_All = 0;
+
+        const educationStatsAdmin = {};
+        Object.keys(trackedEducationLevels).forEach(eduKey => {
+            educationStatsAdmin[eduKey] = { total: 0, female: 0 };
+        });
 
         for (const villageNameKey in allVillageData) {
             if (allVillageData.hasOwnProperty(villageNameKey) && Array.isArray(allVillageData[villageNameKey])) {
@@ -578,20 +681,34 @@ document.addEventListener('DOMContentLoaded', () => {
                                 totalExternalMigrantsAll++;
                                 if (member.gender === 'ស្រី') femaleExternalMigrantsAll++;
                             }
+
                             const age = calculateAge(member.dob);
                             if (age !== null) {
-                                if (age >= 18 && age <= 35) {
-                                    count18_35_All++;
-                                    if (member.gender === 'ស្រី') count18_35_Female_All++;
-                                } else if (age >= 36 && age <= 55) {
-                                    count36_55_All++;
-                                    if (member.gender === 'ស្រី') count36_55_Female_All++;
-                                } else if (age >= 56 && age <= 65) {
-                                    count56_65_All++;
-                                    if (member.gender === 'ស្រី') count56_65_Female_All++;
-                                } else if (age >= 66) {
-                                    count66Plus_All++;
-                                    if (member.gender === 'ស្រី') count66Plus_Female_All++;
+                                if (age >= 0 && age <= 2) { count0_2_All++; if (member.gender === 'ស្រី') count0_2_Female_All++; }
+                                else if (age >= 3 && age <= 4) { count3_4_All++; if (member.gender === 'ស្រី') count3_4_Female_All++; }
+                                else if (age === 5) { count5_5_All++; if (member.gender === 'ស្រី') count5_5_Female_All++; }
+                                else if (age === 6) { count6_6_All++; if (member.gender === 'ស្រី') count6_6_Female_All++; }
+                                else if (age >= 7 && age <= 11) { count7_11_All++; if (member.gender === 'ស្រី') count7_11_Female_All++; }
+                                else if (age >= 12 && age <= 14) { count12_14_All++; if (member.gender === 'ស្រី') count12_14_Female_All++; }
+                                else if (age >= 15 && age <= 17) { count15_17_All++; if (member.gender === 'ស្រី') count15_17_Female_All++; }
+                                else if (age >= 18 && age <= 24) { count18_24_All++; if (member.gender === 'ស្រី') count18_24_Female_All++; }
+                                else if (age >= 25 && age <= 35) { count25_35_All++; if (member.gender === 'ស្រី') count25_35_Female_All++; }
+                                else if (age >= 36 && age <= 45) { count36_45_All++; if (member.gender === 'ស្រី') count36_45_Female_All++; }
+                                else if (age >= 46 && age <= 60) { count46_60_All++; if (member.gender === 'ស្រី') count46_60_Female_All++; }
+                                else if (age >= 61) { count61_Plus_All++; if (member.gender === 'ស្រី') count61_Plus_Female_All++; }
+                            }
+
+                            const educationLevelText = member.educationLevel || "";
+                            const categorizedEdu = categorizeEducation(educationLevelText);
+                            if (educationStatsAdmin[categorizedEdu]) {
+                                educationStatsAdmin[categorizedEdu].total++;
+                                if (member.gender === 'ស្រី') {
+                                    educationStatsAdmin[categorizedEdu].female++;
+                                }
+                            } else {
+                                educationStatsAdmin["ផ្សេងៗ"].total++;
+                                if (member.gender === 'ស្រី') {
+                                   educationStatsAdmin["ផ្សេងៗ"].female++;
                                 }
                             }
                         });
@@ -607,16 +724,54 @@ document.addEventListener('DOMContentLoaded', () => {
         if(totalInternalMigrantsFemaleAdminSpan) totalInternalMigrantsFemaleAdminSpan.textContent = femaleInternalMigrantsAll;
         totalExternalMigrantsAdminSpan.textContent = totalExternalMigrantsAll;
         if(totalExternalMigrantsFemaleAdminSpan) totalExternalMigrantsFemaleAdminSpan.textContent = femaleExternalMigrantsAll;
-        ageGroup18_35_AdminSpan.textContent = count18_35_All;
-        ageGroup36_55_AdminSpan.textContent = count36_55_All;
-        ageGroup56_65_AdminSpan.textContent = count56_65_All;
-        ageGroup66Plus_AdminSpan.textContent = count66Plus_All;
-        ageGroup18_35_Female_AdminSpan.textContent = count18_35_Female_All;
-        ageGroup36_55_Female_AdminSpan.textContent = count36_55_Female_All;
-        ageGroup56_65_Female_AdminSpan.textContent = count56_65_Female_All;
-        ageGroup66Plus_Female_AdminSpan.textContent = count66Plus_Female_All;
+
+        ageGroup0_2_AdminSpan.textContent = count0_2_All;
+        ageGroup0_2_Female_AdminSpan.textContent = count0_2_Female_All;
+        ageGroup3_4_AdminSpan.textContent = count3_4_All;
+        ageGroup3_4_Female_AdminSpan.textContent = count3_4_Female_All;
+        ageGroup5_5_AdminSpan.textContent = count5_5_All;
+        ageGroup5_5_Female_AdminSpan.textContent = count5_5_Female_All;
+        ageGroup6_6_AdminSpan.textContent = count6_6_All;
+        ageGroup6_6_Female_AdminSpan.textContent = count6_6_Female_All;
+        ageGroup7_11_AdminSpan.textContent = count7_11_All;
+        ageGroup7_11_Female_AdminSpan.textContent = count7_11_Female_All;
+        ageGroup12_14_AdminSpan.textContent = count12_14_All;
+        ageGroup12_14_Female_AdminSpan.textContent = count12_14_Female_All;
+        ageGroup15_17_AdminSpan.textContent = count15_17_All;
+        ageGroup15_17_Female_AdminSpan.textContent = count15_17_Female_All;
+        ageGroup18_24_AdminSpan.textContent = count18_24_All;
+        ageGroup18_24_Female_AdminSpan.textContent = count18_24_Female_All;
+        ageGroup25_35_AdminSpan.textContent = count25_35_All;
+        ageGroup25_35_Female_AdminSpan.textContent = count25_35_Female_All;
+        ageGroup36_45_AdminSpan.textContent = count36_45_All;
+        ageGroup36_45_Female_AdminSpan.textContent = count36_45_Female_All;
+        ageGroup46_60_AdminSpan.textContent = count46_60_All;
+        ageGroup46_60_Female_AdminSpan.textContent = count46_60_Female_All;
+        ageGroup61_Plus_AdminSpan.textContent = count61_Plus_All;
+        ageGroup61_Plus_Female_AdminSpan.textContent = count61_Plus_Female_All;
+
+        // Populate Education Stats Spans for Admin
+        if(eduLevelUneducatedAdminSpan) eduLevelUneducatedAdminSpan.textContent = educationStatsAdmin["មិនបានសិក្សា"].total;
+        if(eduLevelUneducatedFemaleAdminSpan) eduLevelUneducatedFemaleAdminSpan.textContent = educationStatsAdmin["មិនបានសិក្សា"].female;
+        if(eduLevelPrimaryAdminSpan) eduLevelPrimaryAdminSpan.textContent = educationStatsAdmin["បឋមសិក្សា"].total;
+        if(eduLevelPrimaryFemaleAdminSpan) eduLevelPrimaryFemaleAdminSpan.textContent = educationStatsAdmin["បឋមសិក្សា"].female;
+        if(eduLevelLowerSecondaryAdminSpan) eduLevelLowerSecondaryAdminSpan.textContent = educationStatsAdmin["អនុវិទ្យាល័យ"].total;
+        if(eduLevelLowerSecondaryFemaleAdminSpan) eduLevelLowerSecondaryFemaleAdminSpan.textContent = educationStatsAdmin["អនុវិទ្យាល័យ"].female;
+        if(eduLevelHighSchoolAdminSpan) eduLevelHighSchoolAdminSpan.textContent = educationStatsAdmin["វិទ្យាល័យ"].total;
+        if(eduLevelHighSchoolFemaleAdminSpan) eduLevelHighSchoolFemaleAdminSpan.textContent = educationStatsAdmin["វិទ្យាល័យ"].female;
+        if(eduLevelBachelorAdminSpan) eduLevelBachelorAdminSpan.textContent = educationStatsAdmin["បរិញ្ញាបត្រ"].total;
+        if(eduLevelBachelorFemaleAdminSpan) eduLevelBachelorFemaleAdminSpan.textContent = educationStatsAdmin["បរិញ្ញាបត្រ"].female;
+        if(eduLevelSkillAdminSpan) eduLevelSkillAdminSpan.textContent = educationStatsAdmin["ជំនាញ"].total;
+        if(eduLevelSkillFemaleAdminSpan) eduLevelSkillFemaleAdminSpan.textContent = educationStatsAdmin["ជំនាញ"].female;
+        if(eduLevelPostgraduateAdminSpan) eduLevelPostgraduateAdminSpan.textContent = educationStatsAdmin["លើសបរិញ្ញាបត្រ"].total;
+        if(eduLevelPostgraduateFemaleAdminSpan) eduLevelPostgraduateFemaleAdminSpan.textContent = educationStatsAdmin["លើសបរិញ្ញាបត្រ"].female;
+        if(eduLevelOtherAdminSpan) eduLevelOtherAdminSpan.textContent = educationStatsAdmin["ផ្សេងៗ"].total;
+        if(eduLevelOtherFemaleAdminSpan) eduLevelOtherFemaleAdminSpan.textContent = educationStatsAdmin["ផ្សេងៗ"].female;
+
         displayGlobalAssetSummary(allVillageData);
     };
+
+    // --- (Rest of the functions: openEditFamilyModalForAdmin, editFamilyForm submit, etc. are the same as the previous complete version)
 
     const openEditFamilyModalForAdmin = (villageNameCtx, familyId, familyData) => {
         if (!familyData || typeof familyData !== 'object') {
@@ -918,7 +1073,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkAndShowPrintButton = (villageName) => {
         // This function is no longer relevant for a global print button.
     };
-    checkAndShowPrintButton(); // Call to potentially hide any old global print button if its ID still exists in HTML
+    checkAndShowPrintButton();
 
 
     const loadAndDisplayActivityLog = () => {
