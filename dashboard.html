@@ -6,33 +6,40 @@
     <title>ផ្ទាំងគ្រប់គ្រងទិន្នន័យភូមិ</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Khmer+OS+Siemreap&display=swap" rel="stylesheet">
+
+    <!-- jsPDF Core Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF AutoTable Plugin - ADDED HERE -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
     <div class="container">
         <header class="dashboard-header">
-            <h1 id="dashboard-title">ផ្ទាំងគ្រប់គ្រងទិន្នន័យភូមិ [...]</h1>
+            <h1 id="dashboard-title">ផ្ទាំងគ្រប់គ្រងទិន្នន័យភូមិ</h1>
             <div>
-                 <button id="back-to-admin-button" style="display: none; background-color: #6c757d; margin-right: 10px;">ត្រឡប់ទៅ Admin Dashboard</button>
-                 <button id="logout-button">ចាកចេញ</button>
+                <button id="back-to-admin-button" style="display: none; margin-right:10px; background-color: #6c757d;">ត្រឡប់ទៅ Admin Dashboard</button>
+                <button id="logout-button">ចាកចេញ</button>
             </div>
         </header>
         <p id="welcome-message">សូមស្វាគមន៍!</p>
-        <p id="current-date-time" class="date-time-display"></p>
-        <div id="admin-view-notice" style="display: none; background-color: #fff3cd; color: #856404; padding: 10px; border: 1px solid #ffeeba; border-radius: 4px; margin-bottom: 15px;">
-            ⚠️ អ្នកកំពុងមើលទិន្នន័យនេះក្នុងនាមជា Admin។ អ្នកអាចកែសម្រួល ឬលុបបាន ប៉ុន្តែមិនអាចបញ្ចូលទិន្នន័យថ្មីពីទីនេះបានទេ។
+        <p id="current-date-time" class="date-time-display" style="text-align: center; margin-top: 5px; margin-bottom: 20px; font-size: 0.95em; color: #444;"></p>
+        <div id="admin-view-notice" style="display:none; background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin-bottom:15px; border: 1px solid #ffeeba;">
+            <strong>កំណត់សម្គាល់:</strong> អ្នកកំពុងមើលទិន្នន័យនេះក្នុងនាមជា Admin។ ការកែសម្រួល ឬលុបទិន្នន័យនឹងត្រូវបានអនុវត្តដោយផ្ទាល់។
         </div>
-        <div id="village-edit-permission-notice" style="display: none; background-color: #d1ecf1; color: #0c5460; padding: 10px; border: 1px solid #bee5eb; border-radius: 4px; margin-bottom: 15px;">
+         <div id="village-edit-permission-notice" style="display:none; background-color: #d1ecf1; color: #0c5460; padding: 10px; border-radius: 5px; margin-bottom:15px; border: 1px solid #bee5eb;">
+            <!-- Content will be set by JS -->
         </div>
-         <div class="summary-stats" id="village-summary-stats">
+
+        <div class="summary-stats">
             <h3>ស្ថិតិភូមិ <span id="current-village-name-stats"></span></h3>
             <p>ចំនួនគ្រួសារសរុប: <span id="total-families-village">0</span></p>
             <p>ចំនួនប្រជាជនសរុប: <span id="total-people-village">0</span></p>
             <p>ចំនួនស្រីសរុប: <span id="total-females-village">0</span></p>
-            <p>ចំនួនចំណាកស្រុកក្នុង : <span id="total-internal-migrants-village">0</span> នាក់ (ស្រី: <span id="total-internal-migrants-female-village">0</span>)</p>
-            <p>ចំនួនចំណាកស្រុកក្រៅ : <span id="total-external-migrants-village">0</span> នាក់ (ស្រី: <span id="total-external-migrants-female-village">0</span>)</p>
-            <p>ទិន្នន័យបញ្ចូលថ្ងៃនេះ: <span id="today-entries-village">0</span> គ្រួសារ</p>
-            <hr style="margin: 10px 0; border-color: #cce5ff;">
-            <p style="font-weight:bold; color: #004085; margin-top:10px;">ស្ថិតិតាមក្រុមអាយុ (ក្នុងភូមិ):</p>
+            <p>ចំនួនគ្រួសារបញ្ចូលថ្ងៃនេះ: <span id="today-entries-village">0</span></p>
+            <p>ចំនួនចំណាកស្រុកក្នុងសរុប: <span id="total-internal-migrants-village">0</span> នាក់ (ស្រី: <span id="total-internal-migrants-female-village">0</span>)</p>
+            <p>ចំនួនចំណាកស្រុកក្រៅសរុប: <span id="total-external-migrants-village">0</span> នាក់ (ស្រី: <span id="total-external-migrants-female-village">0</span>)</p>
+             <hr style="margin: 10px 0; border-color: #ddd;">
+            <p style="font-weight:bold; color: #0056b3; margin-top:10px;">ស្ថិតិតាមក្រុមអាយុ (ភូមិ <span class="current-village-name-dynamic"></span>):</p>
             <p>  អាយុ 0 - 2 ឆ្នាំ: <span id="age-group-0-2-village">0</span> នាក់ (ស្រី: <span id="age-group-0-2-female-village">0</span>)</p>
             <p>  អាយុ 3 - 4 ឆ្នាំ: <span id="age-group-3-4-village">0</span> នាក់ (ស្រី: <span id="age-group-3-4-female-village">0</span>)</p>
             <p>  អាយុ 5 ឆ្នាំ: <span id="age-group-5-5-village">0</span> នាក់ (ស្រី: <span id="age-group-5-5-female-village">0</span>)</p>
@@ -46,23 +53,21 @@
             <p>  អាយុ 46 - 60 ឆ្នាំ: <span id="age-group-46-60-village">0</span> នាក់ (ស្រី: <span id="age-group-46-60-female-village">0</span>)</p>
             <p>  អាយុ 61+ ឆ្នាំ: <span id="age-group-61-plus-village">0</span> នាក់ (ស្រី: <span id="age-group-61-plus-female-village">0</span>)</p>
 
-            <!-- Occupation Stats Section is REMOVED -->
-
-            <hr style="margin: 15px 0; border-color: #cce5ff;">
-            <p style="font-weight:bold; color: #004085; margin-top:10px;">ស្ថិតិកម្រិតវប្បធម៌ (ក្នុងភូមិ):</p>
-            <!----p>  មិនបានសិក្សា: <span id="edu-level-uneducated-village">0</span> នាក់ (ស្រី: <span id="edu-level-uneducated-female-village">0</span>)</p--->
+            <hr style="margin: 15px 0; border-color: #ddd;">
+            <p style="font-weight:bold; color: #0056b3; margin-top:10px;">ស្ថិតិកម្រិតវប្បធម៌ (ភូមិ <span class="current-village-name-dynamic"></span>):</p>
+            <!---p>  មិនបានសិក្សា: <span id="edu-level-uneducated-village">0</span> នាក់ (ស្រី: <span id="edu-level-uneducated-female-village">0</span>)</p---->
             <p>  បឋមសិក្សា (ថ្នាក់ទី ១-៦): <span id="edu-level-primary-village">0</span> នាក់ (ស្រី: <span id="edu-level-primary-female-village">0</span>)</p>
             <p>  អនុវិទ្យាល័យ (ថ្នាក់ទី ៧-៩): <span id="edu-level-lower-secondary-village">0</span> នាក់ (ស្រី: <span id="edu-level-lower-secondary-female-village">0</span>)</p>
             <p>  វិទ្យាល័យ (ថ្នាក់ទី ១០-១២): <span id="edu-level-high-school-village">0</span> នាក់ (ស្រី: <span id="edu-level-high-school-female-village">0</span>)</p>
             <p>  បរិញ្ញាបត្រ: <span id="edu-level-bachelor-village">0</span> នាក់ (ស្រី: <span id="edu-level-bachelor-female-village">0</span>)</p>
-            <!---p>  ជំនាញ: <span id="edu-level-skill-village">0</span> នាក់ (ស្រី: <span id="edu-level-skill-female-village">0</span>)</p--->
-            <!---p>  លើសបរិញ្ញាបត្រ: <span id="edu-level-postgraduate-village">0</span> នាក់ (ស្រី: <span id="edu-level-postgraduate-female-village">0</span>)</p--->
+            <!----p>  ជំនាញ: <span id="edu-level-skill-village">0</span> នាក់ (ស្រី: <span id="edu-level-skill-female-village">0</span>)</p>
+            <p>  លើសបរិញ្ញាបត្រ: <span id="edu-level-postgraduate-village">0</span> នាក់ (ស្រី: <span id="edu-level-postgraduate-female-village">0</span>)</p---->
             <p>  ផ្សេងៗ: <span id="edu-level-other-village">0</span> នាក់ (ស្រី: <span id="edu-level-other-female-village">0</span>)</p>
         </div>
-        <hr>
+         <hr>
 
         <div class="asset-summary-section">
-            <h3>សរុបទ្រព្យសម្បត្តិ និងអាជីវកម្មក្នុងភូមិ <span id="current-village-name-assets"></span></h3>
+            <h3>សរុបទ្រព្យសម្បត្តិ និងអាជីវកម្ម (ភូមិ <span id="current-village-name-assets"></span>)</h3>
             <table id="village-asset-summary-table">
                 <thead><tr><th>ប្រភេទ</th><th>ចំនួនសរុប</th></tr></thead>
                 <tbody id="village-asset-summary-tbody"><tr><td colspan="2"><em>កំពុងគណនា...</em></td></tr></tbody>
@@ -71,12 +76,12 @@
         <hr>
 
         <div id="data-input-section">
-             <h2><button id="toggle-form-button">បង្ហាញទម្រង់បញ្ចូលទិន្នន័យគ្រួសារថ្មី</button></h2>
-             <form id="family-data-entry-form" style="display:none;">
-                 <fieldset>
+            <button id="toggle-form-button">បង្ហាញទម្រង់បញ្ចូលទិន្នន័យគ្រួសារថ្មី</button>
+            <form id="family-data-entry-form" style="display: none;">
+                <fieldset>
                     <legend>ព័ត៌មានមេគ្រួសារ</legend>
                     <label for="family-head-name">ឈ្មោះមេគ្រួសារ (ឬឈ្មោះតំណាងគ្រួសារ):</label>
-                    <input type="text" id="family-head-name" required placeholder="ឧទាហរណ៍: លោក សុខ បុនណា (ប្ដី)">
+                    <input type="text" id="family-head-name" required placeholder="ឧទាហរណ៍: លោក សុខ ឧត្ដម (ប្ដី)">
                     <label for="family-head-phone">លេខទូរស័ព្ទមេគ្រួសារ (បើមាន):</label>
                     <input type="tel" id="family-head-phone" placeholder="092893535">
                 </fieldset>
@@ -85,7 +90,7 @@
                     <div id="member-fields-container">
                         <div class="member-entry" data-member-index="0">
                             <h4>សមាជិកទី 1</h4>
-                            <label>ឈ្មោះ:</label> <input type="text" class="member-name" required>
+                            <label>គោត្តនាម-នាមខ្លួន:</label> <input type="text" class="member-name" required >
                             <label>ភេទ:</label> <select class="member-gender"> <option value="ប្រុស">ប្រុស</option> <option value="ស្រី">ស្រី</option> </select>
                             <label>ថ្ងៃខែឆ្នាំកំណើត:</label> <input type="date" class="member-dob">
                             <label>ខេត្តកំណើត:</label> <input type="text" class="member-birthProvince">
@@ -102,61 +107,59 @@
                 </fieldset>
                 <fieldset>
                     <legend>ទ្រព្យសម្បត្តិ និងអាជីវកម្ម</legend>
-                    <p><i>(ប្រសិនបើគ្មាន សូមទុកលេខ 0 ឬវាលទំនេរ)</i></p>
                     <div class="asset-grid">
-                          <div><label for="largeTrucks">រថយន្ដធំ:</label> <input type="number" id="largeTrucks" value="0" min="0"></div>
-                          <div><label for="smallCars">រថយន្តតូច:</label> <input type="number" id="smallCars" value="0" min="0"></div>
-                          <div><label for="modifiedVehicles">រថយន្ដកែឆ្នៃ:</label> <input type="number" id="modifiedVehicles" value="0" min="0"></div>
-                          <div><label for="tractors">ត្រាក់ទ័រ:</label> <input type="number" id="tractors" value="0" min="0"></div>
-                          <div><label for="kubotas">គោយន្ដកន្ត្រៃ:</label> <input type="number" id="kubotas" value="0" min="0"></div>
-                          <div><label for="riceHarvesters">ម៉ាស៊ីនច្រូតស្រូវ:</label> <input type="number" id="riceHarvesters" value="0" min="0"></div>
-                          <div><label for="riceMills">ម៉ាស៊ីនកិនស្រូវ:</label> <input type="number" id="riceMills" value="0" min="0"></div>
-                          <div><label for="waterPumpsWells">អណ្ដូងស្នប់:</label> <input type="number" id="waterPumpsWells" value="0" min="0"></div>
-                          <div><label for="ponds">ផ្ទះលក់ថ្នាំពេទ្យ(គ្រូពេទ្យ):</label> <input type="number" id="ponds" value="0" min="0"></div>
-                          <div><label for="residentialLandSize">ទំហំដីលំនៅដ្ឋាន(មេត្រការ៉េ):</label> <input type="text" id="residentialLandSize" placeholder="0"></div>
-                          <div><label for="paddyLandSize">ទំហំដីស្រែ:</label> <input type="text" id="paddyLandSize" placeholder="0"></div>
-                          <div><label for="plantationLandSize">ដីចំការ (ផ្សេងៗ):</label> <input type="text" id="plantationLandSize" placeholder="0"></div>
-                          <div><label for="coconutLandSize">ដីចំការដូង:</label> <input type="text" id="coconutLandSize" placeholder="0"></div>
-                          <div><label for="mangoLandSize">ដីចំការស្វាយ:</label> <input type="text" id="mangoLandSize" placeholder="0"></div>
-                          <div><label for="cashewLandSize">ដីចំការស្វាយចន្ទី:</label> <input type="text" id="cashewLandSize" placeholder="0"></div>
-                          <div><label for="livestockLandSize">ដីចំការមាន:</label> <input type="text" id="livestockLandSize" placeholder="0"></div>
-                          <div><label for="vehicleRepairShops">ជាងជួសជុល(ម៉ូតូ+ឡាន):</label> <input type="number" id="vehicleRepairShops" value="0" min="0"></div>
-                          <div><label for="groceryStores">ផ្ទះលក់ចាប់ហួយ:</label> <input type="number" id="groceryStores" value="0" min="0"></div>
-                          <div><label for="mobilePhoneShops">ផ្ទះលក់ទូស័ព្ទដៃ:</label> <input type="number" id="mobilePhoneShops" value="0" min="0"></div>
-                          <div><label for="constructionMaterialDepots">ដេប៉ូលក់គ្រឿងសំណង់:</label> <input type="number" id="constructionMaterialDepots" value="0" min="0"></div>
-                          <div><label for="fuelDepots">ដេប៉ូប្រេង:</label> <input type="number" id="fuelDepots" value="0" min="0"></div>
-                          <div><label for="beautySalons">ផ្ទះសម្អាងការ(សាឡន):</label> <input type="number" id="beautySalons" value="0" min="0"></div>
-                          <div><label for="motorcycles">ម៉ូតូ:</label> <input type="number" id="motorcycles" value="0" min="0"></div>
-                          <div><label for="tukTuks">ម៉ូតូកង់បី+ម៉ូតូសណ្ដោងរម៉ក់:</label> <input type="number" id="tukTuks" value="0" min="0"></div>
-                          <div><label for="remorques">ផ្ទះលក់គ្រឿងកសិកម្ម:</label> <input type="number" id="remorques" value="0" min="0"></div>
+                        <div><label for="largeTrucks">រថយន្ដធំ:</label> <input type="number" id="largeTrucks" value="0" min="0"></div>
+                        <div><label for="smallCars">រថយន្តតូច:</label> <input type="number" id="smallCars" value="0" min="0"></div>
+                        <div><label for="modifiedVehicles">រថយន្ដកែឆ្នៃ:</label> <input type="number" id="modifiedVehicles" value="0" min="0"></div>
+                        <div><label for="tractors">ត្រាក់ទ័រ:</label> <input type="number" id="tractors" value="0" min="0"></div>
+                        <div><label for="kubotas">គោយន្ដកន្ត្រៃ:</label> <input type="number" id="kubotas" value="0" min="0"></div>
+                        <div><label for="riceHarvesters">ម៉ាស៊ីនច្រូតស្រូវ:</label> <input type="number" id="riceHarvesters" value="0" min="0"></div>
+                        <div><label for="riceMills">ម៉ាស៊ីនកិនស្រូវ:</label> <input type="number" id="riceMills" value="0" min="0"></div>
+                        <div><label for="waterPumpsWells">អណ្ដូងស្នប់:</label> <input type="number" id="waterPumpsWells" value="0" min="0"></div>
+                        <div><label for="ponds">ផ្ទះលក់ថ្នាំពេទ្យ(គ្រូពេទ្យ):</label> <input type="number" id="ponds" value="0" min="0"></div>
+                        <div><label for="residentialLandSize">ទំហំដីលំនៅដ្ឋាន(ម៉ែត្រការ៉េ):</label> <input type="text" id="residentialLandSize" placeholder="ឧ: 100m2, 0.5ha"></div>
+                        <div><label for="paddyLandSize">ទំហំដីស្រែ (ហិចតា):</label> <input type="text" id="paddyLandSize" placeholder="ឧ: 2ha"></div>
+                        <div><label for="plantationLandSize">ដីចំការ (ផ្សេងៗ) (ហិចតា):</label> <input type="text" id="plantationLandSize" placeholder="ឧ: 1.5ha"></div>
+                        <div><label for="coconutLandSize">ដីចំការដូង (ហិចតា):</label> <input type="text" id="coconutLandSize" placeholder="ឧ: 1ha"></div>
+                        <div><label for="mangoLandSize">ដីចំការស្វាយ (ហិចតា):</label> <input type="text" id="mangoLandSize" placeholder="ឧ: 3ha"></div>
+                        <div><label for="cashewLandSize">ដីចំការស្វាយចន្ទី (ហិចតា):</label> <input type="text" id="cashewLandSize" placeholder="ឧ: 5ha"></div>
+                        <div><label for="livestockLandSize">ដីចំការមាន់ (ហិចតា):</label> <input type="text" id="livestockLandSize" placeholder="ឧ: 0.5ha"></div>
+                        <div><label for="vehicleRepairShops">ជាងជួសជុល(ម៉ូតូ+ឡាន):</label> <input type="number" id="vehicleRepairShops" value="0" min="0"></div>
+                        <div><label for="groceryStores">ផ្ទះលក់ចាប់ហួយ:</label> <input type="number" id="groceryStores" value="0" min="0"></div>
+                        <div><label for="mobilePhoneShops">ផ្ទះលក់ទូស័ព្ទដៃ:</label> <input type="number" id="mobilePhoneShops" value="0" min="0"></div>
+                        <div><label for="constructionMaterialDepots">ដេប៉ូលក់គ្រឿងសំណង់:</label> <input type="number" id="constructionMaterialDepots" value="0" min="0"></div>
+                        <div><label for="fuelDepots">ដេប៉ូប្រេង:</label> <input type="number" id="fuelDepots" value="0" min="0"></div>
+                        <div><label for="beautySalons">ផ្ទះសម្អាងការ(សាឡន):</label> <input type="number" id="beautySalons" value="0" min="0"></div>
+                        <div><label for="motorcycles">ម៉ូតូ:</label> <input type="number" id="motorcycles" value="0" min="0"></div>
+                        <div><label for="tukTuks">ម៉ូតូកង់បី+ម៉ូតូសណ្ដោងរម៉ក់:</label> <input type="number" id="tukTuks" value="0" min="0"></div>
+                        <div><label for="remorques">ផ្ទះលក់គ្រឿងកសិកម្ម:</label> <input type="number" id="remorques" value="0" min="0"></div>
                     </div>
                 </fieldset>
-                 <button type="submit" id="submit-family-data">បញ្ជូនទិន្នន័យគ្រួសារ</button>
+                <button type="submit" id="submit-family-data">រក្សាទុកទិន្នន័យគ្រួសារ</button>
                 <p id="data-entry-success" class="success-message"></p>
                 <p id="data-entry-error" class="error-message"></p>
             </form>
         </div>
         <hr>
 
-        <div class="search-section">
-            <h2>ស្វែងរកទិន្នន័យក្នុងភូមិ</h2>
-            <input type="text" id="search-village-input" placeholder="វាយបញ្ចូលឈ្មោះមេគ្រួសារ, សមាជិក, ឬលេខអត្តសញ្ញាណប័ណ្ណ...">
+        <h2>បញ្ជីទិន្នន័យគ្រួសារដែលបានបញ្ជូលភូមិ <span class="current-village-name-dynamic"></span></h2>
+        <div class="search-section" style="background-color: #f0f8ff; border-color: #cce5ff;">
+             <h2 style="color:#004085;">ស្វែងរកក្នុងភូមិ <span class="current-village-name-dynamic"></span></h2>
+            <input type="text" id="search-village-input" placeholder="វាយបញ្ចូលឈ្មោះមេគ្រួសារ, សមាជិក, លេខអត្តសញ្ញាណប័ណ្ណ...">
             <button id="search-village-button">ស្វែងរក</button>
         </div>
-
-        <h2>បញ្ជីទិន្នន័យគ្រួសារដែលបានបញ្ចូល</h2>
-        <div id="family-data-display-area">
-            <p id="no-family-data-message">មិនទាន់មានទិន្នន័យគ្រួសារដែលបានបញ្ចូលទេ...</p>
-            <div id="family-list-container"></div>
-        </div>
+        <div id="family-list-container"></div>
+        <p id="no-family-data-message" style="display: none;">មិនទាន់មានទិន្នន័យគ្រួសារទេ។</p>
     </div>
 
+    <!-- Edit Family Modal (Admin Style, but used by Village Chief with permission) -->
     <div id="edit-family-modal-admin" class="modal">
         <div class="modal-content">
             <span class="close-button" id="close-edit-family-modal-admin">×</span>
-            <h2>កែសម្រួលទិន្នន័យគ្រួសារ</h2>
+            <h2 id="edit-modal-title">កែសម្រួលទិន្នន័យគ្រួសារ</h2>
             <form id="edit-family-form-admin">
-                <input type="hidden" id="edit-family-id-admin"><input type="hidden" id="edit-family-village-admin">
+                <input type="hidden" id="edit-family-id-admin">
+                <input type="hidden" id="edit-family-village-admin">
                 <fieldset>
                     <legend>ព័ត៌មានគ្រួសារ (កែសម្រួល)</legend>
                     <label for="edit-family-head-name-admin">ឈ្មោះមេគ្រួសារ:</label>
@@ -166,12 +169,16 @@
                 </fieldset>
                 <fieldset id="edit-family-members-section-admin">
                     <legend>សមាជិកគ្រួសារ (កែសម្រួល)</legend>
-                    <div id="edit-family-members-container-admin"></div>
+                    <div id="edit-family-members-container-admin">
+                        <!-- Member entries will be populated by JS -->
+                    </div>
                     <button type="button" id="add-member-to-edit-form-admin">បន្ថែមសមាជិក (កែសម្រួល)</button>
                 </fieldset>
                 <fieldset>
                     <legend>ទ្រព្យសម្បត្តិ និងអាជីវកម្ម (កែសម្រួល)</legend>
-                    <div id="edit-family-assets-container-admin" class="asset-grid"></div>
+                    <div id="edit-family-assets-container-admin" class="asset-grid">
+                        <!-- Asset fields will be populated by JS -->
+                    </div>
                 </fieldset>
                 <button type="submit">រក្សាទុកការផ្លាស់ប្តូរ</button>
                 <p id="edit-family-error-admin" class="error-message"></p>
@@ -182,7 +189,9 @@
 
     <template id="family-card-template">
         <div class="family-card">
-            <h3 class="family-card-name"></h3><p class="family-card-phone" style="font-size: 0.9em; color: #444; margin-top: -15px; margin-bottom: 10px;"></p><p class="family-card-entry-date"></p>
+            <h3 class="family-card-name"></h3>
+            <p class="family-card-phone" style="font-size:0.9em; color:#555;"></p>
+            <p class="family-card-entry-date"></p>
             <h4>សមាជិក (<span class="family-member-count"></span>)</h4>
             <table class="members-table">
                 <thead><tr><th>ឈ្មោះ</th><th>ភេទ</th><th>ថ្ងៃខែឆ្នាំកំណើត</th><th>ខេត្តកំណើត</th><th>កម្រិតវប្បធម៌</th><th>មុខរបរ</th><th>លេខ<br>អត្ត-<br>សញ្ញាណ-<br>ប័ណ្ណ</th><th>លេខ<br>ការិយា-<br>ល័យ<br>បោះឆ្នោត</th><th>ចំណាក-<br>ស្រុក-<br>ក្នុង</th><th>ចំណាក-<br>ស្រុក-<br>ក្រៅ</th></tr></thead>
@@ -193,30 +202,48 @@
             <div class="family-card-actions" style="display:none;">
                 <button class="edit-family-button action-button">កែសម្រួល</button>
                 <button class="delete-family-button action-button">លុប</button>
-                <button class="print-family-button-village action-button" style="background-color: #17a2b8;">បោះពុម្ពគ្រួសារនេះ</button>
+                <button class="print-family-button-village action-button" style="background-color: #17a2b8; display:none;">បោះពុម្ពគ្រួសារនេះ</button>
             </div>
         </div>
     </template>
 
+    <!-- Edit Member Template (Admin Style, but used by Village Chief with permission) -->
     <template id="edit-member-template-admin">
         <div class="member-entry" data-member-id="">
             <h4>សមាជិក (កែសម្រួល) <button type="button" class="remove-member-edit-button" title="ដកសមាជិកនេះចេញ">×</button></h4>
             <input type="hidden" class="member-original-id-edit">
             <div><label>ឈ្មោះ:</label> <input type="text" class="member-name-edit" required></div>
-            <div><label>ភេទ:</label><select class="member-gender-edit"><option value="ប្រុស">ប្រុស</option><option value="ស្រី">ស្រី</option></select></div>
+            <div><label>ភេទ:</label>
+                <select class="member-gender-edit">
+                    <option value="ប្រុស">ប្រុស</option>
+                    <option value="ស្រី">ស្រី</option>
+                </select>
+            </div>
             <div><label>ថ្ងៃខែឆ្នាំកំណើត:</label> <input type="date" class="member-dob-edit"></div>
             <div><label>ខេត្តកំណើត:</label> <input type="text" class="member-birthProvince-edit"></div>
             <div><label>កម្រិតវប្បធម៌:</label> <input type="text" class="member-educationLevel-edit"></div>
             <div><label>មុខរបរ:</label> <input type="text" class="member-occupation-edit"></div>
-            <div><label>លេខអត្តសញ្ញាណប័ណ្ណ:</label> <input type="text" class="member-nationalId-edit"></div>
-            <div><label>លេខការិយាល័យបោះឆ្នោត:</label> <input type="text" class="member-electionOfficeId-edit"></div>
-            <div><label>ចំណាកស្រុកក្នុង:</label><select class="member-internalMigration-edit"><option value="ទេ">ទេ</option><option value="បាទ">បាទ</option></select></div>
-            <div><label>ចំណាកស្រុកក្រៅ:</label><select class="member-externalMigration-edit"><option value="ទេ">ទេ</option><option value="បាទ">បាទ</option></select></div>
+            <div><label>លេខអត្តសញ្ញាណប័ណ្ណ:</label> <input type="text" class="member-nationalId-edit" maxlength="9"></div>
+            <div><label>លេខការិយាល័យបោះឆ្នោត:</label> <input type="text" class="member-electionOfficeId-edit" maxlength="4"></div>
+            <div>
+                <label>ចំណាកស្រុកក្នុង:</label>
+                <select class="member-internalMigration-edit">
+                    <option value="ទេ">ទេ</option>
+                    <option value="បាទ">បាទ</option>
+                </select>
+            </div>
+            <div>
+                <label>ចំណាកស្រុកក្រៅ:</label>
+                <select class="member-externalMigration-edit">
+                    <option value="ទេ">ទេ</option>
+                    <option value="បាទ">បាទ</option>
+                </select>
+            </div>
             <hr class="member-divider">
         </div>
     </template>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Your custom dashboard script - This should be at the end of the body -->
     <script src="dashboard.js"></script>
 </body>
 </html>
