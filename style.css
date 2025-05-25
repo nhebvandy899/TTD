@@ -60,14 +60,14 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 #admin-village-list-section #village-table th {background-color: #f2f2f2;}
 #admin-village-list-section #village-table button {padding: 5px 10px; font-size: 12px; background-color: #17a2b8; color: white; border: none; border-radius: 3px; cursor: pointer;}
 #admin-village-list-section #village-table button:hover {background-color: #138496;}
-#admin-village-list-section .permission-toggle-button { /* Specific style for permission button */
+#admin-village-list-section .permission-toggle-button {
     padding: 4px 8px;
     font-size: 0.85em;
     color: white;
     border: none;
     border-radius: 3px;
     cursor: pointer;
-    min-width: 90px; /* Ensure buttons have similar width */
+    min-width: 90px;
 }
 #selected-village-name-admin {text-align: left; margin-bottom: 10px;}
 .modal {display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); padding-top: 30px;}
@@ -87,7 +87,6 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 #daily-report-content li {padding: 5px 0; border-bottom: 1px dotted #ddd;}
 #daily-report-content li:last-child {border-bottom: none;}
 #search-family-input, #search-village-input {margin-bottom: 10px;}
-/* Styles for Asset Summary Tables */
 .asset-summary-section {background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #dee2e6;}
 .asset-summary-section h3 {margin-top: 0; text-align: left; color: #495057; font-size: 1.1em; margin-bottom: 10px;}
 #village-asset-summary-table, #admin-asset-summary-table {width: 100%; border-collapse: collapse; font-size: 0.9em;}
@@ -96,3 +95,37 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 #village-asset-summary-table tr:nth-child(even), #admin-asset-summary-table tr:nth-child(even) {background-color: #fff;}
 #village-asset-summary-tbody td:last-child, #admin-asset-summary-tbody td:last-child {text-align: right; font-weight: bold;}
 .container::after {content: ""; clear: both; display: table;}
+
+/* --- Styles for Permission Notice on Dashboard --- */
+#village-edit-permission-notice {
+    /* display:none; Initially hidden, JS will show it - This base style is important */
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom:15px;
+    border: 1px solid #ccc; /* Default border, will be overridden by specific classes below */
+    font-weight: 500; /* Makes text a bit bolder */
+    line-height: 1.5; /* Improves readability if message wraps */
+}
+
+#village-edit-permission-notice.has-permission {
+    color: #155724; /* Dark Green for text */
+    background-color: #d4edda; /* Light Green background */
+    border-color: #c3e6cb; /* Greenish border */
+}
+
+#village-edit-permission-notice.no-permission {
+    color: #721c24; /* Dark Red for text */
+    background-color: #f8d7da; /* Light Red background */
+    border-color: #f5c6cb; /* Reddish border */
+}
+
+/* Existing admin view notice style - this should not conflict */
+#admin-view-notice {
+    display:none; /* JS controls visibility */
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom:15px;
+    border: 1px solid #ffeeba;
+}
