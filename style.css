@@ -15,14 +15,64 @@ button:hover {background-color: #0056b3;}
 a {color: #007bff; text-decoration: none;}
 a:hover {text-decoration: underline;}
 hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
+
+/* Dashboard Header Styles */
 .dashboard-header {display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;}
 .dashboard-header h1 {margin-bottom: 0; text-align: left;}
+
+/* Styles for Icon Button (like the bell) */
+.icon-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    transition: background-color 0.3s ease;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+.icon-button:hover {
+    background-color: #218838;
+}
+.icon-button img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.unread-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    padding: 1px 5px;
+    font-size: 0.7em;
+    font-weight: bold;
+    border: 1px solid white;
+    min-width: 16px;
+    height: 16px;
+    line-height: 14px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* Summary Stats Styles */
 .summary-stats {background-color: #e9f5ff; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #b3d7ff;}
 .summary-stats h3 {margin-top: 0; color: #0056b3; text-align: left;}
 .summary-stats p {margin: 5px 0; font-size: 0.95em;}
 .summary-stats span {font-weight: bold;}
 .admin-summary-stats {background-color: #fff3cd; border-color: #ffeeba;}
 .admin-summary-stats h3 {color: #856404;}
+
+/* Form and Fieldset Styles */
 #family-data-entry-form fieldset, #edit-family-form-admin fieldset {border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px;}
 #family-data-entry-form legend, #edit-family-form-admin legend {font-weight: bold; color: #333; padding: 0 10px;}
 .member-entry {border: 1px dashed #eee; padding: 10px; margin-bottom: 15px; background-color: #f9f9f9; border-radius: 4px; position: relative;}
@@ -35,10 +85,14 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 #submit-family-data {background-color: #007bff; width: 100%; padding: 12px; font-size: 1.1em;}
 #toggle-form-button {margin-bottom: 15px; background-color: #6c757d; display: block; width: 100%;}
 #toggle-form-button:hover {background-color: #5a6268;}
+
+/* Asset Grid Styles */
 .asset-grid {display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;}
 .asset-grid > div {display: flex; flex-direction: column;}
 .asset-grid label {margin-bottom: 3px; font-size: 0.9em;}
 .asset-grid input[type="number"], .asset-grid input[type="text"] {padding: 8px; margin-bottom: 0;}
+
+/* Family List and Card Styles */
 #family-list-container, #family-list-container-admin {margin-top: 20px;}
 .family-card {background-color: #fff; border: 1px solid #ddd; border-radius: 5px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);}
 .family-card h3 {margin-top: 0; color: #0056b3; text-align: left; font-size: 1.3em;}
@@ -55,25 +109,26 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 .family-card-actions .action-button {margin-left: 10px; padding: 6px 12px; font-size: 0.9em;}
 .family-card .edit-family-button {background-color: #ffc107; color: #212529;}
 .family-card .delete-family-button {background-color: #dc3545;}
+
+/* Admin Village List Table Styles */
 #admin-village-list-section #village-table {width: 100%; border-collapse: collapse; margin-top: 15px;}
 #admin-village-list-section #village-table th, #admin-village-list-section #village-table td {border: 1px solid #ddd; padding: 10px; text-align: left;}
 #admin-village-list-section #village-table th {background-color: #f2f2f2;}
-#admin-village-list-section #village-table button {padding: 5px 10px; font-size: 12px; background-color: #17a2b8; color: white; border: none; border-radius: 3px; cursor: pointer;}
-#admin-village-list-section #village-table button:hover {background-color: #138496;}
+#admin-village-list-section #village-table button {padding: 5px 10px; font-size: 12px; /* background-color: #17a2b8; */ /* Color handled by .action-button or specific classes */ color: white; border: none; border-radius: 3px; cursor: pointer; margin-right: 5px;}
+#admin-village-list-section #village-table button:hover { /* background-color: #138496; */ } /* Hover color handled by .action-button:hover or specific classes */
 #admin-village-list-section .permission-toggle-button {
-    padding: 4px 8px;
-    font-size: 0.85em;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    min-width: 90px;
+    padding: 4px 8px; font-size: 0.85em; color: white;
+    border: none; border-radius: 3px; cursor: pointer; min-width: 90px;
 }
 #selected-village-name-admin {text-align: left; margin-bottom: 10px;}
+
+/* Modal Styles */
 .modal {display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); padding-top: 30px;}
 .modal-content {background-color: #fefefe; margin: 2% auto; padding: 25px; border: 1px solid #888; width: 90%; max-width: 750px; border-radius: 8px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19); position: relative;}
 .close-button {color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 20px;}
 .close-button:hover, .close-button:focus {color: black; text-decoration: none; cursor: pointer;}
+
+/* Edit Family Modal Specific Styles */
 #edit-family-modal-admin label {margin-top: 10px;}
 #edit-family-modal-admin textarea, #edit-family-modal-admin input[type="text"], #edit-family-modal-admin input[type="date"], #edit-family-modal-admin input[type="number"], #edit-family-modal-admin select {width: 100%; margin-bottom: 10px;}
 #edit-family-modal-admin button[type="submit"] {width: 100%; background-color: #28a745; margin-top: 15px;}
@@ -81,12 +136,16 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 #edit-family-members-container-admin .member-entry div, #edit-family-assets-container-admin > div {margin-bottom: 8px;}
 #edit-family-members-container-admin .member-entry label, #edit-family-assets-container-admin label {font-size: 0.9em; margin-bottom: 2px;}
 #edit-family-members-container-admin .member-entry input, #edit-family-members-container-admin .member-entry select, #edit-family-assets-container-admin input {padding: 8px; margin-bottom: 5px;}
+
+/* Report and Search Section Styles */
 .daily-report-section, .search-section {background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #eee;}
 .daily-report-section h2, .search-section h2 {text-align: left; margin-top:0; font-size: 1.2em; color: #337ab7;}
 #daily-report-content ul {list-style-type: none; padding-left: 0;}
 #daily-report-content li {padding: 5px 0; border-bottom: 1px dotted #ddd;}
 #daily-report-content li:last-child {border-bottom: none;}
 #search-family-input, #search-village-input {margin-bottom: 10px;}
+
+/* Asset Summary Table Styles */
 .asset-summary-section {background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #dee2e6;}
 .asset-summary-section h3 {margin-top: 0; text-align: left; color: #495057; font-size: 1.1em; margin-bottom: 10px;}
 #village-asset-summary-table, #admin-asset-summary-table {width: 100%; border-collapse: collapse; font-size: 0.9em;}
@@ -94,38 +153,149 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 #village-asset-summary-table th, #admin-asset-summary-table th {background-color: #e9ecef; font-weight: bold;}
 #village-asset-summary-table tr:nth-child(even), #admin-asset-summary-table tr:nth-child(even) {background-color: #fff;}
 #village-asset-summary-tbody td:last-child, #admin-asset-summary-tbody td:last-child {text-align: right; font-weight: bold;}
+
+/* Clearfix */
 .container::after {content: ""; clear: both; display: table;}
 
-/* --- Styles for Permission Notice on Dashboard --- */
+/* Permission Notice Styles */
 #village-edit-permission-notice {
-    /* display:none; Initially hidden, JS will show it - This base style is important */
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom:15px;
-    border: 1px solid #ccc; /* Default border, will be overridden by specific classes below */
-    font-weight: 500; /* Makes text a bit bolder */
-    line-height: 1.5; /* Improves readability if message wraps */
+    padding: 10px; border-radius: 5px; margin-bottom:15px;
+    border: 1px solid #ccc; font-weight: 500; line-height: 1.5;
 }
-
-#village-edit-permission-notice.has-permission {
-    color: #155724; /* Dark Green for text */
-    background-color: #d4edda; /* Light Green background */
-    border-color: #c3e6cb; /* Greenish border */
-}
-
-#village-edit-permission-notice.no-permission {
-    color: #721c24; /* Dark Red for text */
-    background-color: #f8d7da; /* Light Red background */
-    border-color: #f5c6cb; /* Reddish border */
-}
-
-/* Existing admin view notice style - this should not conflict */
+#village-edit-permission-notice.has-permission { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+#village-edit-permission-notice.no-permission { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
 #admin-view-notice {
-    display:none; /* JS controls visibility */
-    background-color: #fff3cd;
-    color: #856404;
+    display:none; background-color: #fff3cd; color: #856404;
+    padding: 10px; border-radius: 5px; margin-bottom:15px; border: 1px solid #ffeeba;
+}
+
+/* --- Messaging Styles --- */
+.message-modal-content {
+    max-width: 600px;
+}
+#message-history-admin, #message-history-village {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
     padding: 10px;
-    border-radius: 5px;
-    margin-bottom:15px;
-    border: 1px solid #ffeeba;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+}
+#message-history-admin ul, #message-history-village ul {
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
+}
+#message-history-admin ul li, #message-history-village ul li {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+    background-color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease-in-out;
+}
+#message-history-admin ul li:hover, #message-history-village ul li:hover {
+    background-color: #f0f8ff;
+}
+#message-history-admin ul li .unread-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #007bff;
+    border-radius: 50%;
+}
+.message-bubble {
+    padding: 8px 12px;
+    border-radius: 18px;
+    margin-bottom: 8px;
+    max-width: 75%;
+    word-wrap: break-word;
+    line-height: 1.4;
+    position: relative;
+}
+.message-bubble.sent {
+    background-color: #007bff;
+    color: white;
+    margin-left: auto;
+    align-self: flex-end;
+    border-bottom-right-radius: 5px;
+}
+.message-bubble.received {
+    background-color: #e9e9eb;
+    color: #333;
+    margin-right: auto;
+    align-self: flex-start;
+    border-bottom-left-radius: 5px;
+}
+.message-content {
+    margin-bottom: 3px;
+}
+.message-timestamp {
+    font-size: 0.75em;
+    color: #e0e0e0;
+    display: block;
+    margin-top: 2px;
+    text-align: right;
+}
+.message-bubble.received .message-timestamp {
+    color: #777;
+    text-align: left;
+}
+.message-sender-name {
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-bottom: 2px;
+    color: #555;
+}
+.message-bubble.sent .message-sender-name {
+    text-align: right;
+    color: #cce5ff;
+}
+.message-bubble.received .message-sender-name {
+    text-align: left;
+}
+#message-composer-admin textarea, #message-composer-village textarea {
+    height: 70px;
+    resize: none;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+#village-unread-count { /* For village dashboard if using text button for mail */
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    padding: 0px 5px;
+    font-size: 0.8em;
+    vertical-align: super;
+}
+.action-button.message-village-button { /* Specific for "ផ្ញើសារ" button in admin village list */
+    background-color: #17a2b8;
+}
+.action-button.message-village-button:hover {
+    background-color: #138496;
+}
+
+/* Styles for Image in Chat Bubble & File Input Label */
+.message-bubble img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 10px;
+    margin-top: 5px;
+    display: block;
+    cursor: pointer;
+}
+label.action-button { /* General style for labels acting as buttons */
+    display: inline-block;
+    padding: 5px 10px;
+    font-size: 0.9em;
+    cursor: pointer;
+    border-radius: 4px;
+    text-align: center;
+    color: white; /* Assuming action buttons have white text */
+    /* background-color will be set inline or by more specific classes */
 }
