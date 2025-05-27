@@ -9,7 +9,7 @@
 
     <!-- jsPDF Core Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- jsPDF AutoTable Plugin - ADDED HERE -->
+    <!-- jsPDF AutoTable Plugin -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
@@ -17,6 +17,10 @@
         <header class="dashboard-header">
             <h1 id="dashboard-title">ផ្ទាំងគ្រប់គ្រងទិន្នន័យភូមិ</h1>
             <div>
+                <button id="village-bell-mailbox-button" class="icon-button" title="ប្រអប់សារ" style="margin-right: 10px; position: relative; display: none;">
+                    <img src="bell-icon.png" alt="Mailbox" style="width: 24px; height: 24px; vertical-align: middle;">
+                    <span id="village-unread-bell-count" class="unread-badge">0</span>
+                </button>
                 <button id="back-to-admin-button" style="display: none; margin-right:10px; background-color: #6c757d;">ត្រឡប់ទៅ Admin Dashboard</button>
                 <button id="logout-button">ចាកចេញ</button>
             </div>
@@ -55,13 +59,13 @@
 
             <hr style="margin: 15px 0; border-color: #ddd;">
             <p style="font-weight:bold; color: #0056b3; margin-top:10px;">ស្ថិតិកម្រិតវប្បធម៌ (ភូមិ <span class="current-village-name-dynamic"></span>):</p>
-            <!---p>  មិនបានសិក្សា: <span id="edu-level-uneducated-village">0</span> នាក់ (ស្រី: <span id="edu-level-uneducated-female-village">0</span>)</p---->
+            <p>  មិនបានសិក្សា: <span id="edu-level-uneducated-village">0</span> នាក់ (ស្រី: <span id="edu-level-uneducated-female-village">0</span>)</p>
             <p>  បឋមសិក្សា (ថ្នាក់ទី ១-៦): <span id="edu-level-primary-village">0</span> នាក់ (ស្រី: <span id="edu-level-primary-female-village">0</span>)</p>
             <p>  អនុវិទ្យាល័យ (ថ្នាក់ទី ៧-៩): <span id="edu-level-lower-secondary-village">0</span> នាក់ (ស្រី: <span id="edu-level-lower-secondary-female-village">0</span>)</p>
             <p>  វិទ្យាល័យ (ថ្នាក់ទី ១០-១២): <span id="edu-level-high-school-village">0</span> នាក់ (ស្រី: <span id="edu-level-high-school-female-village">0</span>)</p>
             <p>  បរិញ្ញាបត្រ: <span id="edu-level-bachelor-village">0</span> នាក់ (ស្រី: <span id="edu-level-bachelor-female-village">0</span>)</p>
-            <!----p>  ជំនាញ: <span id="edu-level-skill-village">0</span> នាក់ (ស្រី: <span id="edu-level-skill-female-village">0</span>)</p>
-            <p>  លើសបរិញ្ញាបត្រ: <span id="edu-level-postgraduate-village">0</span> នាក់ (ស្រី: <span id="edu-level-postgraduate-female-village">0</span>)</p---->
+            <p>  ជំនាញ: <span id="edu-level-skill-village">0</span> នាក់ (ស្រី: <span id="edu-level-skill-female-village">0</span>)</p>
+            <p>  លើសបរិញ្ញាបត្រ: <span id="edu-level-postgraduate-village">0</span> នាក់ (ស្រី: <span id="edu-level-postgraduate-female-village">0</span>)</p>
             <p>  ផ្សេងៗ: <span id="edu-level-other-village">0</span> នាក់ (ស្រី: <span id="edu-level-other-female-village">0</span>)</p>
         </div>
          <hr>
@@ -117,13 +121,13 @@
                         <div><label for="riceMills">ម៉ាស៊ីនកិនស្រូវ:</label> <input type="number" id="riceMills" value="0" min="0"></div>
                         <div><label for="waterPumpsWells">អណ្ដូងស្នប់:</label> <input type="number" id="waterPumpsWells" value="0" min="0"></div>
                         <div><label for="ponds">ផ្ទះលក់ថ្នាំពេទ្យ(គ្រូពេទ្យ):</label> <input type="number" id="ponds" value="0" min="0"></div>
-                        <div><label for="residentialLandSize">ទំហំដីលំនៅដ្ឋាន(ម៉ែត្រការ៉េ):</label> <input type="text" id="residentialLandSize" placeholder="ឧ: 100m2, 0.5ha"></div>
-                        <div><label for="paddyLandSize">ទំហំដីស្រែ (ហិចតា):</label> <input type="text" id="paddyLandSize" placeholder="ឧ: 2ha"></div>
-                        <div><label for="plantationLandSize">ដីចំការ (ផ្សេងៗ) (ហិចតា):</label> <input type="text" id="plantationLandSize" placeholder="ឧ: 1.5ha"></div>
-                        <div><label for="coconutLandSize">ដីចំការដូង (ហិចតា):</label> <input type="text" id="coconutLandSize" placeholder="ឧ: 1ha"></div>
-                        <div><label for="mangoLandSize">ដីចំការស្វាយ (ហិចតា):</label> <input type="text" id="mangoLandSize" placeholder="ឧ: 3ha"></div>
-                        <div><label for="cashewLandSize">ដីចំការស្វាយចន្ទី (ហិចតា):</label> <input type="text" id="cashewLandSize" placeholder="ឧ: 5ha"></div>
-                        <div><label for="livestockLandSize">ដីចំការមាន់ (ហិចតា):</label> <input type="text" id="livestockLandSize" placeholder="ឧ: 0.5ha"></div>
+                        <div><label for="residentialLandSize">ទំហំដីលំនៅដ្ឋាន(ម៉ែត្រការ៉េ):</label> <input type="text" id="residentialLandSize" placeholder="ម៉ែត្រការ៉េ"></div>
+                        <div><label for="paddyLandSize">ទំហំដីស្រែ (ហិចតា):</label> <input type="text" id="paddyLandSize" placeholder="ហិចតា"></div>
+                        <div><label for="plantationLandSize">ដីចំការ (ផ្សេងៗ) (ហិចតា):</label> <input type="text" id="plantationLandSize" placeholder="ហិចតា"></div>
+                        <div><label for="coconutLandSize">ដីចំការដូង (ហិចតា):</label> <input type="text" id="coconutLandSize" placeholder="ហិចតា"></div>
+                        <div><label for="mangoLandSize">ដីចំការស្វាយ (ហិចតា):</label> <input type="text" id="mangoLandSize" placeholder="ហិចតា"></div>
+                        <div><label for="cashewLandSize">ដីចំការស្វាយចន្ទី (ហិចតា):</label> <input type="text" id="cashewLandSize" placeholder="ហិចតា"></div>
+                        <div><label for="livestockLandSize">ដីចំការមាន់ (ហិចតា):</label> <input type="text" id="livestockLandSize" placeholder="ហិចតា"></div>
                         <div><label for="vehicleRepairShops">ជាងជួសជុល(ម៉ូតូ+ឡាន):</label> <input type="number" id="vehicleRepairShops" value="0" min="0"></div>
                         <div><label for="groceryStores">ផ្ទះលក់ចាប់ហួយ:</label> <input type="number" id="groceryStores" value="0" min="0"></div>
                         <div><label for="mobilePhoneShops">ផ្ទះលក់ទូស័ព្ទដៃ:</label> <input type="number" id="mobilePhoneShops" value="0" min="0"></div>
@@ -142,7 +146,7 @@
         </div>
         <hr>
 
-        <h2>បញ្ជីទិន្នន័យគ្រួសារដែលបានបញ្ជូលភូមិ <span class="current-village-name-dynamic"></span></h2>
+        <h2>បញ្ជីទិន្នន័យគ្រួសារដែលបានបញ្ជូលក្នុងភូមិ <span class="current-village-name-dynamic"></span></h2>
         <div class="search-section" style="background-color: #f0f8ff; border-color: #cce5ff;">
              <h2 style="color:#004085;">ស្វែងរកក្នុងភូមិ <span class="current-village-name-dynamic"></span></h2>
             <input type="text" id="search-village-input" placeholder="វាយបញ្ចូលឈ្មោះមេគ្រួសារ, សមាជិក, លេខអត្តសញ្ញាណប័ណ្ណ...">
@@ -152,7 +156,7 @@
         <p id="no-family-data-message" style="display: none;">មិនទាន់មានទិន្នន័យគ្រួសារទេ។</p>
     </div>
 
-    <!-- Edit Family Modal (Admin Style, but used by Village Chief with permission) -->
+    <!-- Edit Family Modal (Shared with Admin but controlled by JS) -->
     <div id="edit-family-modal-admin" class="modal">
         <div class="modal-content">
             <span class="close-button" id="close-edit-family-modal-admin">×</span>
@@ -187,6 +191,32 @@
         </div>
     </div>
 
+    <!-- Village Message Modal -->
+    <div id="message-modal-village" class="modal">
+        <div class="modal-content message-modal-content">
+            <span class="close-button" id="close-message-modal-village">×</span>
+            <h2 id="message-modal-title-village">ប្រអប់សារ (ទៅកាន់ Admin)</h2>
+            <div id="message-history-village">
+                 <p style="text-align:center; color:#777;"><em>កំពុងផ្ទុកសារ...</em></p>
+            </div>
+            <div id="message-composer-village">
+                <textarea id="message-input-village" placeholder="វាយសាររបស់អ្នកទៅ Admin..."></textarea>
+                
+                <!-- Image Input and Preview for Village -->
+                <div style="margin-top: 5px; margin-bottom: 10px;">
+                    <label for="message-image-input-village" class="action-button" style="background-color: #6c757d; padding: 5px 10px; font-size: 0.9em; cursor: pointer;">ជ្រើសរើសរូបភាព</label>
+                    <input type="file" id="message-image-input-village" accept="image/*" style="display: none;">
+                    <button type="button" id="clear-image-village" style="display:none; margin-left: 5px; background-color: #ffc107; color:#212529; font-size:0.8em; padding: 3px 6px;">លុបរូបភាព</button>
+                </div>
+                <img id="message-image-preview-village" src="#" alt="Image Preview" style="max-width: 100px; max-height: 100px; margin-bottom: 10px; display: none; border: 1px solid #ddd;">
+                
+                <button id="send-message-button-village" style="margin-top: 10px; width:100%;">ផ្ញើ</button>
+            </div>
+            <p id="message-error-village" class="error-message"></p>
+        </div>
+    </div>
+
+
     <template id="family-card-template">
         <div class="family-card">
             <h3 class="family-card-name"></h3>
@@ -207,8 +237,7 @@
         </div>
     </template>
 
-    <!-- Edit Member Template (Admin Style, but used by Village Chief with permission) -->
-    <template id="edit-member-template-admin">
+    <template id="edit-member-template-admin"> <!-- This template is shared for the edit modal -->
         <div class="member-entry" data-member-id="">
             <h4>សមាជិក (កែសម្រួល) <button type="button" class="remove-member-edit-button" title="ដកសមាជិកនេះចេញ">×</button></h4>
             <input type="hidden" class="member-original-id-edit">
@@ -243,7 +272,6 @@
         </div>
     </template>
 
-    <!-- Your custom dashboard script - This should be at the end of the body -->
     <script src="dashboard.js"></script>
 </body>
 </html>
