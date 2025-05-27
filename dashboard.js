@@ -3,13 +3,16 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Determine User Type and Village to Display ---
     let currentUserType = sessionStorage.getItem('loggedInUserType');
-    let villageChiefVillage = sessionStorage.getItem('loggedInVillage');
+    let villageChiefVillageName = sessionStorage.getItem('loggedInVillage');
     let adminViewingVillage = sessionStorage.getItem('adminViewingVillage');
     let currentAdminUsername = sessionStorage.getItem('loggedInUsername');
 
     let villageToDisplay = '';
+    let currentVillageIdForMessaging = '';
+    let adminIdForMessaging = '';
+
     let isAdminViewing = false;
-    let villageChiefCanEdit = false; // This controls EDIT and DELETE for village chief
+    let villageChiefCanEdit = false;
 
     const VILLAGES_KEY = 'registeredVillages_v2';
     const getRegisteredVillages = () => {
@@ -23,15 +26,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const adminAccountInfo = JSON.parse(localStorage.getItem('adminAccount_v2') || '{}');
+    if (adminAccountInfo && adminAccountInfo.username) {
+        adminIdForMessaging = `admin:${adminAccountInfo.username}`;
+    }
+
     if (currentUserType === 'admin' && adminViewingVillage) {
         villageToDisplay = adminViewingVillage;
         isAdminViewing = true;
-        villageChiefCanEdit = true; // Admin viewing this page has effective edit rights for displayed data
-    } else if (currentUserType === 'village' && villageChiefVillage) {
-        villageToDisplay = villageChiefVillage;
+        villageChiefCanEdit = true;
+        currentVillageIdForMessaging = `village:${villageToDisplay}`;
+    } else if (currentUserType === 'village' && villageChiefVillageName) {
+        villageToDisplay = villageChiefVillageName;
         isAdminViewing = false;
         sessionStorage.removeItem('adminViewingVillage');
-
+        currentVillageIdForMessaging = `village:${villageToDisplay}`;
         const allRegisteredVillages = getRegisteredVillages();
         if (allRegisteredVillages[villageToDisplay]) {
             villageChiefCanEdit = allRegisteredVillages[villageToDisplay].canEditData === true;
@@ -65,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const familyCardTemplate = document.getElementById('family-card-template');
     const memberFieldsContainer = document.getElementById('member-fields-container');
     const addMemberButton = document.getElementById('add-member-button');
-    const MAX_MEMBERS = 9;
     const currentVillageNameStats = document.getElementById('current-village-name-stats');
     const totalFamiliesVillageSpan = document.getElementById('total-families-village');
     const totalPeopleVillageSpan = document.getElementById('total-people-village');
@@ -91,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const editMemberTemplateAdmin = document.getElementById('edit-member-template-admin');
     const editFamilyErrorAdmin = document.getElementById('edit-family-error-admin');
     const editFamilySuccessAdmin = document.getElementById('edit-family-success-admin');
-
     const ageGroup0_2_VillageSpan = document.getElementById('age-group-0-2-village');
     const ageGroup0_2_Female_VillageSpan = document.getElementById('age-group-0-2-female-village');
     const ageGroup3_4_VillageSpan = document.getElementById('age-group-3-4-village');
@@ -118,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const ageGroup61_Plus_Female_VillageSpan = document.getElementById('age-group-61-plus-female-village');
     const totalInternalMigrantsFemaleVillageSpan = document.getElementById('total-internal-migrants-female-village');
     const totalExternalMigrantsFemaleVillageSpan = document.getElementById('total-external-migrants-female-village');
-
     const eduLevelUneducatedVillageSpan = document.getElementById('edu-level-uneducated-village');
     const eduLevelUneducatedFemaleVillageSpan = document.getElementById('edu-level-uneducated-female-village');
     const eduLevelPrimaryVillageSpan = document.getElementById('edu-level-primary-village');
@@ -136,10 +142,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const eduLevelOtherVillageSpan = document.getElementById('edu-level-other-village');
     const eduLevelOtherFemaleVillageSpan = document.getElementById('edu-level-other-female-village');
 
+    // --- Messaging DOM References for Village Dashboard (Updated) ---
+    const villageBellMailboxButton = document.getElementById('village-bell-mailbox-button');
+    const villageUnreadBellCountSpan = document.getElementById('village-unread-bell-count');
+    const messageModalVillage = document.getElementById('message-modal-village');
+    const closeMessageModalVillageButton = document.getElementById('close-message-modal-village');
+    const messageModalTitleVillage = document.getElementById('message-modal-title-village');
+    const messageHistoryVillageDiv = document.getElementById('message-history-village');
+    const messageComposerVillageDiv = document.getElementById('message-composer-village');
+    const messageInputVillage = document.getElementById('message-input-village');
+    const sendMessageButtonVillage = document.getElementById('send-message-button-village');
+    const messageErrorVillage = document.getElementById('message-error-village');
+    const messageImageInputVillage = document.getElementById('message-image-input-village');
+    const messageImagePreviewVillage = document.getElementById('message-image-preview-village');
+    const clearImageVillageButton = document.getElementById('clear-image-village');
+
+    let selectedImageBase64Village = null; // To store the selected image for sending
+
+    const MAX_MEMBERS_DATA_ENTRY = 9;
+    const MAX_MEMBERS_EDIT_MODAL = 9;
+
     const { jsPDF } = window.jspdf;
     const ACTIVITY_LOG_KEY = 'activityLog_v2';
+    const MESSAGES_KEY = 'villageMessages_v1';
 
-    const khmerOSFontBase64_Village = 'Khmer OS Battambang'; // <- **PASTE YOUR ACTUAL BASE64 STRING HERE**
+    const khmerOSFontBase64_Village = 'YOUR_KHMER_OS_BATTAMBANG_BASE64_STRING_HERE';
     const FONT_FILENAME_VFS_VILLAGE = "KhmerOSBattambang-Regular.ttf";
     const FONT_NAME_JSPDF_VILLAGE = "KhmerOSVillageFont";
     let khmerFontLoadedSuccessfully_Village = false;
@@ -149,9 +176,10 @@ document.addEventListener('DOMContentLoaded', () => {
             doc.setFont(FONT_NAME_JSPDF_VILLAGE);
             return;
         }
+        khmerFontLoadedSuccessfully_Village = false;
         try {
             const isValidBase64 = khmerOSFontBase64_Village &&
-                                  khmerOSFontBase64_Village !== 'Khmer OS Battambang' &&
+                                  khmerOSFontBase64_Village !== 'YOUR_KHMER_OS_BATTAMBANG_BASE64_STRING_HERE' &&
                                   khmerOSFontBase64_Village.length > 1000;
             if (isValidBase64) {
                 if (!doc.getFileFromVFS(FONT_FILENAME_VFS_VILLAGE)) {
@@ -166,12 +194,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.warn("Village PDF: Khmer OS font Base64 string is missing, a placeholder, or too short. PDF text might not render Khmer correctly. Falling back to helvetica.");
                 doc.setFont("helvetica", "normal");
-                khmerFontLoadedSuccessfully_Village = false;
             }
         } catch (e) {
             console.error("Village PDF: Error loading/setting Khmer font:", e);
             doc.setFont("helvetica", "normal");
-            khmerFontLoadedSuccessfully_Village = false;
         }
     }
 
@@ -214,7 +240,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (backToAdminButton) backToAdminButton.style.display = 'inline-block';
         if (dataInputSection) dataInputSection.style.display = 'none';
         if (villageEditPermissionNotice) villageEditPermissionNotice.style.display = 'none';
-    } else { // For Village Chief
+        if (villageBellMailboxButton) villageBellMailboxButton.style.display = 'none';
+    } else {
         if (adminViewNotice) adminViewNotice.style.display = 'none';
         if (backToAdminButton) backToAdminButton.style.display = 'none';
         if (dataInputSection) dataInputSection.style.display = 'block';
@@ -223,34 +250,30 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleFormButton.textContent = 'បង្ហាញទម្រង់បញ្ចូលទិន្នន័យគ្រួសារថ្មី';
             toggleFormButton.style.display = 'block';
         }
+        if (villageBellMailboxButton) villageBellMailboxButton.style.display = 'inline-flex';
+
         if (villageEditPermissionNotice) {
             let permissionText = '';
-            // Reset inline styles and classes first
             villageEditPermissionNotice.style.color = '';
             villageEditPermissionNotice.style.backgroundColor = '';
             villageEditPermissionNotice.style.borderColor = '';
             villageEditPermissionNotice.classList.remove('has-permission', 'no-permission');
-
             if (villageChiefCanEdit) {
-                permissionText = '✅ រដ្ឋបាលឃុំទួលពង្រ បានអនុញ្ញាតឲ្យអ្នកកែសម្រួល និងលុបទិន្នន័យគ្រួសារ។';
-                // Apply green styles directly using inline styles
-                villageEditPermissionNotice.style.color = '#155724'; // Dark Green text
-                villageEditPermissionNotice.style.backgroundColor = '#d4edda'; // Light Green background
-                villageEditPermissionNotice.style.borderColor = '#c3e6cb'; // Greenish border
+                permissionText = '✅ រដ្ឋបាលឃុំបានអនុញ្ញាតឲ្យអ្នកកែសម្រួល និងលុបទិន្នន័យគ្រួសារ។';
+                villageEditPermissionNotice.style.color = '#155724'; 
+                villageEditPermissionNotice.style.backgroundColor = '#d4edda'; 
+                villageEditPermissionNotice.style.borderColor = '#c3e6cb'; 
             } else {
-                permissionText = '❌ រដ្ឋបាលឃុំទួលពង្រ មិនទាន់អនុញ្ញាតឲ្យអ្នកកែសម្រួល ឬលុបទិន្នន័យគ្រួសារទេ។ សូមទាក់ទងរដ្ឋបាលឃុំ។';
-                // Apply red styles directly using inline styles
-                villageEditPermissionNotice.style.color = '#B4182D'; // Dark Red text
-                villageEditPermissionNotice.style.backgroundColor = '#f8d7da'; // Light Red background
-                villageEditPermissionNotice.style.borderColor = '#f5c6cb'; // Reddish border
+                permissionText = '❌ រដ្ឋបាលឃុំមិនទាន់អនុញ្ញាតឲ្យអ្នកកែសម្រួល ឬលុបទិន្នន័យគ្រួសារទេ។ សូមទាក់ទងរដ្ឋបាលឃុំ។';
+                villageEditPermissionNotice.style.color = '#721c24'; 
+                villageEditPermissionNotice.style.backgroundColor = '#f8d7da'; 
+                villageEditPermissionNotice.style.borderColor = '#f5c6cb'; 
             }
-            // Ensure other necessary base styles are applied if not covered by the above
             villageEditPermissionNotice.style.padding = '10px';
             villageEditPermissionNotice.style.borderRadius = '5px';
             villageEditPermissionNotice.style.marginBottom = '15px';
-            villageEditPermissionNotice.style.borderWidth = '1px'; // If not set by borderColor
-            villageEditPermissionNotice.style.borderStyle = 'solid'; // If not set by borderColor
-
+            villageEditPermissionNotice.style.borderWidth = '1px'; 
+            villageEditPermissionNotice.style.borderStyle = 'solid'; 
             villageEditPermissionNotice.innerHTML = permissionText;
             villageEditPermissionNotice.style.display = 'block';
         }
@@ -270,6 +293,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const getMessages = () => {
+        try { return JSON.parse(localStorage.getItem(MESSAGES_KEY) || '[]'); }
+        catch (e) { console.error("Error parsing messages:", e); return []; }
+    };
+    const saveMessages = (messages) => localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages));
+
     const assetFieldDefinitions = [
         {id: 'largeTrucks', label: 'រថយន្ដធំ', type: 'number'}, {id: 'smallCars', label: 'រថយន្តតូច', type: 'number'},
         {id: 'modifiedVehicles', label: 'រថយន្ដកែឆ្នៃ', type: 'number'}, {id: 'tractors', label: 'ត្រាក់ទ័រ', type: 'number'},
@@ -282,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {id: 'coconutLandSize', label: 'ដីចំការដូង', type: 'text', isLandArea: true},
         {id: 'mangoLandSize', label: 'ដីចំការស្វាយ', type: 'text', isLandArea: true},
         {id: 'cashewLandSize', label: 'ដីចំការស្វាយចន្ទី', type: 'text', isLandArea: true},
-        {id: 'livestockLandSize', label: 'ដីចំការមាន', type: 'text', isLandArea: true},
+        {id: 'livestockLandSize', label: 'ដីចំការមាន់', type: 'text', isLandArea: true},
         {id: 'vehicleRepairShops', label: 'ជាងជួសជុល(ម៉ូតូ+ឡាន)', type: 'number'}, {id: 'groceryStores', label: 'ផ្ទះលក់ចាប់ហួយ', type: 'number'},
         {id: 'mobilePhoneShops', label: 'ផ្ទះលក់ទូស័ព្ទដៃ', type: 'number'}, {id: 'constructionMaterialDepots', label: 'ដេប៉ូលក់គ្រឿងសំណង់', type: 'number'},
         {id: 'fuelDepots', label: 'ដេប៉ូប្រេង', type: 'number'}, {id: 'beautySalons', label: 'ផ្ទះសម្អាងការ(សាឡន)', type: 'number'},
@@ -301,7 +330,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { classSuffix: 'member-internalMigration-edit', prop: 'internalMigration', label: 'ចំណាកស្រុកក្នុង', type: 'select', options: [{value:'ទេ', text:'ទេ'}, {value:'បាទ', text:'បាទ'}] },
         { classSuffix: 'member-externalMigration-edit', prop: 'externalMigration', label: 'ចំណាកស្រុកក្រៅ', type: 'select', options: [{value:'ទេ', text:'ទេ'}, {value:'បាទ', text:'បាទ'}] }
     ];
-
     const trackedEducationLevels = {
         "មិនបានសិក្សា": "មិនបានសិក្សា", "បឋមសិក្សា": "បឋមសិក្សា (ថ្នាក់ទី ១-៦)",
         "អនុវិទ្យាល័យ": "អនុវិទ្យាល័យ (ថ្នាក់ទី ៧-៩)", "វិទ្យាល័យ": "វិទ្យាល័យ (ថ្នាក់ទី ១០-១២)",
@@ -319,8 +347,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (normalizedText.includes("ជំនាញ") || normalizedText.includes("skill") || normalizedText.includes("vocational") || normalizedText.includes("វិជ្ជាជីវៈ")) return "ជំនាញ";
         if (normalizedText.includes("បរិញ្ញាបត្ររង") || normalizedText.includes("បរិញ្ញាប័ត្ររង") || normalizedText.includes("อนุปริญญา")) return "បរិញ្ញាបត្រ";
         if (normalizedText.includes("បរិញ្ញាបត្រ") || normalizedText.includes("បរិញ្ញាប័ត្រ") || normalizedText.includes("ปริญญาตรี")) return "បរិញ្ញាបត្រ";
-        if (normalizedText.includes("អនុបណ្ឌិត") || normalizedText.includes("ปริญญาโท")) return "លើសបរិញ្ញាបត្រ";
-        if (normalizedText.includes("បណ្ឌិត") || normalizedText.includes("ปริญญาเอก")) return "លើសបរិញ្ញាបត្រ";
+        if (normalizedText.includes("អនុបណ្ឌិត") || normalizedText.includes("ปริญญาโท") || normalizedText.includes("postgraduate") || normalizedText.includes("master")) return "លើសបរិញ្ញាបត្រ";
+        if (normalizedText.includes("បណ្ឌិត") || normalizedText.includes("ปริญญาเอก") || normalizedText.includes("doctorate") || normalizedText.includes("phd")) return "លើសបរិញ្ញាបត្រ";
         for (let i = 10; i <= 12; i++) { if (normalizedText.includes(`ថ្នាក់ទី${i}`) || normalizedText.includes(`ទី${i}`) || normalizedText.includes(`ថ្នាក់${i}`) || normalizedText.includes(`grade ${i}`)) return "វិទ្យាល័យ"; }
         if (normalizedText.includes("វិទ្យាល័យ") || normalizedText.includes("high school") || normalizedText.includes("បាក់ឌុប")) return "វិទ្យាល័យ";
         for (let i = 7; i <= 9; i++) { if (normalizedText.includes(`ថ្នាក់ទី${i}`) || normalizedText.includes(`ទី${i}`) || normalizedText.includes(`ថ្នាក់${i}`) || normalizedText.includes(`grade ${i}`)) return "អនុវិទ្យាល័យ"; }
@@ -330,7 +358,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (normalizedText.includes("មិនបាន") || normalizedText.includes("អត់") || normalizedText.includes("none") || normalizedText.includes("no formal")) return "មិនបានសិក្សា";
         return "ផ្សេងៗ";
     };
-
     const getChangedFields = (oldData, newData) => {
         if (!oldData || !newData) return "មិនអាចប្រៀបធៀបទិន្នន័យបានទេ (ទិន្នន័យដើមបាត់)។";
         let changes = [];
@@ -365,35 +392,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const addActivityLogEntry = (action, villageName, familyId, familyName = '', oldFamilyData = null, newFamilyData = null) => {
         if (isAdminViewing) return;
-
-        if (action !== "ADDED_FAMILY" && !villageChiefCanEdit) {
+        if (action === "ADDED_FAMILY") { /* Allowed */ }
+        else if ((action === "EDITED_FAMILY" || action === "DELETED_FAMILY") && !villageChiefCanEdit) {
+            console.warn(`Activity log: ${action} blocked for ${villageName} due to no edit permission.`);
             return;
         }
-
         let log = [];
         const storedLog = localStorage.getItem(ACTIVITY_LOG_KEY);
         if (storedLog) { try { log = JSON.parse(storedLog); if (!Array.isArray(log)) log = []; } catch (e) { console.error("Error parsing activity log:", e); log = []; }}
-
         let details = '';
         if (action === "EDITED_FAMILY") {
-            if (oldFamilyData && newFamilyData) details = getChangedFields(oldFamilyData, newFamilyData);
-            else details = "ព័ត៌មានលម្អិតអំពីការកែប្រែមិនអាចបង្កើតបាន។";
-        } else if (action === "DELETED_FAMILY") {
-            details = `គ្រួសារ "${familyName || familyId}" ត្រូវបានលុប។`;
-        } else if (action === "ADDED_FAMILY") {
-            details = `គ្រួសារថ្មី "${familyName || familyId}" ត្រូវបានបញ្ចូល។`;
-        }
-
+            if (oldFamilyData && newFamilyData) { details = getChangedFields(oldFamilyData, newFamilyData); }
+            else { details = "ព័ត៌មានលម្អិតអំពីការកែប្រែមិនអាចបង្កើតបាន។"; }
+        } else if (action === "DELETED_FAMILY") { details = `គ្រួសារ "${familyName || familyId}" ត្រូវបានលុប។`; }
+        else if (action === "ADDED_FAMILY") { details = `គ្រួសារថ្មី "${familyName || familyId}" ត្រូវបានបញ្ចូល។`; }
         const logEntry = {
             timestamp: new Date().toISOString(), action: action, villageName: villageName, familyId: familyId,
             familyName: familyName || (newFamilyData ? newFamilyData.familyName : (oldFamilyData ? oldFamilyData.familyName : 'N/A')),
-            modifiedBy: `មេភូមិ:${villageName}`, details: details, userAgent: navigator.userAgent
+            modifiedBy: currentVillageIdForMessaging, details: details, userAgent: navigator.userAgent
         };
         log.unshift(logEntry);
         if (log.length > 100) log = log.slice(0, 100);
         localStorage.setItem(ACTIVITY_LOG_KEY, JSON.stringify(log));
     };
-
     const calculateAge = (dobString) => {
         if (!dobString) return null; const birthDate = new Date(dobString);
         if (isNaN(birthDate.valueOf())) return null; const today = new Date();
@@ -408,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const value = parseFloat(numberMatch[0]); let unit = 'unknown';
         if (cleanedValue.includes('ហិចតា') || cleanedValue.includes('ហិកតា') || cleanedValue.includes('ha')) unit = 'hectare';
         else if (cleanedValue.includes('ម៉ែត្រការ៉េ') || cleanedValue.includes('m2')) unit = 'sqm';
-        else if (cleanedValue.includes('អា') || cleanedValue.endsWith('a')) unit = 'are';
+        else if (cleanedValue.includes('អា') || cleanedValue.endsWith('a') && !cleanedValue.includes('ha')) unit = 'are';
         else if (cleanedValue.match(/^(\d+(\.\d+)?)$/)) unit = 'hectare';
         return { value, unit };
     };
@@ -419,7 +440,6 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'are': return value / 100; case 'unknown': return value; default: return 0;
         }
     };
-
     const restrictInput = (inputElement, regexToRemove, maxLength) => {
         if (!inputElement) return; const originalValue = inputElement.value;
         let newValue = originalValue.replace(regexToRemove, '');
@@ -428,13 +448,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     if (!isAdminViewing) {
-        if (familyHeadNameInput) { familyHeadNameInput.addEventListener('input', () => { restrictInput(familyHeadNameInput, /[^a-zA-Z\u1780-\u17FF\s]/g);});}
-        if (familyHeadPhoneInput) { familyHeadPhoneInput.addEventListener('input', () => { restrictInput(familyHeadPhoneInput, /[^0-9]/g);});}
+        if (familyHeadNameInput) { familyHeadNameInput.addEventListener('input', () => { restrictInput(familyHeadNameInput, /[^a-zA-Z\u1780-\u17FF\s()]/g);});}
+        if (familyHeadPhoneInput) { familyHeadPhoneInput.addEventListener('input', () => { restrictInput(familyHeadPhoneInput, /[^0-9+-\s]/g);});}
         if (memberFieldsContainer) {
             memberFieldsContainer.addEventListener('input', (e) => {
                 const target = e.target;
-                if (target.matches('.member-name') || target.matches('.member-birthProvince') || target.matches('.member-occupation')) { restrictInput(target, /[^a-zA-Z\u1780-\u17FF\s]/g);}
-                else if (target.matches('.member-nationalId')) { restrictInput(target, /[^0-9]/g, 9);}
+                if (target.matches('.member-name') || target.matches('.member-birthProvince') || target.matches('.member-occupation') || target.matches('.member-educationLevel')) {
+                    restrictInput(target, /[^a-zA-Z0-9\u1780-\u17FF\s.,()/-]/g);
+                } else if (target.matches('.member-nationalId')) { restrictInput(target, /[^0-9]/g, 9);}
                 else if (target.matches('.member-electionOfficeId')) { restrictInput(target, /[^0-9]/g, 4);}
             });
         }
@@ -445,12 +466,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const isHidden = familyDataEntryForm.style.display === 'none';
             familyDataEntryForm.style.display = isHidden ? 'block' : 'none';
             toggleFormButton.textContent = isHidden ? 'លាក់ទម្រង់បញ្ចូលទិន្នន័យគ្រួសារថ្មី' : 'បង្ហាញទម្រង់បញ្ចូលទិន្នន័យគ្រួសារថ្មី';
+            if (isHidden) familyDataEntryForm.scrollIntoView({ behavior: 'smooth' });
         });
     }
     let newFamilyMemberCount = 1;
     if (addMemberButton && !isAdminViewing && memberFieldsContainer) {
         addMemberButton.addEventListener('click', () => {
-            if (newFamilyMemberCount < MAX_MEMBERS) {
+            if (newFamilyMemberCount < MAX_MEMBERS_DATA_ENTRY) {
                 newFamilyMemberCount++;
                 const firstMemberEntry = memberFieldsContainer.querySelector('.member-entry');
                 if (!firstMemberEntry) { console.error("Default member entry template not found."); return; }
@@ -463,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     else if (input.tagName === 'SELECT') input.selectedIndex = 0; else input.value = '';
                 });
                 memberFieldsContainer.appendChild(newMemberEntry);
-                if (newFamilyMemberCount === MAX_MEMBERS) { addMemberButton.disabled = true; addMemberButton.textContent = `បានដល់ចំនួនសមាជិកអតិបរមា (${MAX_MEMBERS})`;}
+                if (newFamilyMemberCount === MAX_MEMBERS_DATA_ENTRY) { addMemberButton.disabled = true; addMemberButton.textContent = `បានដល់ចំនួនសមាជិកអតិបរមា (${MAX_MEMBERS_DATA_ENTRY})`;}
             }
         });
     }
@@ -478,6 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
              const titleElement = firstMemberEntry.querySelector('h4');
              if(titleElement) titleElement.textContent = `សមាជិកទី 1`;
+             firstMemberEntry.dataset.memberIndex = "0";
         }
         newFamilyMemberCount = 1;
         if (addMemberButton) { addMemberButton.disabled = false; addMemberButton.textContent = "បន្ថែមសមាជិកម្នាក់ទៀត"; }
@@ -537,7 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 bodyStyles: { font: FONT_NAME_JSPDF_VILLAGE, fontSize: 7.5, cellPadding: 1.5, },
                 columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 7: { cellWidth: 15 }, 8: { cellWidth: 15 }, 9: { cellWidth: 12, halign: 'center'}, 10: {cellWidth: 12, halign: 'center'} },
                 margin: { left: indent, right: indent }, tableWidth: 'auto',
-                didDrawPage: function (data) { if (khmerFontLoadedSuccessfully_Village) { doc.setFont(FONT_NAME_JSPDF_VILLAGE);}}
+                didDrawPage: async function (data) { await loadKhmerFontForVillagePDF(doc); }
             });
             yPosition = doc.lastAutoTable.finalY + lineHeight;
         } else { doc.setFontSize(10); doc.text("មិនមានសមាជិកគ្រួសារ។", indent + 5, yPosition); yPosition += lineHeight;}
@@ -708,25 +731,17 @@ document.addEventListener('DOMContentLoaded', () => {
         displayVillageAssetSummary(fullDataForStats);
     };
 
-    // --- New Family Data Entry Form Submission ---
     if (familyDataEntryForm && !isAdminViewing) {
         familyDataEntryForm.addEventListener('submit', (e) => {
             e.preventDefault();
-
-            // Village chief can always add new data.
-            // The `villageChiefCanEdit` only controls edit/delete of existing data.
-
             if(dataEntrySuccessMsg) dataEntrySuccessMsg.textContent = '';
             if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = '';
             const familyHeadNameValue = familyHeadNameInput ? familyHeadNameInput.value.trim() : "";
             const headOfHouseholdPhoneValue = familyHeadPhoneInput ? familyHeadPhoneInput.value.trim() : "";
-
             if (!familyHeadNameValue) {
                 if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = 'សូមបញ្ចូលឈ្មោះមេគ្រួសារ។';
-                if(familyHeadNameInput) familyHeadNameInput.focus();
-                return;
+                if(familyHeadNameInput) familyHeadNameInput.focus(); return;
             }
-
             const memberEntries = memberFieldsContainer.querySelectorAll('.member-entry');
             for (let i = 0; i < memberEntries.length; i++) {
                 const entry = memberEntries[i];
@@ -734,35 +749,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const nationalIdInput = entry.querySelector('.member-nationalId');
                 const electionOfficeIdInput = entry.querySelector('.member-electionOfficeId');
                 const memberName = memberNameInput ? memberNameInput.value.trim() : '';
-
                 if (memberName) {
                     const nationalIdValue = nationalIdInput ? nationalIdInput.value.trim() : '';
                     if (nationalIdValue !== "" && nationalIdValue.length !== 9) {
                         if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = `សមាជិក "${memberName}"៖ លេខអត្តសញ្ញាណប័ណ្ណត្រូវតែមាន 9 ខ្ទង់ (បើមានបញ្ចូល)។`;
-                        if(nationalIdInput) nationalIdInput.focus();
-                        return;
+                        if(nationalIdInput) nationalIdInput.focus(); return;
                     }
                     const electionOfficeIdValue = electionOfficeIdInput ? electionOfficeIdInput.value.trim() : '';
                     if (electionOfficeIdValue !== "" && electionOfficeIdValue.length !== 4) {
                         if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = `សមាជិក "${memberName}"៖ លេខការិយាល័យបោះឆ្នោតត្រូវតែមាន 4 ខ្ទង់ (បើមានបញ្ចូល)។`;
-                        if(electionOfficeIdInput) electionOfficeIdInput.focus();
-                        return;
+                        if(electionOfficeIdInput) electionOfficeIdInput.focus(); return;
                     }
                 }
             }
-
             const newFamilyData = {
                 familyId: `fam_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-                familyName: familyHeadNameValue,
-                headOfHouseholdPhone: headOfHouseholdPhoneValue,
-                entryDate: new Date().toISOString(),
-                members: [],
-                assets: {},
-                enteredBy: `មេភូមិ:${villageToDisplay}`,
-                lastModifiedBy: `មេភូមិ:${villageToDisplay}`,
+                familyName: familyHeadNameValue, headOfHouseholdPhone: headOfHouseholdPhoneValue,
+                entryDate: new Date().toISOString(), members: [], assets: {},
+                enteredBy: currentVillageIdForMessaging, lastModifiedBy: currentVillageIdForMessaging,
                 lastModifiedDate: new Date().toISOString()
             };
-
             let hasAtLeastOneValidMember = false;
             if (memberFieldsContainer) {
                 memberFieldsContainer.querySelectorAll('.member-entry').forEach(entry => {
@@ -770,8 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (name) {
                         hasAtLeastOneValidMember = true;
                         newFamilyData.members.push({
-                            id: `mem_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-                            name: name,
+                            id: `mem_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, name: name,
                             gender: entry.querySelector('.member-gender')?.value || 'ប្រុស',
                             dob: entry.querySelector('.member-dob')?.value || null,
                             birthProvince: entry.querySelector('.member-birthProvince')?.value.trim() || null,
@@ -785,7 +790,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             }
-
             const assetInputs = familyDataEntryForm.querySelectorAll('.asset-grid input, .asset-grid textarea');
             assetInputs.forEach(input => {
                 const assetDef = assetFieldDefinitions.find(def => def.id === input.id);
@@ -795,18 +799,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 else { value = input.value.trim() || "";}
                 newFamilyData.assets[input.id] = value;
             });
-
             const allVillageData = getVillageDataStorage();
             if (!allVillageData.hasOwnProperty(villageToDisplay) || !Array.isArray(allVillageData[villageToDisplay])) {
                 allVillageData[villageToDisplay] = [];
             }
             allVillageData[villageToDisplay].push(newFamilyData);
             saveVillageDataStorage(allVillageData);
-
             if (!isAdminViewing) {
                  addActivityLogEntry("ADDED_FAMILY", villageToDisplay, newFamilyData.familyId, newFamilyData.familyName, null, newFamilyData );
             }
-
             if(dataEntrySuccessMsg) dataEntrySuccessMsg.textContent = 'ទិន្នន័យគ្រួសារត្រូវបានបញ្ចូលដោយជោគជ័យ!';
             if(familyDataEntryForm) familyDataEntryForm.reset();
             resetNewFamilyFormMemberFields();
@@ -815,8 +816,174 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const updateVillageUnreadCount = () => {
+        if (isAdminViewing || !villageUnreadBellCountSpan) return;
+        const allMessages = getMessages();
+        const unread = allMessages.filter(msg => msg.to === currentVillageIdForMessaging && msg.from === adminIdForMessaging && !msg.readByReceiver).length;
+        villageUnreadBellCountSpan.textContent = unread;
+        villageUnreadBellCountSpan.style.display = unread > 0 ? 'inline-block' : 'none';
+    };
 
-    const performVillageSearch = () => { if (!searchVillageInput) return; const searchTerm = searchVillageInput.value; loadVillageFamilyData(searchTerm);};
+    const markVillageMessagesAsRead = () => {
+        if (isAdminViewing) return;
+        let messages = getMessages();
+        let changed = false;
+        messages.forEach(msg => {
+            if (msg.to === currentVillageIdForMessaging && msg.from === adminIdForMessaging && !msg.readByReceiver) {
+                msg.readByReceiver = true; changed = true;
+            }
+        });
+        if (changed) saveMessages(messages);
+        updateVillageUnreadCount();
+    };
+
+    const displayVillageChatHistory = () => {
+        if (isAdminViewing || !messageHistoryVillageDiv) return;
+        messageHistoryVillageDiv.innerHTML = '';
+        const allMessages = getMessages();
+        const chatMessages = allMessages.filter(
+            msg => (msg.from === currentVillageIdForMessaging && msg.to === adminIdForMessaging) || (msg.from === adminIdForMessaging && msg.to === currentVillageIdForMessaging)
+        ).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        if (chatMessages.length === 0) {
+            messageHistoryVillageDiv.innerHTML = `<p style="text-align:center; color:#777;"><em>មិនមានសារជាមួយ Admin ទេ។</em></p>`;
+            return;
+        }
+        chatMessages.forEach(msg => {
+            const bubble = document.createElement('div');
+            bubble.classList.add('message-bubble');
+            bubble.classList.add(msg.from === currentVillageIdForMessaging ? 'sent' : 'received');
+            const senderNameDiv = document.createElement('div');
+            senderNameDiv.classList.add('message-sender-name');
+            senderNameDiv.textContent = msg.from === currentVillageIdForMessaging ? villageToDisplay : (adminIdForMessaging.split(':')[1] || 'Admin');
+            bubble.appendChild(senderNameDiv);
+
+            if (msg.imageContent) {
+                const imgElement = document.createElement('img');
+                imgElement.src = msg.imageContent;
+                imgElement.style.maxWidth = '100%';
+                imgElement.style.maxHeight = '200px';
+                imgElement.style.borderRadius = '10px';
+                imgElement.style.marginTop = '5px';
+                imgElement.style.cursor = 'pointer';
+                imgElement.onclick = () => {
+                    const newTab = window.open();
+                    newTab.document.write(`<img src="${msg.imageContent}" style="max-width:90vw; max-height:90vh; display:block; margin:auto;">`);
+                };
+                bubble.appendChild(imgElement);
+            }
+            if (msg.content) {
+                const contentDiv = document.createElement('div');
+                contentDiv.classList.add('message-content');
+                contentDiv.textContent = msg.content;
+                bubble.appendChild(contentDiv);
+            }
+
+            const timestampDiv = document.createElement('div');
+            timestampDiv.classList.add('message-timestamp');
+            timestampDiv.textContent = new Date(msg.timestamp).toLocaleString('km-KH', { hour: '2-digit', minute: '2-digit', day:'2-digit', month:'short' });
+            bubble.appendChild(timestampDiv);
+            
+            messageHistoryVillageDiv.appendChild(bubble);
+        });
+        messageHistoryVillageDiv.scrollTop = messageHistoryVillageDiv.scrollHeight;
+        markVillageMessagesAsRead();
+    };
+
+    const openVillageMessageModal = () => {
+        if (isAdminViewing || !messageModalVillage || !messageModalTitleVillage || !messageComposerVillageDiv) return;
+        const adminDisplayName = adminIdForMessaging.split(':')[1] || 'Admin';
+        messageModalTitleVillage.textContent = `ផ្ញើសារទៅ ${adminDisplayName}`;
+        
+        if (messageImageInputVillage) messageImageInputVillage.value = null;
+        if (messageImagePreviewVillage) messageImagePreviewVillage.style.display = 'none';
+        if (clearImageVillageButton) clearImageVillageButton.style.display = 'none';
+        selectedImageBase64Village = null;
+        
+        displayVillageChatHistory();
+        messageComposerVillageDiv.style.display = 'block';
+        messageInputVillage.value = '';
+        messageInputVillage.focus();
+        if(messageErrorVillage) messageErrorVillage.textContent = '';
+        messageModalVillage.style.display = 'block';
+        updateVillageUnreadCount();
+    };
+    
+    if (messageImageInputVillage && !isAdminViewing) {
+        messageImageInputVillage.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                    if(messageErrorVillage) messageErrorVillage.textContent = 'ទំហំរូបភាពធំពេក (អតិបរមា 2MB)។';
+                    selectedImageBase64Village = null;
+                    if(messageImagePreviewVillage) messageImagePreviewVillage.style.display = 'none';
+                    if(clearImageVillageButton) clearImageVillageButton.style.display = 'none';
+                    messageImageInputVillage.value = null;
+                    return;
+                }
+                if(messageErrorVillage) messageErrorVillage.textContent = '';
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedImageBase64Village = e.target.result;
+                    if(messageImagePreviewVillage) {
+                        messageImagePreviewVillage.src = e.target.result;
+                        messageImagePreviewVillage.style.display = 'block';
+                    }
+                    if(clearImageVillageButton) clearImageVillageButton.style.display = 'inline-block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    if (clearImageVillageButton && !isAdminViewing) {
+        clearImageVillageButton.addEventListener('click', () => {
+            selectedImageBase64Village = null;
+            if(messageImagePreviewVillage) messageImagePreviewVillage.style.display = 'none';
+            if(messageImageInputVillage) messageImageInputVillage.value = null;
+            if(clearImageVillageButton) clearImageVillageButton.style.display = 'none';
+        });
+    }
+
+    if (sendMessageButtonVillage && !isAdminViewing) {
+        sendMessageButtonVillage.addEventListener('click', () => {
+            if (!messageInputVillage) return;
+            const textContent = messageInputVillage.value.trim();
+            if (!textContent && !selectedImageBase64Village) {
+                if(messageErrorVillage) messageErrorVillage.textContent = 'សូមបញ្ចូលខ្លឹមសារសារ ឬជ្រើសរើសរូបភាព។';
+                return;
+            }
+            if (!adminIdForMessaging) { if(messageErrorVillage) messageErrorVillage.textContent = 'មិនអាចកំណត់ Admin អ្នកទទួល។'; return; }
+            if(messageErrorVillage) messageErrorVillage.textContent = '';
+            const newMessage = {
+                id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                from: currentVillageIdForMessaging, to: adminIdForMessaging, content: textContent,
+                imageContent: selectedImageBase64Village,
+                timestamp: new Date().toISOString(), readByReceiver: false
+            };
+            let messages = getMessages(); messages.push(newMessage); saveMessages(messages);
+            messageInputVillage.value = '';
+            selectedImageBase64Village = null;
+            if(messageImageInputVillage) messageImageInputVillage.value = null;
+            if(messageImagePreviewVillage) messageImagePreviewVillage.style.display = 'none';
+            if(clearImageVillageButton) clearImageVillageButton.style.display = 'none';
+            displayVillageChatHistory();
+        });
+    }
+
+    if (villageBellMailboxButton && !isAdminViewing) {
+        villageBellMailboxButton.addEventListener('click', openVillageMessageModal);
+    }
+    if (closeMessageModalVillageButton && !isAdminViewing) {
+        closeMessageModalVillageButton.onclick = () => {
+            if (messageModalVillage) messageModalVillage.style.display = 'none';
+            updateVillageUnreadCount();
+        };
+    }
+
+    const performVillageSearch = () => {
+        if (!searchVillageInput) return; const searchTerm = searchVillageInput.value;
+        loadVillageFamilyData(searchTerm);
+    };
     if (searchVillageButton) searchVillageButton.addEventListener('click', performVillageSearch);
     if (searchVillageInput) {
         searchVillageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performVillageSearch(); });
@@ -861,11 +1028,10 @@ document.addEventListener('DOMContentLoaded', () => {
          editFamilyModal.style.display = 'block';
     };
 
-    const MAX_MEMBERS_EDIT = 9;
     if(addMemberToEditFormButton && editMemberTemplateAdmin) {
          addMemberToEditFormButton.onclick = () => {
              if (!isAdminViewing && !villageChiefCanEdit) { alert("អ្នកមិនមានសិទ្ធិកែសម្រួល និងបន្ថែមសមាជិកទេ។"); return; }
-             if (editFamilyMembersContainer.children.length < MAX_MEMBERS_EDIT) {
+             if (editFamilyMembersContainer.children.length < MAX_MEMBERS_EDIT_MODAL) {
                  if(!editMemberTemplateAdmin.content) {return;} const memberClone = editMemberTemplateAdmin.content.cloneNode(true);
                  const memberEntryDiv = memberClone.querySelector('.member-entry'); if(!memberEntryDiv) {return;}
                  const newMemberOriginalId = `new_edit_form_${Date.now()}`; memberEntryDiv.dataset.originalMemberId = newMemberOriginalId;
@@ -873,11 +1039,18 @@ document.addEventListener('DOMContentLoaded', () => {
                  const titleElement = memberEntryDiv.querySelector('h4'); if(titleElement) { titleElement.innerHTML = `សមាជិកថ្មី (កែសម្រួល) <button type="button" class="remove-member-edit-button" title="ដកសមាជិកនេះចេញ">×</button>`; const removeBtn = titleElement.querySelector('.remove-member-edit-button'); if(removeBtn) removeBtn.onclick = (e) => {e.preventDefault(); memberEntryDiv.remove();};}
                  memberEntryDiv.querySelectorAll('input[type="text"], input[type="date"], input[type="tel"], input[type="number"]').forEach(input => input.value = '');
                  memberEntryDiv.querySelectorAll('select').forEach(select => select.selectedIndex = 0); editFamilyMembersContainer.appendChild(memberClone);
-             } else { alert(`មិនអាចបន្ថែមសមាជិកលើសពី ${MAX_MEMBERS_EDIT} នាក់បានទេ។`); }
+             } else { alert(`មិនអាចបន្ថែមសមាជិកលើសពី ${MAX_MEMBERS_EDIT_MODAL} នាក់បានទេ។`); }
          };
     }
     if (closeEditFamilyModalButton && editFamilyModal) { closeEditFamilyModalButton.onclick = () => { editFamilyModal.style.display = 'none'; };}
-    window.onclick = (event) => { if (event.target == editFamilyModal && editFamilyModal) editFamilyModal.style.display = 'none'; };
+    
+    window.onclick = (event) => {
+        if (event.target == editFamilyModal && editFamilyModal) editFamilyModal.style.display = 'none';
+        if (event.target == messageModalVillage && messageModalVillage && !isAdminViewing) {
+            messageModalVillage.style.display = 'none';
+            updateVillageUnreadCount();
+        }
+    };
 
     if (editFamilyForm) {
         editFamilyForm.addEventListener('submit', (e) => {
@@ -891,7 +1064,8 @@ document.addEventListener('DOMContentLoaded', () => {
              const originalFamilyDataForLog = JSON.parse(JSON.stringify( (allDataForComparison[villageOfFamily] || []).find(f => f.familyId === familyIdToUpdate) || null ));
              const updatedFamilyPayload = {
                  familyId: familyIdToUpdate, familyName: updatedFamilyHeadNameValue, headOfHouseholdPhone: updatedHeadPhoneValue, members: [], assets: {},
-                 lastModifiedBy: isAdminViewing ? (currentAdminUsername || 'Admin') : `មេភូមិ:${villageToDisplay}`, lastModifiedDate: new Date().toISOString(),
+                 lastModifiedBy: isAdminViewing ? (currentAdminUsername ? `admin:${currentAdminUsername}` : adminIdForMessaging) : currentVillageIdForMessaging,
+                 lastModifiedDate: new Date().toISOString(),
                  entryDate: originalFamilyDataForLog ? originalFamilyDataForLog.entryDate : new Date().toISOString()
              };
              const memberEditEntries = editFamilyMembersContainer.querySelectorAll('.member-entry'); let editFormValidationError = false;
@@ -917,11 +1091,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const assetKey = input.name; const assetDef = assetFieldDefinitions.find(def => def.id === assetKey);
                 if (assetKey) { let value; if (assetDef?.isLandArea) { value = input.value.trim() || "0"; } else if (input.type === 'number') { value = parseInt(input.value, 10) || 0; } else { value = input.value.trim(); } updatedFamilyPayload.assets[assetKey] = value;}
             });
-            if (originalFamilyDataForLog && originalFamilyDataForLog.entryDate) { updatedFamilyPayload.entryDate = originalFamilyDataForLog.entryDate;}
             if (originalFamilyDataForLog && originalFamilyDataForLog.enteredBy && !updatedFamilyPayload.enteredBy){
                  updatedFamilyPayload.enteredBy = originalFamilyDataForLog.enteredBy;
             }
-
              const allDataToSave = getVillageDataStorage();
              if (allDataToSave.hasOwnProperty(villageOfFamily) && Array.isArray(allDataToSave[villageOfFamily])) {
                  const familyIndex = allDataToSave[villageOfFamily].findIndex(f => f.familyId === familyIdToUpdate);
@@ -967,4 +1139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutButton) { logoutButton.addEventListener('click', () => { sessionStorage.clear(); window.location.href = 'index.html';});}
 
     loadVillageFamilyData();
+    if (!isAdminViewing) {
+        updateVillageUnreadCount();
+    }
 });
