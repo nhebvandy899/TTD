@@ -228,10 +228,10 @@ document.addEventListener('DOMContentLoaded', () => {
             let permissionText = ''; villageEditPermissionNotice.style.color = ''; villageEditPermissionNotice.style.backgroundColor = '';
             villageEditPermissionNotice.style.borderColor = ''; villageEditPermissionNotice.classList.remove('has-permission', 'no-permission');
             if (villageChiefCanEdit) {
-                permissionText = '✅ រដ្ឋបាលឃុំបានអនុញ្ញាតឲ្យអ្នកកែសម្រួល ឬលុបទិន្នន័យគ្រួសារ (សូមធ្វើការកែសម្រួលទិន្នន័យ ឬលុបដោយទទួលខុសត្រូវ)។';
+                permissionText = '✅ រដ្ឋបាលឃុំទួលពង្រ បានអនុញ្ញាតឲ្យអ្នកកែសម្រួល ឬលុបទិន្នន័យគ្រួសារ (សូមធ្វើការកែសម្រួលទិន្នន័យ ឬលុបដោយទទួលខុសត្រូវ)។';
                 villageEditPermissionNotice.style.color = '#155724'; villageEditPermissionNotice.style.backgroundColor = '#d4edda'; villageEditPermissionNotice.style.borderColor = '#c3e6cb'; 
             } else {
-                permissionText = '❌ រដ្ឋបាលឃុំមិនទាន់អនុញ្ញាតឲ្យអ្នកកែសម្រួល ឬលុបទិន្នន័យគ្រួសារទេ។ សូមទាក់ទងរដ្ឋបាលឃុំ។';
+                permissionText = '❌ រដ្ឋបាលឃុំទួលពង្រ មិនទាន់អនុញ្ញាតឲ្យអ្នកកែសម្រួល ឬលុបទិន្នន័យគ្រួសារទេ។ សូមទាក់ទងរដ្ឋបាលឃុំ។';
                 villageEditPermissionNotice.style.color = '#721c24'; villageEditPermissionNotice.style.backgroundColor = '#f8d7da'; villageEditPermissionNotice.style.borderColor = '#f5c6cb'; 
             }
             villageEditPermissionNotice.style.padding = '10px'; villageEditPermissionNotice.style.borderRadius = '5px';
