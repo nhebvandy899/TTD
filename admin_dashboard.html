@@ -16,8 +16,9 @@
         <header class="dashboard-header">
             <h1>ផ្ទាំងគ្រប់គ្រង Admin</h1>
             <div>
+                <!-- NEWER Icon Mailbox Button -->
                 <button id="admin-bell-mailbox-button" class="icon-button" title="ប្រអប់សារ" style="margin-right: 10px; position: relative;">
-                    <img src="bell-icon.png" alt="Mailbox" style="width: 24px; height: 24px; vertical-align: middle;">
+                    <img src="new-chat-icon.png" alt="ប្រអប់សារ" style="width: 24px; height: 24px; vertical-align: middle;">
                     <span id="admin-unread-bell-count" class="unread-badge">0</span>
                 </button>
                 <button id="logout-button">ចាកចេញ</button>
@@ -57,7 +58,7 @@
             <p>  វិទ្យាល័យ (ថ្នាក់ទី ១០-១២): <span id="edu-level-high-school-admin">0</span> នាក់ (ស្រី: <span id="edu-level-high-school-female-admin">0</span>)</p>
             <p>  បរិញ្ញាបត្រ: <span id="edu-level-bachelor-admin">0</span> នាក់ (ស្រី: <span id="edu-level-bachelor-female-admin">0</span>)</p>
             <p>  ជំនាញ: <span id="edu-level-skill-admin">0</span> នាក់ (ស្រី: <span id="edu-level-skill-female-admin">0</span>)</p>
-            <p>  លើសបរិញ្ញាបត្រ: <span id="edu-level-postgraduate-admin">0</span> នាក់ (ស្រី: <span id="edu-level-postgraduate-female-admin">0</span>)</p> <!-- JS uses "លើសបរិញ្ញាបត្រ" for this -->
+            <p>  អនុបណ្ឌិត: <span id="edu-level-postgraduate-admin">0</span> នាក់ (ស្រី: <span id="edu-level-postgraduate-female-admin">0</span>)</p>
             <p>  ផ្សេងៗ: <span id="edu-level-other-admin">0</span> នាក់ (ស្រី: <span id="edu-level-other-female-admin">0</span>)</p>
         </div>
         <hr>
@@ -171,15 +172,13 @@
             <div id="message-composer-admin" style="display:none;">
                 <input type="hidden" id="message-recipient-admin-id">
                 <textarea id="message-input-admin" placeholder="វាយសាររបស់អ្នកនៅទីនេះ..."></textarea>
-                
                 <!-- Image Input and Preview for Admin -->
-                <div style="margin-top: 5px; margin-bottom: 10px;">
-                    <label for="message-image-input-admin" class="action-button" style="background-color: #6c757d; padding: 5px 10px; font-size: 0.9em; cursor: pointer;">ជ្រើសរើសរូបភាព</label>
-                    <input type="file" id="message-image-input-admin" accept="image/*" style="display: none;">
-                    <button type="button" id="clear-image-admin" style="display:none; margin-left: 5px; background-color: #ffc107; color:#212529; font-size:0.8em; padding: 3px 6px;">លុបរូបភាព</button>
+                <div style="margin-top: 5px; margin-bottom: 5px;">
+                    <label for="image-input-admin" class="action-button" style="background-color: #6c757d; padding: 5px 10px; font-size: 0.9em; display: inline-block; cursor:pointer;">ជ្រើសរើសរូបភាព</label>
+                    <input type="file" id="image-input-admin" accept="image/*" style="display: none;">
+                    <img id="image-preview-admin" src="#" alt="រូបភាពដែលបានជ្រើសរើស" style="max-width: 100px; max-height: 100px; margin-top: 5px; display: none; border: 1px solid #ccc; vertical-align: middle;">
+                    <button type="button" id="remove-image-admin" style="display:none; font-size:0.8em; background-color:#dc3545; margin-left:5px; padding: 3px 6px; vertical-align: middle;">ដករូបភាព</button>
                 </div>
-                <img id="message-image-preview-admin" src="#" alt="Image Preview" style="max-width: 100px; max-height: 100px; margin-bottom: 10px; display: none; border: 1px solid #ddd;">
-                
                 <button id="send-message-button-admin" style="margin-top: 10px; width: 100%;">ផ្ញើ</button>
             </div>
             <p id="message-error-admin" class="error-message"></p>
