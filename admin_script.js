@@ -380,31 +380,35 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Event listener for image input - ADMIN
-    if (imageInputAdmin && imagePreviewAdmin && removeImageAdminButton) {
-        imageInputAdmin.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                if (file.size > 3 * 1024 * 1024) { // 3MB limit
-                    alert('រូបភាពធំពេក! សូមជ្រើសរើសរូបភាពតូចជាង 3MB។');
-                    imageInputAdmin.value = ""; imagePreviewAdmin.style.display = 'none';
-                    removeImageAdminButton.style.display = 'none'; selectedImageBase64Admin = null; return;
-                }
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreviewAdmin.src = e.target.result; imagePreviewAdmin.style.display = 'block';
-                    removeImageAdminButton.style.display = 'inline-block'; selectedImageBase64Admin = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            } else {
-                imagePreviewAdmin.style.display = 'none'; removeImageAdminButton.style.display = 'none';
+if (imageInputAdmin && imagePreviewAdmin && removeImageAdminButton) {
+    imageInputAdmin.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            // if (file.size > 3 * 1024 * 1024) { // 3MB limit
+            if (file.size > 5 * 1024 * 1024) { // CHANGED TO 5MB limit
+                alert('រូបភាពធំពេក! សូមជ្រើសរើសរូបភាពតូចជាង 5MB។'); // Update alert message
+                imageInputAdmin.value = ""; // Clear the selected file
+                imagePreviewAdmin.style.display = 'none';
+                removeImageAdminButton.style.display = 'none';
                 selectedImageBase64Admin = null;
+                return;
             }
-        });
-        removeImageAdminButton.addEventListener('click', () => {
-            imageInputAdmin.value = ""; imagePreviewAdmin.src = "#"; imagePreviewAdmin.style.display = 'none';
-            removeImageAdminButton.style.display = 'none'; selectedImageBase64Admin = null;
-        });
-    }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreviewAdmin.src = e.target.result;
+                imagePreviewAdmin.style.display = 'block';
+                removeImageAdminButton.style.display = 'inline-block';
+                selectedImageBase64Admin = e.target.result; // Store Base64 data
+            }
+            reader.readAsDataURL(file);
+        } else {
+            imagePreviewAdmin.style.display = 'none';
+            removeImageAdminButton.style.display = 'none';
+            selectedImageBase64Admin = null;
+        }
+    });
+    // ... rest of the listener
+}
 
     if (sendMessageButtonAdmin) {
         sendMessageButtonAdmin.addEventListener('click', () => {
