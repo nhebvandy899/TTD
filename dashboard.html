@@ -60,12 +60,12 @@
 
             <hr style="margin: 15px 0; border-color: #ddd;">
             <p style="font-weight:bold; color: #0056b3; margin-top:10px;">ស្ថិតិកម្រិតវប្បធម៌ (ភូមិ <span class="current-village-name-dynamic"></span>):</p>
-            <!---p>  មិនបានសិក្សា: <span id="edu-level-uneducated-village">0</span> នាក់ (ស្រី: <span id="edu-level-uneducated-female-village">0</span>)</p--->
+            <!----p>  មិនបានសិក្សា: <span id="edu-level-uneducated-village">0</span> នាក់ (ស្រី: <span id="edu-level-uneducated-female-village">0</span>)</p---->
             <p>  បឋមសិក្សា (ថ្នាក់ទី ១-៦): <span id="edu-level-primary-village">0</span> នាក់ (ស្រី: <span id="edu-level-primary-female-village">0</span>)</p>
             <p>  អនុវិទ្យាល័យ (ថ្នាក់ទី ៧-៩): <span id="edu-level-lower-secondary-village">0</span> នាក់ (ស្រី: <span id="edu-level-lower-secondary-female-village">0</span>)</p>
             <p>  វិទ្យាល័យ (ថ្នាក់ទី ១០-១២): <span id="edu-level-high-school-village">0</span> នាក់ (ស្រី: <span id="edu-level-high-school-female-village">0</span>)</p>
             <p>  បរិញ្ញាបត្រ: <span id="edu-level-bachelor-village">0</span> នាក់ (ស្រី: <span id="edu-level-bachelor-female-village">0</span>)</p>
-            <!---p>  ជំនាញ: <span id="edu-level-skill-village">0</span> នាក់ (ស្រី: <span id="edu-level-skill-female-village">0</span>)</p--->
+            <!---p>  ជំនាញ: <span id="edu-level-skill-village">0</span> នាក់ (ស្រី: <span id="edu-level-skill-female-village">0</span>)</p---->
             <p>  អនុបណ្ឌិត: <span id="edu-level-postgraduate-village">0</span> នាក់ (ស្រី: <span id="edu-level-postgraduate-female-village">0</span>)</p>
             <p>  ផ្សេងៗ: <span id="edu-level-other-village">0</span> នាក់ (ស្រី: <span id="edu-level-other-female-village">0</span>)</p>
         </div>
@@ -90,6 +90,18 @@
                     <label for="family-head-phone">លេខទូរស័ព្ទមេគ្រួសារ (បើមាន):</label>
                     <input type="tel" id="family-head-phone" placeholder="092893535">
                 </fieldset>
+
+                <!-- MODIFIED: Family Photo Input Section -->
+                <fieldset id="family-photo-section">
+                    <legend>រូបថតគ្រួសារ (បើមាន)</legend>
+                    <label for="family-photo-input">ជ្រើសរើសរូបថត (១សន្លឹក, ទំហំតូចជាង 5MB):</label>
+                    <input type="file" id="family-photo-input" accept="image/*">
+                    <div id="family-photo-preview-container" class="image-preview-box" style="margin-top: 10px; min-height:100px; border:1px dashed #ccc; padding:5px; display:none;">
+                        <img id="family-photo-preview" src="#" alt="រូបថតគ្រួសារ Preview" style="max-width: 150px; max-height: 150px; display: block; margin-bottom: 5px; border: 1px solid #ddd;">
+                        <button type="button" id="remove-family-photo-button" class="remove-image-button-style" style="display:none;">ដករូបថត</button>
+                    </div>
+                </fieldset>
+
                 <fieldset id="family-members-section">
                     <legend>សមាជិកគ្រួសារ (រហូតដល់ 9 នាក់)</legend>
                     <div id="member-fields-container">
@@ -172,6 +184,19 @@
                     <label for="edit-family-head-phone-admin">លេខទូរស័ព្ទមេគ្រួសារ:</label>
                     <input type="tel" id="edit-family-head-phone-admin">
                 </fieldset>
+
+                <!-- MODIFIED: Edit Family Photo Section -->
+                <fieldset id="edit-family-photo-section-admin">
+                    <legend>កែសម្រួលរូបថតគ្រួសារ</legend>
+                    <label for="edit-family-photo-input-admin">ជ្រើសរើសរូបថតថ្មី (១សន្លឹក, ទំហំតូចជាង 5MB):</label>
+                    <input type="file" id="edit-family-photo-input-admin" accept="image/*">
+                    <div id="edit-family-photo-preview-container-admin" class="image-preview-box" style="margin-top: 10px; min-height:100px; border:1px dashed #ccc; padding:5px; display:none;">
+                        <img id="edit-family-photo-preview-admin" src="#" alt="រូបថតគ្រួសារ Preview" style="max-width: 150px; max-height: 150px; display: block; margin-bottom: 5px; border: 1px solid #ddd;">
+                    </div>
+                     <button type="button" id="remove-current-family-photo-button-admin" class="remove-image-button-style" style="display:none; margin-top:5px;">ដករូបថតបច្ចុប្បន្ន</button>
+                </fieldset>
+
+
                 <fieldset id="edit-family-members-section-admin">
                     <legend>សមាជិកគ្រួសារ (កែសម្រួល)</legend>
                     <div id="edit-family-members-container-admin">
@@ -201,13 +226,15 @@
                  <p style="text-align:center; color:#777;"><em>កំពុងផ្ទុកសារ...</em></p>
             </div>
             <div id="message-composer-village">
-                <textarea id="message-input-village" placeholder="វាយសាររបស់អ្នកទៅ Admin..."></textarea>
+                <textarea id="message-input-village" placeholder="វាយសាររបស់អ្នកទៅ រដ្ឋបាលឃុំទួលពង្រ..."></textarea>
                 <!-- Image Input and Preview for Village -->
                 <div style="margin-top: 5px; margin-bottom: 5px;">
-                    <label for="image-input-village" class="action-button" style="background-color: #6c757d; padding: 5px 10px; font-size: 0.9em; display: inline-block; cursor:pointer;">ជ្រើសរើសរូបភាព</label>
-                    <input type="file" id="image-input-village" accept="image/*" style="display: none;">
-                    <img id="image-preview-village" src="#" alt="រូបភាពដែលបានជ្រើសរើស" style="max-width: 100px; max-height: 100px; margin-top: 5px; display: none; border: 1px solid #ccc; vertical-align: middle;">
-                    <button type="button" id="remove-image-village" style="display:none; font-size:0.8em; background-color:#dc3545; margin-left:5px; padding: 3px 6px; vertical-align: middle;">ដករូបភាព</button>
+                    <label for="image-input-village" class="action-button" style="background-color: #6c757d; padding: 5px 10px; font-size: 0.9em; display: inline-block; cursor:pointer;">ជ្រើសរើសរូបភាព (ច្រើន)</label>
+                    <input type="file" id="image-input-village" accept="image/*" style="display: none;" multiple>
+                    <div id="image-preview-container-village" style="margin-top: 5px; display: flex; flex-wrap: wrap; gap: 5px; min-height: 30px;">
+                        <!-- Image previews will be appended here by JS -->
+                    </div>
+                    <button type="button" id="remove-all-images-village" style="display:none; font-size:0.8em; background-color:#dc3545; margin-left:0; padding: 3px 6px; vertical-align: middle; margin-top:5px;">ដករូបភាពទាំងអស់</button>
                 </div>
                 <button id="send-message-button-village" style="margin-top: 10px; width:100%;">ផ្ញើ</button>
             </div>
