@@ -96,6 +96,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const editFamilyErrorAdmin = document.getElementById('edit-family-error-admin');
     const editFamilySuccessAdmin = document.getElementById('edit-family-success-admin');
 
+    // NEW DOM references for family photo input
+    const familyPhotoInput = document.getElementById('family-photo-input');
+    const familyPhotoPreviewContainer = document.getElementById('family-photo-preview-container');
+    const familyPhotoPreview = document.getElementById('family-photo-preview');
+    const removeFamilyPhotoButton = document.getElementById('remove-family-photo-button');
+    let selectedFamilyPhotoBase64 = null;
+
+    // NEW DOM references for edit family photo
+    const editFamilyPhotoInputAdmin = document.getElementById('edit-family-photo-input-admin');
+    const editFamilyPhotoPreviewContainerAdmin = document.getElementById('edit-family-photo-preview-container-admin');
+    const editFamilyPhotoPreviewAdmin = document.getElementById('edit-family-photo-preview-admin');
+    const removeCurrentFamilyPhotoButtonAdmin = document.getElementById('remove-current-family-photo-button-admin');
+    let selectedFamilyPhotoBase64ForEdit = null; // Used during edit
+    let currentFamilyPhotoOnEdit = null; // To store the existing photo when opening edit modal
+
+
     // Age group spans
     const ageGroup0_2_VillageSpan = document.getElementById('age-group-0-2-village');
     const ageGroup0_2_Female_VillageSpan = document.getElementById('age-group-0-2-female-village');
@@ -153,11 +169,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageInputVillage = document.getElementById('message-input-village');
     const sendMessageButtonVillage = document.getElementById('send-message-button-village');
     const messageErrorVillage = document.getElementById('message-error-village');
+
     // Image related DOM elements for Village
     const imageInputVillage = document.getElementById('image-input-village');
-    const imagePreviewVillage = document.getElementById('image-preview-village');
-    const removeImageVillageButton = document.getElementById('remove-image-village');
-    let selectedImageBase64Village = null;
+    const imagePreviewContainerVillage = document.getElementById('image-preview-container-village'); // Updated
+    const removeAllImagesVillageButton = document.getElementById('remove-all-images-village'); // Updated
+    let selectedImagesBase64Village = []; // Updated
+
 
     const MAX_MEMBERS_DATA_ENTRY = 9;
     const MAX_MEMBERS_EDIT_MODAL = 9;
@@ -166,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ACTIVITY_LOG_KEY = 'activityLog_v2';
     const MESSAGES_KEY = 'villageMessages_v1';
 
-    const khmerOSFontBase64_Village = 'YOUR_KHMER_OS_BATTAMBANG_BASE64_STRING_HERE';
+    const khmerOSFontBase64_Village = 'YOUR_KHMER_OS_BATTAMBANG_BASE64_STRING_HERE'; // Ensure this is populated
     const FONT_FILENAME_VFS_VILLAGE = "KhmerOSBattambang-Regular.ttf";
     const FONT_NAME_JSPDF_VILLAGE = "KhmerOSVillageFont";
     let khmerFontLoadedSuccessfully_Village = false;
@@ -217,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dataInputSection) dataInputSection.style.display = 'none';
         if (villageEditPermissionNotice) villageEditPermissionNotice.style.display = 'none';
         if (villageBellMailboxButton) villageBellMailboxButton.style.display = 'none';
-    } else { 
+    } else {
         if (adminViewNotice) adminViewNotice.style.display = 'none';
         if (backToAdminButton) backToAdminButton.style.display = 'none';
         if (dataInputSection) dataInputSection.style.display = 'block';
@@ -229,13 +247,13 @@ document.addEventListener('DOMContentLoaded', () => {
             villageEditPermissionNotice.style.borderColor = ''; villageEditPermissionNotice.classList.remove('has-permission', 'no-permission');
             if (villageChiefCanEdit) {
                 permissionText = '✅ រដ្ឋបាលឃុំទួលពង្រ បានអនុញ្ញាតឲ្យអ្នកកែសម្រួល ឬលុបទិន្នន័យគ្រួសារ (សូមធ្វើការកែសម្រួលទិន្នន័យ ឬលុបដោយទទួលខុសត្រូវ)។';
-                villageEditPermissionNotice.style.color = '#155724'; villageEditPermissionNotice.style.backgroundColor = '#d4edda'; villageEditPermissionNotice.style.borderColor = '#c3e6cb'; 
+                villageEditPermissionNotice.style.color = '#155724'; villageEditPermissionNotice.style.backgroundColor = '#d4edda'; villageEditPermissionNotice.style.borderColor = '#c3e6cb';
             } else {
                 permissionText = '❌ រដ្ឋបាលឃុំទួលពង្រ មិនទាន់អនុញ្ញាតឲ្យអ្នកកែសម្រួល ឬលុបទិន្នន័យគ្រួសារទេ។ សូមទាក់ទងរដ្ឋបាលឃុំ។';
-                villageEditPermissionNotice.style.color = '#721c24'; villageEditPermissionNotice.style.backgroundColor = '#f8d7da'; villageEditPermissionNotice.style.borderColor = '#f5c6cb'; 
+                villageEditPermissionNotice.style.color = '#721c24'; villageEditPermissionNotice.style.backgroundColor = '#f8d7da'; villageEditPermissionNotice.style.borderColor = '#f5c6cb';
             }
             villageEditPermissionNotice.style.padding = '10px'; villageEditPermissionNotice.style.borderRadius = '5px';
-            villageEditPermissionNotice.style.marginBottom = '15px'; villageEditPermissionNotice.style.borderWidth = '1px'; 
+            villageEditPermissionNotice.style.marginBottom = '15px'; villageEditPermissionNotice.style.borderWidth = '1px';
             villageEditPermissionNotice.style.borderStyle = 'solid'; villageEditPermissionNotice.innerHTML = permissionText;
             villageEditPermissionNotice.style.display = 'block';
         }
@@ -308,6 +326,19 @@ document.addEventListener('DOMContentLoaded', () => {
         let changes = []; const formatDisplayValue = (val) => (val === undefined || val === null || String(val).trim() === "") ? "N/A" : String(val).trim();
         if (formatDisplayValue(oldData.familyName) !== formatDisplayValue(newData.familyName)) { changes.push(`ឈ្មោះមេគ្រួសារ: "${formatDisplayValue(oldData.familyName)}" -> "${formatDisplayValue(newData.familyName)}"`);}
         if (formatDisplayValue(oldData.headOfHouseholdPhone) !== formatDisplayValue(newData.headOfHouseholdPhone)) { changes.push(`លេខទូរស័ព្ទមេគ្រួសារ: "${formatDisplayValue(oldData.headOfHouseholdPhone)}" -> "${formatDisplayValue(newData.headOfHouseholdPhone)}"`);}
+
+        // Compare familyPhoto
+        if (oldData.familyPhoto !== newData.familyPhoto) { // Compare actual base64 strings or presence/absence
+            if (oldData.familyPhoto && newData.familyPhoto) {
+                changes.push(`រូបថតគ្រួសារ: បានផ្លាស់ប្តូរ`); // Indicates a different photo was uploaded
+            } else if (newData.familyPhoto) { // Was null/undefined, now has a photo
+                changes.push(`រូបថតគ្រួសារ: បានបន្ថែម`);
+            } else { // Had a photo, now it's null/undefined
+                changes.push(`រូបថតគ្រួសារ: បានដកចេញ`);
+            }
+        }
+
+
         const oldMembers = oldData.members || []; const newMembers = newData.members || [];
         if (oldMembers.length !== newMembers.length) { changes.push(`ចំនួនសមាជិក: ${oldMembers.length} -> ${newMembers.length}`);}
         newMembers.forEach(newMember => {
@@ -326,27 +357,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (changes.length === 0) return "មិនមានការផ្លាស់ប្តូរជាក់លាក់ណាមួយត្រូវបានកត់ត្រា។"; return changes.join('; \n');
     };
-    
+
     const addActivityLogEntry = (action, villageName, familyId, familyName = '', oldFamilyData = null, newFamilyData = null, performedByAdminOnVillageDashboard = false) => {
-        if (action !== "EDITED_FAMILY" && action !== "DELETED_FAMILY") {
-            console.log(`Activity Log: Action "${action}" for family "${familyName || familyId}" in village "${villageName}" will NOT be logged in the village chief activity log.`);
-            return; 
+        if (action === "ADDED_FAMILY" && !isAdminViewing && !performedByAdminOnVillageDashboard) {
+            console.log(`Activity Log: Action "ADDED_FAMILY" by village chief ${villageName} for family "${familyName || familyId}" will NOT be logged for admin view.`);
+            return;
         }
-        if (!performedByAdminOnVillageDashboard && !isAdminViewing) { 
-            if (!villageChiefCanEdit) { 
+
+        if (action !== "EDITED_FAMILY" && action !== "DELETED_FAMILY" && action !== "ADDED_FAMILY") {
+            console.log(`Activity Log: Action "${action}" for family "${familyName || familyId}" in village "${villageName}" will NOT be logged for other reasons.`);
+            return;
+        }
+
+        if (!performedByAdminOnVillageDashboard && !isAdminViewing) {
+            if (!villageChiefCanEdit && (action === "EDITED_FAMILY" || action === "DELETED_FAMILY")) {
                 console.warn(`Activity log: Village chief ${action} blocked for ${villageName} due to no edit/delete permission.`);
-                return; 
+                return;
             }
         }
+
         let log = []; const storedLog = localStorage.getItem(ACTIVITY_LOG_KEY);
         if (storedLog) { try { log = JSON.parse(storedLog); if (!Array.isArray(log)) log = []; } catch (e) { console.error("Error parsing activity log:", e); log = []; }}
         let details = '';
         if (action === "EDITED_FAMILY") { if (oldFamilyData && newFamilyData) { details = getChangedFields(oldFamilyData, newFamilyData); } else { details = "ព័ត៌មានលម្អិតអំពីការកែប្រែមិនអាចបង្កើតបាន។"; }}
         else if (action === "DELETED_FAMILY") { details = `គ្រួសារ "${familyName || familyId}" ត្រូវបានលុប។`; }
+        else if (action === "ADDED_FAMILY") { details = `គ្រួសារថ្មី "${familyName || familyId}" ត្រូវបានបញ្ចូល។`; }
         const logEntry = { timestamp: new Date().toISOString(), action: action, villageName: villageName, familyId: familyId, familyName: familyName || (newFamilyData ? newFamilyData.familyName : (oldFamilyData ? oldFamilyData.familyName : 'N/A')), modifiedBy: performedByAdminOnVillageDashboard ? (currentAdminUsername ? `Admin: ${currentAdminUsername}` : 'Admin') : `មេភូមិ:${villageName}`, details: details, userAgent: navigator.userAgent };
         log.unshift(logEntry); if (log.length > 100) log = log.slice(0, 100); localStorage.setItem(ACTIVITY_LOG_KEY, JSON.stringify(log));
         console.log(`Activity Log: Action "${action}" for family "${familyName || familyId}" in village "${villageName}" has been logged.`);
     };
+
 
     const calculateAge = (dobString) => { if (!dobString) return null; const birthDate = new Date(dobString); if (isNaN(birthDate.valueOf())) return null; const today = new Date(); let age = today.getFullYear() - birthDate.getFullYear(); const monthDifference = today.getMonth() - birthDate.getMonth(); if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) { age--;} return age; };
     const parseLandSize = (textValue) => { if (!textValue || typeof textValue !== 'string') return null; const cleanedValue = textValue.trim().toLowerCase(); const numberMatch = cleanedValue.match(/(\d+(\.\d+)?)/); if (!numberMatch) return null; const value = parseFloat(numberMatch[0]); let unit = 'unknown'; if (cleanedValue.includes('ហិចតា') || cleanedValue.includes('ហិកតា') || cleanedValue.includes('ha')) unit = 'hectare'; else if (cleanedValue.includes('ម៉ែត្រការ៉េ') || cleanedValue.includes('m2')) unit = 'sqm'; else if (cleanedValue.includes('អា') || cleanedValue.endsWith('a') && !cleanedValue.includes('ha')) unit = 'are'; else if (cleanedValue.match(/^(\d+(\.\d+)?)$/)) unit = 'hectare'; return { value, unit }; };
@@ -429,45 +469,166 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const printSingleFamilyDataForVillagePDF = async (familyData, villageName) => {
         if (!familyData) { alert("មិនមានទិន្នន័យគ្រួសារសម្រាប់បោះពុម្ពទេ។"); return; }
-        khmerFontLoadedSuccessfully_Village = false; const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-        await loadKhmerFontForVillagePDF(doc); let yPosition = 15; const lineHeight = 7; const indent = 15;
-        const pageWidth = doc.internal.pageSize.getWidth(); const contentWidth = pageWidth - (indent * 2);
-        doc.setFontSize(16); doc.text(`បញ្ជីទិន្នន័យគ្រួសារ`, pageWidth / 2, yPosition, { align: 'center' }); yPosition += lineHeight * 1.5;
-        doc.setFontSize(12); doc.text(`ឈ្មោះមេគ្រួសារ: ${familyData.familyName || 'N/A'}`, indent, yPosition); yPosition += lineHeight;
-        doc.text(`ភូមិ: ${villageName || 'N/A'}`, indent, yPosition); yPosition += lineHeight;
-        try { doc.text(`កាលបរិច្ឆេទបញ្ចូល: ${new Date(familyData.entryDate).toLocaleDateString('km-KH', { day: '2-digit', month: 'long', year: 'numeric' })}`, indent, yPosition);}
-        catch { doc.text(`កាលបរិច្ឆេទបញ្ចូល: មិនត្រឹមត្រូវ`, indent, yPosition);} yPosition += lineHeight;
-        if (familyData.headOfHouseholdPhone) { doc.text(`លេខទូរស័ព្ទមេគ្រួសារ: ${familyData.headOfHouseholdPhone}`, indent, yPosition); yPosition += lineHeight;}
-        yPosition += lineHeight * 0.5; doc.setFontSize(13); doc.text("សមាជិកគ្រួសារ:", indent, yPosition); yPosition += lineHeight;
+        khmerFontLoadedSuccessfully_Village = false;
+        const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+        await loadKhmerFontForVillagePDF(doc);
+
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 15; // General margin for content
+        const photoWidth = 40; // mm, width of the family photo
+        const photoHeight = 50; // mm, height of the family photo
+        const photoX = pageWidth - margin - photoWidth; // X position for the photo (right aligned with margin)
+        const photoY = margin; // Y position for the photo (top aligned with margin)
+
+        let yPosition = margin; // Initial Y position for text, aligned with top margin
+
+        // Function to draw photo if exists (useful for multi-page)
+        const drawPhotoIfExists = () => {
+            if (familyData.familyPhoto) {
+                try {
+                    let imgFormat = 'JPEG';
+                    try {
+                        const imgProps = doc.getImageProperties(familyData.familyPhoto);
+                        imgFormat = imgProps.fileType;
+                    } catch (e) {
+                        if (familyData.familyPhoto.startsWith('data:image/png')) imgFormat = 'PNG';
+                    }
+                    doc.addImage(familyData.familyPhoto, imgFormat, photoX, photoY, photoWidth, photoHeight);
+                } catch (e) {
+                    console.error("Error adding/re-adding family photo to PDF:", e);
+                }
+            }
+        };
+
+        drawPhotoIfExists(); // Draw on the first page
+
+        doc.setFontSize(16);
+        doc.text(`បញ្ជីទិន្នន័យគ្រួសារ`, pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 7 * 1.5; // Line height and a half
+
+        // Ensure yPosition for the first text block is below the photo if photo is taller
+        const photoBottomYWithBuffer = photoY + photoHeight + 5; // 5mm buffer
+        if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer) {
+            yPosition = photoBottomYWithBuffer;
+        }
+
+        const textContentX = margin;
+        const textContentMaxWidth = familyData.familyPhoto ? (photoX - margin - 5) : (pageWidth - margin * 2); // 5mm gap from photo
+
+        doc.setFontSize(12);
+        let textLines;
+
+        textLines = doc.splitTextToSize(`ឈ្មោះមេគ្រួសារ: ${familyData.familyName || 'N/A'}`, textContentMaxWidth);
+        doc.text(textLines, textContentX, yPosition);
+        yPosition += 7 * textLines.length;
+
+        textLines = doc.splitTextToSize(`ភូមិ: ${villageName || 'N/A'}`, textContentMaxWidth);
+        doc.text(textLines, textContentX, yPosition);
+        yPosition += 7 * textLines.length;
+
+        try {
+            textLines = doc.splitTextToSize(`កាលបរិច្ឆេទបញ្ចូល: ${new Date(familyData.entryDate).toLocaleDateString('km-KH', { day: '2-digit', month: 'long', year: 'numeric' })}`, textContentMaxWidth);
+            doc.text(textLines, textContentX, yPosition);
+        } catch {
+            textLines = doc.splitTextToSize(`កាលបរិច្ឆេទបញ្ចូល: មិនត្រឹមត្រូវ`, textContentMaxWidth);
+            doc.text(textLines, textContentX, yPosition);
+        }
+        yPosition += 7 * textLines.length;
+
+        if (familyData.headOfHouseholdPhone) {
+            textLines = doc.splitTextToSize(`លេខទូរស័ព្ទមេគ្រួសារ: ${familyData.headOfHouseholdPhone}`, textContentMaxWidth);
+            doc.text(textLines, textContentX, yPosition);
+            yPosition += 7 * textLines.length;
+        }
+
+        const checkPageBreak = async (currentY, spaceNeeded = 20) => {
+            if (currentY > pageHeight - margin - spaceNeeded) {
+                doc.addPage();
+                await loadKhmerFontForVillagePDF(doc);
+                drawPhotoIfExists(); // Redraw photo on new page
+                return margin; // Return new starting Y (below photo if photo is very tall and margin is small)
+            }
+            return currentY;
+        };
+        
+        yPosition = await checkPageBreak(yPosition, 30); // Check space before "Members" title
+
+        yPosition += 7 * 0.5; // Space before Members title
+        doc.setFontSize(13);
+        doc.text("សមាជិកគ្រួសារ:", textContentX, yPosition);
+        yPosition += 7;
+
         if (familyData.members && familyData.members.length > 0) {
             const memberTableHeaders = [ "ល.រ", "ឈ្មោះ", "ភេទ", "ថ្ងៃខែឆ្នាំកំណើត", "ខេត្តកំណើត", "កម្រិតវប្បធម៌", "មុខរបរ", "លេខអត្ត.", "លេខការិ.", "ចំណាកស្រុកក្នុង", "ចំណាកស្រុកក្រៅ"];
             const memberTableBody = familyData.members.map((member, index) => [ index + 1, member.name || 'N/A', member.gender || 'N/A', member.dob ? new Date(member.dob).toLocaleDateString('km-KH', {day:'2-digit', month:'2-digit', year:'numeric'}) : 'N/A', member.birthProvince || 'N/A', member.educationLevel || 'N/A', member.occupation || 'N/A', member.nationalId || 'N/A', member.electionOfficeId || 'N/A', member.internalMigration === 'បាទ' ? 'បាទ' : 'ទេ', member.externalMigration === 'បាទ' ? 'បាទ' : 'ទេ']);
-            doc.autoTable({ startY: yPosition, head: [memberTableHeaders], body: memberTableBody, theme: 'grid', headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0], font: FONT_NAME_JSPDF_VILLAGE, fontSize: 8, halign: 'center' }, bodyStyles: { font: FONT_NAME_JSPDF_VILLAGE, fontSize: 7.5, cellPadding: 1.5, }, columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 7: { cellWidth: 15 }, 8: { cellWidth: 15 }, 9: { cellWidth: 12, halign: 'center'}, 10: {cellWidth: 12, halign: 'center'} }, margin: { left: indent, right: indent }, tableWidth: 'auto', didDrawPage: async function (data) { await loadKhmerFontForVillagePDF(doc);}});
-            yPosition = doc.lastAutoTable.finalY + lineHeight;
-        } else { doc.setFontSize(10); doc.text("មិនមានសមាជិកគ្រួសារ។", indent + 5, yPosition); yPosition += lineHeight;}
-        yPosition += lineHeight * 0.5; if (yPosition > doc.internal.pageSize.getHeight() - 40) { doc.addPage(); yPosition = 15; await loadKhmerFontForVillagePDF(doc);}
-        doc.setFontSize(13); doc.text("ទ្រព្យសម្បត្តិ និងអាជីវកម្ម:", indent, yPosition); yPosition += lineHeight; doc.setFontSize(10);
+
+            doc.autoTable({
+                startY: yPosition,
+                head: [memberTableHeaders],
+                body: memberTableBody,
+                theme: 'grid',
+                headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0], font: FONT_NAME_JSPDF_VILLAGE, fontSize: 8, halign: 'center' },
+                bodyStyles: { font: FONT_NAME_JSPDF_VILLAGE, fontSize: 7.5, cellPadding: 1.5 },
+                columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 7: { cellWidth: 15 }, 8: { cellWidth: 15 }, 9: { cellWidth: 12, halign: 'center'}, 10: {cellWidth: 12, halign: 'center'} },
+                margin: { left: margin, right: margin },
+                tableWidth: 'auto',
+                didDrawPage: async function (data) {
+                    await loadKhmerFontForVillagePDF(doc);
+                    if (data.pageNumber > 0) { // autoTable creates new pages
+                         drawPhotoIfExists(); // Redraw photo on these new pages
+                    }
+                    // yPosition will be updated by autoTable.lastAutoTable.finalY after this
+                }
+            });
+            yPosition = doc.lastAutoTable.finalY + 7;
+        } else {
+            doc.setFontSize(10); doc.text("មិនមានសមាជិកគ្រួសារ។", textContentX + 5, yPosition); yPosition += 7;
+        }
+
+        yPosition = await checkPageBreak(yPosition, 30);
+
+        yPosition += 7 * 0.5;
+        doc.setFontSize(13);
+        doc.text("ទ្រព្យសម្បត្តិ និងអាជីវកម្ម:", textContentX, yPosition);
+        yPosition += 7;
+        doc.setFontSize(10);
+
         let hasAssets = false;
         if (familyData.assets && typeof familyData.assets === 'object' && Object.keys(familyData.assets).length > 0) {
+            const assetContentMaxWidthPage = pageWidth - (margin * 2); // Use full width for asset details if no photo conflict
             for (const def of assetFieldDefinitions) {
                 const assetValue = familyData.assets[def.id];
                 if (assetValue !== undefined && assetValue !== null && String(assetValue).trim() !== "" && String(assetValue).trim() !== "0") {
-                    if (yPosition > doc.internal.pageSize.getHeight() - 20) { doc.addPage(); yPosition = 15; await loadKhmerFontForVillagePDF(doc); doc.setFontSize(10);}
-                    const textToPrint = `  • ${def.label}: ${assetValue}`; const textLines = doc.splitTextToSize(textToPrint, contentWidth - 8);
-                    doc.text(textLines, indent + 2, yPosition); yPosition += (lineHeight - 2) * textLines.length; hasAssets = true;
+                    yPosition = await checkPageBreak(yPosition, 10);
+                    const textToPrint = `  • ${def.label}: ${assetValue}`;
+                    const textLinesAssets = doc.splitTextToSize(textToPrint, assetContentMaxWidthPage - 8); // Small indent
+                    doc.text(textLinesAssets, textContentX + 2, yPosition);
+                    yPosition += (7 - 2) * textLinesAssets.length;
+                    hasAssets = true;
                 }
             }
         }
-        if (!hasAssets) { if (yPosition > doc.internal.pageSize.getHeight() - 20) { doc.addPage(); yPosition = 15; await loadKhmerFontForVillagePDF(doc); doc.setFontSize(10);} doc.text("  មិនមានទ្រព្យសម្បត្តិ/អាជីវកម្មដែលបានរាយការណ៍។", indent + 2, yPosition); yPosition += lineHeight;}
+        if (!hasAssets) {
+            yPosition = await checkPageBreak(yPosition, 10);
+            doc.text("  មិនមានទ្រព្យសម្បត្តិ/អាជីវកម្មដែលបានរាយការណ៍។", textContentX + 2, yPosition);
+            yPosition += 7;
+        }
+
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i); await loadKhmerFontForVillagePDF(doc); doc.setFontSize(9);
-            doc.text(`ទំព័រ ${i} នៃ ${pageCount}`, pageWidth - indent, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
-            doc.text(`បោះពុម្ពថ្ងៃទី: ${new Date().toLocaleDateString('km-KH', {day:'2-digit', month:'long', year:'numeric'})} ដោយមេភូមិ ${villageToDisplay}`, indent, doc.internal.pageSize.getHeight() - 10);
+            doc.setPage(i);
+            // Font should be set by checkPageBreak or didDrawPage for new pages
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.text(`ទំព័រ ${i} នៃ ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+            doc.text(`បោះពុម្ពថ្ងៃទី: ${new Date().toLocaleDateString('km-KH', {day:'2-digit', month:'long', year:'numeric'})} ដោយមេភូមិ ${villageToDisplay}`, margin, pageHeight - 10);
         }
+
         doc.save(`បញ្ជីទិន្នន័យគ្រួសារ-${familyData.familyName || familyData.familyId}-${villageName}.pdf`);
         alert("ការបង្កើត PDF បានបញ្ចប់។ សូមពិនិត្យមើលឯកសារដែលបានទាញយក។");
     };
+
 
     const renderSingleFamilyCard = (family, containerElement, currentVillageForActions) => {
          if (!familyCardTemplate || !familyCardTemplate.content) { console.error("Dashboard: Family card template or its content is missing!"); return; }
@@ -586,13 +747,102 @@ document.addEventListener('DOMContentLoaded', () => {
         displayVillageAssetSummary(fullDataForStats);
     };
 
+    // --- Event Listener for Family Photo Input (New Family) ---
+    if (familyPhotoInput && familyPhotoPreview && familyPhotoPreviewContainer && removeFamilyPhotoButton && !isAdminViewing) {
+        familyPhotoInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    alert('រូបភាពធំពេក! សូមជ្រើសរើសរូបភាពតូចជាង 5MB។');
+                    familyPhotoInput.value = ""; // Clear the input
+                    familyPhotoPreview.src = "#";
+                    familyPhotoPreviewContainer.style.display = 'none';
+                    removeFamilyPhotoButton.style.display = 'none';
+                    selectedFamilyPhotoBase64 = null;
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    familyPhotoPreview.src = e.target.result;
+                    selectedFamilyPhotoBase64 = e.target.result;
+                    familyPhotoPreviewContainer.style.display = 'flex';
+                    removeFamilyPhotoButton.style.display = 'inline-block';
+                }
+                reader.readAsDataURL(file);
+            } else { // No file selected or selection cancelled
+                familyPhotoPreview.src = "#";
+                familyPhotoPreviewContainer.style.display = 'none';
+                removeFamilyPhotoButton.style.display = 'none';
+                selectedFamilyPhotoBase64 = null;
+            }
+        });
+
+        removeFamilyPhotoButton.addEventListener('click', function() {
+            familyPhotoInput.value = ""; // Clear the file input
+            familyPhotoPreview.src = "#";
+            familyPhotoPreviewContainer.style.display = 'none';
+            removeFamilyPhotoButton.style.display = 'none';
+            selectedFamilyPhotoBase64 = null;
+        });
+    }
+
+    // --- Event Listener for Edit Family Photo Input ---
+    if (editFamilyPhotoInputAdmin && editFamilyPhotoPreviewAdmin && editFamilyPhotoPreviewContainerAdmin && removeCurrentFamilyPhotoButtonAdmin) {
+        editFamilyPhotoInputAdmin.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    alert('រូបភាពធំពេក! សូមជ្រើសរើសរូបភាពតូចជាង 5MB។');
+                    editFamilyPhotoInputAdmin.value = "";
+                    // Revert to showing the current (old) photo if one exists, or hide if not
+                    if (currentFamilyPhotoOnEdit) {
+                        editFamilyPhotoPreviewAdmin.src = currentFamilyPhotoOnEdit;
+                        editFamilyPhotoPreviewContainerAdmin.style.display = 'flex';
+                        removeCurrentFamilyPhotoButtonAdmin.style.display = 'inline-block';
+                    } else {
+                        editFamilyPhotoPreviewAdmin.src = "#";
+                        editFamilyPhotoPreviewContainerAdmin.style.display = 'none';
+                        removeCurrentFamilyPhotoButtonAdmin.style.display = 'none';
+                    }
+                    selectedFamilyPhotoBase64ForEdit = null; // Clear the newly selected (invalid) one
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    editFamilyPhotoPreviewAdmin.src = e.target.result;
+                    selectedFamilyPhotoBase64ForEdit = e.target.result; // This is a new photo for edit
+                    editFamilyPhotoPreviewContainerAdmin.style.display = 'flex';
+                    removeCurrentFamilyPhotoButtonAdmin.style.display = 'inline-block';
+                }
+                reader.readAsDataURL(file);
+            }
+            // If no file is chosen, do nothing, keep the current preview (or lack thereof)
+        });
+
+        removeCurrentFamilyPhotoButtonAdmin.addEventListener('click', function() {
+            editFamilyPhotoInputAdmin.value = "";
+            editFamilyPhotoPreviewAdmin.src = "#"; // Clear preview
+            editFamilyPhotoPreviewContainerAdmin.style.display = 'none';
+            removeCurrentFamilyPhotoButtonAdmin.style.display = 'none';
+            selectedFamilyPhotoBase64ForEdit = null; // Indicate removal of existing or cancellation of new
+            currentFamilyPhotoOnEdit = null; // Mark that the original photo for this family is to be removed
+        });
+    }
+
+
     if (familyDataEntryForm && !isAdminViewing) {
         familyDataEntryForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            if(dataEntrySuccessMsg) dataEntrySuccessMsg.textContent = ''; if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = '';
+            if(dataEntrySuccessMsg) dataEntrySuccessMsg.textContent = '';
+            if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = '';
             const familyHeadNameValue = familyHeadNameInput ? familyHeadNameInput.value.trim() : "";
             const headOfHouseholdPhoneValue = familyHeadPhoneInput ? familyHeadPhoneInput.value.trim() : "";
-            if (!familyHeadNameValue) { if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = 'សូមបញ្ចូលឈ្មោះមេគ្រួសារ។'; if(familyHeadNameInput) familyHeadNameInput.focus(); return; }
+
+            if (!familyHeadNameValue) {
+                if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = 'សូមបញ្ចូលឈ្មោះមេគ្រួសារ។';
+                if(familyHeadNameInput) familyHeadNameInput.focus();
+                return;
+            }
             const memberEntries = memberFieldsContainer.querySelectorAll('.member-entry');
             for (let i = 0; i < memberEntries.length; i++) {
                 const entry = memberEntries[i]; const memberNameInput = entry.querySelector('.member-name');
@@ -605,7 +855,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (electionOfficeIdValue !== "" && electionOfficeIdValue.length !== 4) { if(dataEntryErrorMsg) dataEntryErrorMsg.textContent = `សមាជិក "${memberName}"៖ លេខការិយាល័យបោះឆ្នោតត្រូវតែមាន 4 ខ្ទង់ (បើមានបញ្ចូល)។`; if(electionOfficeIdInput) electionOfficeIdInput.focus(); return;}
                 }
             }
-            const newFamilyData = { familyId: `fam_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, familyName: familyHeadNameValue, headOfHouseholdPhone: headOfHouseholdPhoneValue, entryDate: new Date().toISOString(), members: [], assets: {}, enteredBy: currentVillageIdForMessaging, lastModifiedBy: currentVillageIdForMessaging, lastModifiedDate: new Date().toISOString() };
+            const newFamilyData = {
+                familyId: `fam_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                familyName: familyHeadNameValue,
+                headOfHouseholdPhone: headOfHouseholdPhoneValue,
+                entryDate: new Date().toISOString(),
+                familyPhoto: selectedFamilyPhotoBase64, // Add selected photo
+                members: [],
+                assets: {},
+                enteredBy: currentVillageIdForMessaging,
+                lastModifiedBy: currentVillageIdForMessaging,
+                lastModifiedDate: new Date().toISOString()
+            };
             let hasAtLeastOneValidMember = false;
             if (memberFieldsContainer) {
                 memberFieldsContainer.querySelectorAll('.member-entry').forEach(entry => {
@@ -623,11 +884,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 newFamilyData.assets[input.id] = value;
             });
             const allVillageData = getVillageDataStorage();
-            if (!allVillageData.hasOwnProperty(villageToDisplay) || !Array.isArray(allVillageData[villageToDisplay])) { allVillageData[villageToDisplay] = [];}
-            allVillageData[villageToDisplay].push(newFamilyData); saveVillageDataStorage(allVillageData);
+            if (!allVillageData.hasOwnProperty(villageToDisplay) || !Array.isArray(allVillageData[villageToDisplay])) {
+                allVillageData[villageToDisplay] = [];
+            }
+            allVillageData[villageToDisplay].push(newFamilyData);
+            saveVillageDataStorage(allVillageData);
+
             addActivityLogEntry("ADDED_FAMILY", villageToDisplay, newFamilyData.familyId, newFamilyData.familyName, null, newFamilyData, false );
+
             if(dataEntrySuccessMsg) dataEntrySuccessMsg.textContent = 'ទិន្នន័យគ្រួសារត្រូវបានបញ្ចូលដោយជោគជ័យ!';
-            if(familyDataEntryForm) familyDataEntryForm.reset(); resetNewFamilyFormMemberFields();
+            if(familyDataEntryForm) familyDataEntryForm.reset();
+            resetNewFamilyFormMemberFields();
+            // Reset photo input and preview
+            if (familyPhotoInput) familyPhotoInput.value = "";
+            if (familyPhotoPreview) familyPhotoPreview.src = "#";
+            if (familyPhotoPreviewContainer) familyPhotoPreviewContainer.style.display = 'none';
+            if (removeFamilyPhotoButton) removeFamilyPhotoButton.style.display = 'none';
+            selectedFamilyPhotoBase64 = null;
+
             loadVillageFamilyData(searchVillageInput ? searchVillageInput.value : '');
             setTimeout(() => { if(dataEntrySuccessMsg) dataEntrySuccessMsg.textContent = ''; }, 4000);
         });
@@ -651,19 +925,61 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isAdminViewing || !messageHistoryVillageDiv) return; messageHistoryVillageDiv.innerHTML = '';
         const allMessages = getMessages();
         const chatMessages = allMessages.filter(msg => (msg.from === currentVillageIdForMessaging && msg.to === adminIdForMessaging) || (msg.from === adminIdForMessaging && msg.to === currentVillageIdForMessaging)).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
         if (chatMessages.length === 0) { messageHistoryVillageDiv.innerHTML = `<p style="text-align:center; color:#777;"><em>មិនមានសារជាមួយ Admin ទេ។</em></p>`; return; }
+
         chatMessages.forEach(msg => {
             const bubble = document.createElement('div'); bubble.classList.add('message-bubble'); bubble.classList.add(msg.from === currentVillageIdForMessaging ? 'sent' : 'received');
-            const senderNameDiv = document.createElement('div'); senderNameDiv.classList.add('message-sender-name'); senderNameDiv.textContent = msg.from === currentVillageIdForMessaging ? villageToDisplay : (adminIdForMessaging.split(':')[1] || 'Admin');
-            const contentDiv = document.createElement('div'); contentDiv.classList.add('message-content'); contentDiv.textContent = msg.content;
-            bubble.appendChild(senderNameDiv); bubble.appendChild(contentDiv);
-            if (msg.imageContent) {
-                const imgElement = document.createElement('img'); imgElement.src = msg.imageContent;
-                imgElement.style.maxWidth = '100%'; imgElement.style.maxHeight = '200px'; imgElement.style.borderRadius = '10px';
-                imgElement.style.marginTop = '5px'; imgElement.alt = "រូបភាពដែលបានផ្ញើ";
-                bubble.appendChild(imgElement);
+
+            const senderNameDiv = document.createElement('div');
+            senderNameDiv.classList.add('message-sender-name');
+            senderNameDiv.textContent = msg.from === currentVillageIdForMessaging ? villageToDisplay : (adminIdForMessaging.split(':')[1] || 'Admin');
+            bubble.appendChild(senderNameDiv);
+
+            if (msg.content && msg.content.trim() !== "") {
+                const contentDiv = document.createElement('div');
+                contentDiv.classList.add('message-content');
+                contentDiv.textContent = msg.content;
+                bubble.appendChild(contentDiv);
             }
-            const timestampDiv = document.createElement('div'); timestampDiv.classList.add('message-timestamp'); timestampDiv.textContent = new Date(msg.timestamp).toLocaleString('km-KH', { hour: '2-digit', minute: '2-digit', day:'2-digit', month:'short' });
+
+            if (msg.imageContent) {
+                const images = Array.isArray(msg.imageContent) ? msg.imageContent : [msg.imageContent];
+                 if (images.length > 0) {
+                    const imageGalleryDiv = document.createElement('div');
+                    imageGalleryDiv.classList.add('image-gallery-container');
+
+                    images.forEach(imgBase64 => {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = imgBase64;
+                        imgElement.alt = "រូបភាពដែលបានផ្ញើ";
+                        imgElement.onclick = () => {
+                            const modalImg = document.createElement('div');
+                            modalImg.style.position = 'fixed';
+                            modalImg.style.left = 0; modalImg.style.top = 0;
+                            modalImg.style.width = '100%'; modalImg.style.height = '100%';
+                            modalImg.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                            modalImg.style.display = 'flex';
+                            modalImg.style.justifyContent = 'center';
+                            modalImg.style.alignItems = 'center';
+                            modalImg.style.zIndex = 2000;
+                            const fullImage = document.createElement('img');
+                            fullImage.src = imgBase64;
+                            fullImage.style.maxWidth = '90%';
+                            fullImage.style.maxHeight = '90%';
+                            fullImage.style.objectFit = 'contain';
+                            modalImg.appendChild(fullImage);
+                            modalImg.onclick = () => document.body.removeChild(modalImg);
+                            document.body.appendChild(modalImg);
+                        };
+                        imageGalleryDiv.appendChild(imgElement);
+                    });
+                    bubble.appendChild(imageGalleryDiv);
+                }
+            }
+            const timestampDiv = document.createElement('div');
+            timestampDiv.classList.add('message-timestamp');
+            timestampDiv.textContent = new Date(msg.timestamp).toLocaleString('km-KH', { hour: '2-digit', minute: '2-digit', day:'2-digit', month:'short' });
             bubble.appendChild(timestampDiv); messageHistoryVillageDiv.appendChild(bubble);
         });
         messageHistoryVillageDiv.scrollTop = messageHistoryVillageDiv.scrollHeight; markVillageMessagesAsRead();
@@ -672,9 +988,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const openVillageMessageModal = () => {
         if (isAdminViewing || !messageModalVillage || !messageModalTitleVillage || !messageComposerVillageDiv) return;
         if (imageInputVillage) imageInputVillage.value = '';
-        if (imagePreviewVillage) imagePreviewVillage.style.display = 'none';
-        if (removeImageVillageButton) removeImageVillageButton.style.display = 'none';
-        selectedImageBase64Village = null;
+        if (imagePreviewContainerVillage) { imagePreviewContainerVillage.innerHTML = ''; imagePreviewContainerVillage.style.display = 'none';}
+        if (removeAllImagesVillageButton) removeAllImagesVillageButton.style.display = 'none';
+        selectedImagesBase64Village = [];
+
         const adminDisplayName = adminIdForMessaging.split(':')[1] || 'Admin';
         messageModalTitleVillage.textContent = `ផ្ញើសារទៅ ${adminDisplayName}`;
         displayVillageChatHistory(); messageComposerVillageDiv.style.display = 'block';
@@ -683,49 +1000,95 @@ document.addEventListener('DOMContentLoaded', () => {
         messageModalVillage.style.display = 'block'; updateVillageUnreadCount();
     };
 
-    // Event listener for image input - VILLAGE
-if (imageInputVillage && imagePreviewVillage && removeImageVillageButton && !isAdminViewing) {
-    imageInputVillage.addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            // if (file.size > 3 * 1024 * 1024) { // 3MB limit
-            if (file.size > 5 * 1024 * 1024) { // CHANGED TO 5MB limit
-                alert('រូបភាពធំពេក! សូមជ្រើសរើសរូបភាពតូចជាង 5MB។'); // Update alert message
-                imageInputVillage.value = "";
-                imagePreviewVillage.style.display = 'none';
-                removeImageVillageButton.style.display = 'none';
-                selectedImageBase64Village = null;
+    if (imageInputVillage && imagePreviewContainerVillage && removeAllImagesVillageButton && !isAdminViewing) {
+        imageInputVillage.addEventListener('change', async function(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) {
                 return;
             }
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                imagePreviewVillage.src = e.target.result;
-                imagePreviewVillage.style.display = 'block';
-                removeImageVillageButton.style.display = 'inline-block';
-                selectedImageBase64Village = e.target.result;
+            selectedImagesBase64Village = [];
+            imagePreviewContainerVillage.innerHTML = '';
+
+            let allFilesValid = true;
+            const newImagePromises = [];
+
+            for (const file of files) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    alert(`រូបភាព "${file.name}" ធំពេក! ( > 5MB)។ វានឹងមិនត្រូវបានបន្ថែមទេ។`);
+                    allFilesValid = false;
+                    continue;
+                }
+                newImagePromises.push(
+                    new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            resolve({ name: file.name, base64: e.target.result });
+                        }
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    })
+                );
             }
-            reader.readAsDataURL(file);
-        } else {
-            imagePreviewVillage.style.display = 'none';
-            removeImageVillageButton.style.display = 'none';
-            selectedImageBase64Village = null;
-        }
-    });
-    // ... rest of the listener
-}
+
+            try {
+                const newImageData = await Promise.all(newImagePromises);
+                newImageData.forEach(imgData => {
+                    selectedImagesBase64Village.push(imgData.base64);
+                    const imgElement = document.createElement('img');
+                    imgElement.src = imgData.base64;
+                    imgElement.alt = imgData.name;
+                    imagePreviewContainerVillage.appendChild(imgElement);
+                });
+            } catch (error) {
+                console.error("Error reading image files for village:", error);
+                alert("មានបញ្ហាក្នុងការអានរូបភាពខ្លះ។");
+            }
+
+            if (selectedImagesBase64Village.length > 0) {
+                imagePreviewContainerVillage.style.display = 'flex';
+                removeAllImagesVillageButton.style.display = 'inline-block';
+            } else {
+                imagePreviewContainerVillage.style.display = 'none';
+                removeAllImagesVillageButton.style.display = 'none';
+                if (!allFilesValid) imageInputVillage.value = "";
+            }
+        });
+
+        removeAllImagesVillageButton.addEventListener('click', function() {
+            imageInputVillage.value = "";
+            selectedImagesBase64Village = [];
+            imagePreviewContainerVillage.innerHTML = '';
+            imagePreviewContainerVillage.style.display = 'none';
+            removeAllImagesVillageButton.style.display = 'none';
+        });
+    }
+
 
     if (sendMessageButtonVillage && !isAdminViewing) {
         sendMessageButtonVillage.addEventListener('click', () => {
-            if (!messageInputVillage) return; const content = messageInputVillage.value.trim();
+            if (!messageInputVillage) return;
+            const content = messageInputVillage.value.trim();
             if (!adminIdForMessaging) { if(messageErrorVillage) messageErrorVillage.textContent = 'មិនអាចកំណត់ Admin អ្នកទទួល។'; return; }
-            if (!content && !selectedImageBase64Village) { if(messageErrorVillage) messageErrorVillage.textContent = 'ខ្លឹមសារសារ ឬរូបភាពមិនអាចទទេបានទេ។'; return; }
-            const newMessage = { id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, from: currentVillageIdForMessaging, to: adminIdForMessaging, content: content, imageContent: selectedImageBase64Village, timestamp: new Date().toISOString(), readByReceiver: false };
+
+            if (!content && selectedImagesBase64Village.length === 0) {
+                 if(messageErrorVillage) messageErrorVillage.textContent = 'ខ្លឹមសារសារ ឬរូបភាពមិនអាចទទេបានទេ។'; return;
+            }
+            const newMessage = {
+                id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                from: currentVillageIdForMessaging,
+                to: adminIdForMessaging,
+                content: content,
+                imageContent: selectedImagesBase64Village.length > 0 ? [...selectedImagesBase64Village] : null,
+                timestamp: new Date().toISOString(),
+                readByReceiver: false
+            };
             let messages = getMessages(); messages.push(newMessage); saveMessages(messages);
+
             messageInputVillage.value = '';
             if(imageInputVillage) imageInputVillage.value = '';
-            if(imagePreviewVillage) imagePreviewVillage.style.display = 'none';
-            if(removeImageVillageButton) removeImageVillageButton.style.display = 'none';
-            selectedImageBase64Village = null;
+            if(imagePreviewContainerVillage) { imagePreviewContainerVillage.innerHTML = ''; imagePreviewContainerVillage.style.display = 'none'; }
+            if(removeAllImagesVillageButton) removeAllImagesVillageButton.style.display = 'none';
+            selectedImagesBase64Village = [];
             if(messageErrorVillage) messageErrorVillage.textContent = ''; displayVillageChatHistory();
         });
     }
@@ -744,9 +1107,32 @@ if (imageInputVillage && imagePreviewVillage && removeImageVillageButton && !isA
 
     const openEditFamilyModal = (villageNameContext, familyId, familyData) => {
          if (!isAdminViewing && !villageChiefCanEdit) { alert("អ្នកមិនមានសិទ្ធិកែសម្រួលទិន្នន័យនេះទេ។"); return; }
-         if (!editFamilyModal || !editFamilyIdInput || !editFamilyVillageInput || !editFamilyHeadNameInput || !editFamilyHeadPhoneAdminInput || !editFamilyMembersContainer || !editFamilyAssetsContainer || !editMemberTemplateAdmin || !editMemberTemplateAdmin.content) { console.error("Dashboard: Essential modal DOM elements or member template content are missing for edit."); alert("មានបញ្ហាក្នុងការបើកទម្រង់កែសម្រួល។"); return;}
-         editFamilyIdInput.value = familyId; editFamilyVillageInput.value = villageNameContext;
-         editFamilyHeadNameInput.value = familyData.familyName || ""; editFamilyHeadPhoneAdminInput.value = familyData.headOfHouseholdPhone || "";
+         if (!editFamilyModal || !editFamilyIdInput || !editFamilyVillageInput || !editFamilyHeadNameInput || !editFamilyHeadPhoneAdminInput || !editFamilyMembersContainer || !editFamilyAssetsContainer || !editMemberTemplateAdmin || !editMemberTemplateAdmin.content ||
+             !editFamilyPhotoInputAdmin || !editFamilyPhotoPreviewAdmin || !editFamilyPhotoPreviewContainerAdmin || !removeCurrentFamilyPhotoButtonAdmin) {
+            console.error("Dashboard: Essential modal DOM elements (including photo elements) or member template content are missing for edit.");
+            alert("មានបញ្ហាក្នុងការបើកទម្រង់កែសម្រួល។");
+            return;
+         }
+         editFamilyIdInput.value = familyId;
+         editFamilyVillageInput.value = villageNameContext;
+         editFamilyHeadNameInput.value = familyData.familyName || "";
+         editFamilyHeadPhoneAdminInput.value = familyData.headOfHouseholdPhone || "";
+
+        editFamilyPhotoInputAdmin.value = "";
+        selectedFamilyPhotoBase64ForEdit = null;
+        currentFamilyPhotoOnEdit = familyData.familyPhoto || null;
+
+        if (currentFamilyPhotoOnEdit) {
+            editFamilyPhotoPreviewAdmin.src = currentFamilyPhotoOnEdit;
+            editFamilyPhotoPreviewContainerAdmin.style.display = 'flex';
+            removeCurrentFamilyPhotoButtonAdmin.style.display = 'inline-block';
+        } else {
+            editFamilyPhotoPreviewAdmin.src = "#";
+            editFamilyPhotoPreviewContainerAdmin.style.display = 'none';
+            removeCurrentFamilyPhotoButtonAdmin.style.display = 'none';
+        }
+
+
          editFamilyMembersContainer.innerHTML = '';
          if (familyData.members && Array.isArray(familyData.members)) {
              familyData.members.forEach((memberData, index) => {
@@ -794,7 +1180,7 @@ if (imageInputVillage && imagePreviewVillage && removeImageVillageButton && !isA
          };
     }
     if (closeEditFamilyModalButton && editFamilyModal) { closeEditFamilyModalButton.onclick = () => { editFamilyModal.style.display = 'none'; };}
-    
+
     window.onclick = (event) => {
         if (event.target == editFamilyModal && editFamilyModal) editFamilyModal.style.display = 'none';
         if (event.target == messageModalVillage && messageModalVillage && !isAdminViewing) { messageModalVillage.style.display = 'none'; updateVillageUnreadCount(); }
@@ -805,12 +1191,36 @@ if (imageInputVillage && imagePreviewVillage && removeImageVillageButton && !isA
              e.preventDefault();
              if (!isAdminViewing && !villageChiefCanEdit) { if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = "អ្នកមិនមានសិទ្ធិរក្សាទុកការផ្លាស់ប្តូរទេ។"; return;}
              if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = ''; if(editFamilySuccessAdmin) editFamilySuccessAdmin.textContent = '';
-             const familyIdToUpdate = editFamilyIdInput.value; const villageOfFamily = editFamilyVillageInput.value;
-             const updatedFamilyHeadNameValue = editFamilyHeadNameInput.value.trim(); const updatedHeadPhoneValue = editFamilyHeadPhoneAdminInput ? editFamilyHeadPhoneAdminInput.value.trim() : "";
-             if (!updatedFamilyHeadNameValue) { if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = "ឈ្មោះមេគ្រួសារមិនអាចនៅទទេបានទេ។"; editFamilyHeadNameInput.focus(); return;}
+             const familyIdToUpdate = editFamilyIdInput.value;
+             const villageOfFamily = editFamilyVillageInput.value;
+             const updatedFamilyHeadNameValue = editFamilyHeadNameInput.value.trim();
+             const updatedHeadPhoneValue = editFamilyHeadPhoneAdminInput ? editFamilyHeadPhoneAdminInput.value.trim() : "";
+
+             if (!updatedFamilyHeadNameValue) {
+                 if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = "ឈ្មោះមេគ្រួសារមិនអាចនៅទទេបានទេ។";
+                 editFamilyHeadNameInput.focus();
+                 return;
+            }
              const allDataForComparison = getVillageDataStorage();
              const originalFamilyDataForLog = JSON.parse(JSON.stringify( (allDataForComparison[villageOfFamily] || []).find(f => f.familyId === familyIdToUpdate) || null ));
-             const updatedFamilyPayload = { familyId: familyIdToUpdate, familyName: updatedFamilyHeadNameValue, headOfHouseholdPhone: updatedHeadPhoneValue, members: [], assets: {}, lastModifiedBy: isAdminViewing ? (currentAdminUsername ? `admin:${currentAdminUsername}` : adminIdForMessaging) : currentVillageIdForMessaging, lastModifiedDate: new Date().toISOString(), entryDate: originalFamilyDataForLog ? originalFamilyDataForLog.entryDate : new Date().toISOString() };
+
+             const updatedFamilyPayload = {
+                familyId: familyIdToUpdate,
+                familyName: updatedFamilyHeadNameValue,
+                headOfHouseholdPhone: updatedHeadPhoneValue,
+                members: [],
+                assets: {},
+                familyPhoto: selectedFamilyPhotoBase64ForEdit !== null ? selectedFamilyPhotoBase64ForEdit : currentFamilyPhotoOnEdit,
+                lastModifiedBy: isAdminViewing ? (currentAdminUsername ? `admin:${currentAdminUsername}` : adminIdForMessaging) : currentVillageIdForMessaging,
+                lastModifiedDate: new Date().toISOString(),
+                entryDate: originalFamilyDataForLog ? originalFamilyDataForLog.entryDate : new Date().toISOString()
+             };
+
+             if (selectedFamilyPhotoBase64ForEdit === null && currentFamilyPhotoOnEdit === null) {
+                 updatedFamilyPayload.familyPhoto = null;
+             }
+
+
              const memberEditEntries = editFamilyMembersContainer.querySelectorAll('.member-entry'); let editFormValidationError = false;
              for (const entry of memberEditEntries) {
                  const nameInput = entry.querySelector('.member-name-edit'); const name = nameInput ? nameInput.value.trim() : '';
@@ -835,21 +1245,30 @@ if (imageInputVillage && imagePreviewVillage && removeImageVillageButton && !isA
                 if (assetKey) { let value; if (assetDef?.isLandArea) { value = input.value.trim() || "0"; } else if (input.type === 'number') { value = parseInt(input.value, 10) || 0; } else { value = input.value.trim(); } updatedFamilyPayload.assets[assetKey] = value;}
             });
             if (originalFamilyDataForLog && originalFamilyDataForLog.enteredBy && !updatedFamilyPayload.enteredBy){ updatedFamilyPayload.enteredBy = originalFamilyDataForLog.enteredBy; }
+
              const allDataToSave = getVillageDataStorage();
              if (allDataToSave.hasOwnProperty(villageOfFamily) && Array.isArray(allDataToSave[villageOfFamily])) {
                  const familyIndex = allDataToSave[villageOfFamily].findIndex(f => f.familyId === familyIdToUpdate);
                  if (familyIndex > -1) {
                      updatedFamilyPayload.entryDate = allDataToSave[villageOfFamily][familyIndex].entryDate;
-                     if (!updatedFamilyPayload.enteredBy && allDataToSave[villageOfFamily][familyIndex].enteredBy) { updatedFamilyPayload.enteredBy = allDataToSave[villageOfFamily][familyIndex].enteredBy;}
-                     allDataToSave[villageOfFamily][familyIndex] = updatedFamilyPayload; saveVillageDataStorage(allDataToSave);
+                     if (!updatedFamilyPayload.enteredBy && allDataToSave[villageOfFamily][familyIndex].enteredBy) {
+                        updatedFamilyPayload.enteredBy = allDataToSave[villageOfFamily][familyIndex].enteredBy;
+                     }
+                     allDataToSave[villageOfFamily][familyIndex] = updatedFamilyPayload;
+                     saveVillageDataStorage(allDataToSave);
+
                      if (originalFamilyDataForLog) {
                         addActivityLogEntry("EDITED_FAMILY", villageOfFamily, familyIdToUpdate, updatedFamilyPayload.familyName, originalFamilyDataForLog, updatedFamilyPayload, isAdminViewing);
                      }
                      if(editFamilySuccessAdmin) editFamilySuccessAdmin.textContent = 'ទិន្នន័យគ្រួសារបានកែសម្រួលជោគជ័យ!';
                      loadVillageFamilyData(searchVillageInput ? searchVillageInput.value : '');
                      setTimeout(() => { if(editFamilyModal) editFamilyModal.style.display = 'none'; if(editFamilySuccessAdmin) editFamilySuccessAdmin.textContent = '';}, 2000);
-                 } else { if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = `រកមិនឃើញទិន្នន័យគ្រួសារដើម ID ${familyIdToUpdate}។`;}
-             } else { if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = `មិនមានទិន្នន័យសម្រាប់ភូមិ ${villageOfFamily}។`;}
+                 } else {
+                    if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = `រកមិនឃើញទិន្នន័យគ្រួសារដើម ID ${familyIdToUpdate}។`;
+                }
+             } else {
+                if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = `មិនមានទិន្នន័យសម្រាប់ភូមិ ${villageOfFamily}។`;
+            }
          });
     }
 
