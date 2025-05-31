@@ -174,10 +174,12 @@
                 <textarea id="message-input-admin" placeholder="វាយសាររបស់អ្នកនៅទីនេះ..."></textarea>
                 <!-- Image Input and Preview for Admin -->
                 <div style="margin-top: 5px; margin-bottom: 5px;">
-                    <label for="image-input-admin" class="action-button" style="background-color: #6c757d; padding: 5px 10px; font-size: 0.9em; display: inline-block; cursor:pointer;">ជ្រើសរើសរូបភាព</label>
-                    <input type="file" id="image-input-admin" accept="image/*" style="display: none;">
-                    <img id="image-preview-admin" src="#" alt="រូបភាពដែលបានជ្រើសរើស" style="max-width: 100px; max-height: 100px; margin-top: 5px; display: none; border: 1px solid #ccc; vertical-align: middle;">
-                    <button type="button" id="remove-image-admin" style="display:none; font-size:0.8em; background-color:#dc3545; margin-left:5px; padding: 3px 6px; vertical-align: middle;">ដករូបភាព</button>
+                    <label for="image-input-admin" class="action-button" style="background-color: #6c757d; padding: 5px 10px; font-size: 0.9em; display: inline-block; cursor:pointer;">ជ្រើសរើសរូបភាព (ច្រើន)</label>
+                    <input type="file" id="image-input-admin" accept="image/*" style="display: none;" multiple>
+                    <div id="image-preview-container-admin" style="margin-top: 5px; display: flex; flex-wrap: wrap; gap: 5px; min-height: 30px;">
+                        <!-- Image previews will be appended here by JS -->
+                    </div>
+                    <button type="button" id="remove-all-images-admin" style="display:none; font-size:0.8em; background-color:#dc3545; margin-left:0; padding: 3px 6px; vertical-align: middle; margin-top:5px;">ដករូបភាពទាំងអស់</button>
                 </div>
                 <button id="send-message-button-admin" style="margin-top: 10px; width: 100%;">ផ្ញើ</button>
             </div>
