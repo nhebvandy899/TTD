@@ -114,8 +114,7 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 #admin-village-list-section #village-table {width: 100%; border-collapse: collapse; margin-top: 15px;}
 #admin-village-list-section #village-table th, #admin-village-list-section #village-table td {border: 1px solid #ddd; padding: 10px; text-align: left;}
 #admin-village-list-section #village-table th {background-color: #f2f2f2;}
-#admin-village-list-section #village-table button {padding: 5px 10px; font-size: 12px; /* background-color: #17a2b8; */ /* Color handled by .action-button or specific classes */ color: white; border: none; border-radius: 3px; cursor: pointer; margin-right: 5px;}
-#admin-village-list-section #village-table button:hover { /* background-color: #138496; */ } /* Hover color handled by .action-button:hover or specific classes */
+#admin-village-list-section #village-table button {padding: 5px 10px; font-size: 12px; color: white; border: none; border-radius: 3px; cursor: pointer; margin-right: 5px;}
 #admin-village-list-section .permission-toggle-button {
     padding: 4px 8px; font-size: 0.85em; color: white;
     border: none; border-radius: 3px; cursor: pointer; min-width: 90px;
@@ -281,14 +280,37 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 }
 
 /* Styles for Image in Chat Bubble & File Input Label */
-.message-bubble img {
-    max-width: 100%;
-    max-height: 200px;
-    border-radius: 10px;
-    margin-top: 5px;
-    display: block;
+.message-bubble img { /* Style for images within chat bubbles (thumbnails) */
+    max-width: 100px; /* Max width for thumbnails in chat */
+    max-height: 100px; /* Max height for thumbnails in chat */
+    border-radius: 5px;
+    margin: 2px; /* Spacing if multiple images */
+    display: inline-block;
     cursor: pointer;
+    border: 1px solid #eee;
+    object-fit: cover;
 }
+/* Container for multiple image previews in chat composer */
+#image-preview-container-admin,
+#image-preview-container-village {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+    min-height: 30px; /* Ensure it has some height even when empty */
+    border: 1px dashed #ccc; /* Optional: border for the preview area */
+    padding: 5px; /* Optional: padding for the preview area */
+}
+#image-preview-container-admin img,
+#image-preview-container-village img { /* Style for image previews in composer */
+    max-width: 80px;
+    max-height: 80px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+    object-fit: cover;
+}
+
+
 label.action-button { /* General style for labels acting as buttons */
     display: inline-block;
     padding: 5px 10px;
@@ -296,6 +318,44 @@ label.action-button { /* General style for labels acting as buttons */
     cursor: pointer;
     border-radius: 4px;
     text-align: center;
-    color: white; /* Assuming action buttons have white text */
-    /* background-color will be set inline or by more specific classes */
+    color: white;
+}
+
+/* Styles for single family photo preview in forms */
+.image-preview-box {
+    border: 1px dashed #ccc;
+    padding: 10px;
+    margin-top: 10px;
+    min-height: 100px;
+    display: flex; /* Changed to flex for better alignment */
+    flex-direction: column; /* Stack image and button vertically */
+    align-items: flex-start; /* Align items to the start (left) */
+}
+
+.image-preview-box img { /* This is for #family-photo-preview and #edit-family-photo-preview-admin */
+    max-width: 150px;
+    max-height: 150px;
+    display: block; /* Make it a block to take up full width available to it */
+    margin-bottom: 10px; /* Space between image and remove button */
+    border: 1px solid #ddd; /* Add a border to the preview image */
+}
+
+.remove-image-button-style { /* For family photo remove buttons */
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 3px 8px;
+    font-size: 0.85em;
+    cursor: pointer;
+    border-radius: 3px;
+    display: inline-block;
+}
+.remove-image-button-style:hover {
+    background-color: #f1b0b7;
+}
+
+/* Ensure preview containers in modals/forms are initially hidden correctly */
+#family-photo-preview-container,
+#edit-family-photo-preview-container-admin {
+    display: none; /* Initially hidden, JS will show if there's an image */
 }
