@@ -104,16 +104,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageInputAdmin = document.getElementById('message-input-admin');
     const sendMessageButtonAdmin = document.getElementById('send-message-button-admin');
     const messageErrorAdmin = document.getElementById('message-error-admin');
+
     // Image related DOM elements for Admin
     const imageInputAdmin = document.getElementById('image-input-admin');
-    const imagePreviewAdmin = document.getElementById('image-preview-admin');
-    const removeImageAdminButton = document.getElementById('remove-image-admin');
-    let selectedImageBase64Admin = null; // To store the selected image data for admin
+    const imagePreviewContainerAdmin = document.getElementById('image-preview-container-admin'); // Updated
+    const removeAllImagesAdminButton = document.getElementById('remove-all-images-admin'); // Updated
+    let selectedImagesBase64Admin = []; // Updated: To store multiple selected image data for admin
+
 
     const MAX_MEMBERS_EDIT = 9;
     const { jsPDF } = window.jspdf;
 
-    const khmerOSBattambangBase64 = 'YOUR_KHMER_OS_BATTAMBANG_BASE64_STRING_HERE';
+    const khmerOSBattambangBase64 = 'YOUR_KHMER_OS_BATTAMBANG_BASE64_STRING_HERE'; // Ensure this is populated
     const FONT_FILENAME_VFS = "KhmerOSBattambang-Regular.ttf";
     const FONT_NAME_JSPDF = "KhmerOSBattambangAdmin";
     let khmerFontForAdminPDFLoaded = false;
@@ -277,6 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const chatMessages = allMessages.filter(
             msg => (msg.from === adminId && msg.to === villageId) || (msg.from === villageId && msg.to === adminId)
         ).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
         if (chatMessages.length === 0) {
             messageHistoryAdminDiv.innerHTML = `<p style="text-align:center; color:#777;"><em>មិនមានសារក្នុងកិច្ចសន្ទនានេះទេ។</em></p>`;
             return;
@@ -285,21 +288,60 @@ document.addEventListener('DOMContentLoaded', () => {
             const bubble = document.createElement('div');
             bubble.classList.add('message-bubble');
             bubble.classList.add(msg.from === adminId ? 'sent' : 'received');
+
             const senderNameDiv = document.createElement('div');
             senderNameDiv.classList.add('message-sender-name');
             senderNameDiv.textContent = msg.from === adminId ? adminUsernameFromSession : msg.from.split(':')[1];
-            const contentDiv = document.createElement('div');
-            contentDiv.classList.add('message-content');
-            contentDiv.textContent = msg.content;
             bubble.appendChild(senderNameDiv);
-            bubble.appendChild(contentDiv);
-            if (msg.imageContent) { // Display image if present
-                const imgElement = document.createElement('img');
-                imgElement.src = msg.imageContent;
-                imgElement.style.maxWidth = '100%'; imgElement.style.maxHeight = '200px';
-                imgElement.style.borderRadius = '10px'; imgElement.style.marginTop = '5px';
-                imgElement.alt = "រូបភាពដែលបានផ្ញើ";
-                bubble.appendChild(imgElement);
+
+            if (msg.content && msg.content.trim() !== "") {
+                const contentDiv = document.createElement('div');
+                contentDiv.classList.add('message-content');
+                contentDiv.textContent = msg.content;
+                bubble.appendChild(contentDiv);
+            }
+
+            if (msg.imageContent) {
+                const images = Array.isArray(msg.imageContent) ? msg.imageContent : [msg.imageContent];
+                if (images.length > 0) {
+                    const imageGalleryDiv = document.createElement('div');
+                    imageGalleryDiv.style.display = 'flex';
+                    imageGalleryDiv.style.flexWrap = 'wrap';
+                    imageGalleryDiv.style.gap = '5px';
+                    imageGalleryDiv.style.marginTop = (msg.content && msg.content.trim() !== "") ? '5px' : '0';
+
+                    images.forEach(imgBase64 => {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = imgBase64;
+                        imgElement.style.maxWidth = '100px';
+                        imgElement.style.maxHeight = '100px';
+                        imgElement.style.borderRadius = '5px';
+                        imgElement.style.border = '1px solid #ddd';
+                        imgElement.alt = "រូបភាពដែលបានផ្ញើ";
+                        imgElement.style.cursor = 'pointer';
+                        imgElement.onclick = () => {
+                            const modalImg = document.createElement('div');
+                            modalImg.style.position = 'fixed';
+                            modalImg.style.left = 0; modalImg.style.top = 0;
+                            modalImg.style.width = '100%'; modalImg.style.height = '100%';
+                            modalImg.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                            modalImg.style.display = 'flex';
+                            modalImg.style.justifyContent = 'center';
+                            modalImg.style.alignItems = 'center';
+                            modalImg.style.zIndex = 2000;
+                            const fullImage = document.createElement('img');
+                            fullImage.src = imgBase64;
+                            fullImage.style.maxWidth = '90%';
+                            fullImage.style.maxHeight = '90%';
+                            fullImage.style.objectFit = 'contain';
+                            modalImg.appendChild(fullImage);
+                            modalImg.onclick = () => document.body.removeChild(modalImg);
+                            document.body.appendChild(modalImg);
+                        };
+                        imageGalleryDiv.appendChild(imgElement);
+                    });
+                    bubble.appendChild(imageGalleryDiv);
+                }
             }
             const timestampDiv = document.createElement('div');
             timestampDiv.classList.add('message-timestamp');
@@ -359,11 +401,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const openAdminMessageModal = (targetVillageName = null) => {
         if (!messageModalAdmin || !messageRecipientAdminIdInput || !messageModalTitleAdmin || !messageComposerAdminDiv) return;
-        // Reset image selection when opening modal
         if (imageInputAdmin) imageInputAdmin.value = '';
-        if (imagePreviewAdmin) imagePreviewAdmin.style.display = 'none';
-        if (removeImageAdminButton) removeImageAdminButton.style.display = 'none';
-        selectedImageBase64Admin = null;
+        if (imagePreviewContainerAdmin) { imagePreviewContainerAdmin.innerHTML = ''; imagePreviewContainerAdmin.style.display = 'none'; }
+        if (removeAllImagesAdminButton) removeAllImagesAdminButton.style.display = 'none';
+        selectedImagesBase64Admin = [];
 
         if (targetVillageName) {
             const villageId = `village:${targetVillageName}`;
@@ -380,35 +421,75 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Event listener for image input - ADMIN
-if (imageInputAdmin && imagePreviewAdmin && removeImageAdminButton) {
-    imageInputAdmin.addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            // if (file.size > 3 * 1024 * 1024) { // 3MB limit
-            if (file.size > 5 * 1024 * 1024) { // CHANGED TO 5MB limit
-                alert('រូបភាពធំពេក! សូមជ្រើសរើសរូបភាពតូចជាង 5MB។'); // Update alert message
-                imageInputAdmin.value = ""; // Clear the selected file
-                imagePreviewAdmin.style.display = 'none';
-                removeImageAdminButton.style.display = 'none';
-                selectedImageBase64Admin = null;
+    if (imageInputAdmin && imagePreviewContainerAdmin && removeAllImagesAdminButton) {
+        imageInputAdmin.addEventListener('change', async function(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) {
                 return;
             }
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                imagePreviewAdmin.src = e.target.result;
-                imagePreviewAdmin.style.display = 'block';
-                removeImageAdminButton.style.display = 'inline-block';
-                selectedImageBase64Admin = e.target.result; // Store Base64 data
+            // Clear previous selections when new files are chosen
+            selectedImagesBase64Admin = [];
+            imagePreviewContainerAdmin.innerHTML = '';
+
+            let allFilesValid = true;
+            const newImagePromises = [];
+
+            for (const file of files) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    alert(`រូបភាព "${file.name}" ធំពេក! ( > 5MB)។ វានឹងមិនត្រូវបានបន្ថែមទេ។`);
+                    allFilesValid = false;
+                    continue;
+                }
+                newImagePromises.push(
+                    new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            resolve({ name: file.name, base64: e.target.result });
+                        }
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    })
+                );
             }
-            reader.readAsDataURL(file);
-        } else {
-            imagePreviewAdmin.style.display = 'none';
-            removeImageAdminButton.style.display = 'none';
-            selectedImageBase64Admin = null;
-        }
-    });
-    // ... rest of the listener
-}
+
+            try {
+                const newImageData = await Promise.all(newImagePromises);
+                newImageData.forEach(imgData => {
+                    selectedImagesBase64Admin.push(imgData.base64);
+                    const imgElement = document.createElement('img');
+                    imgElement.src = imgData.base64;
+                    imgElement.alt = imgData.name;
+                    imgElement.style.maxWidth = '80px';
+                    imgElement.style.maxHeight = '80px';
+                    imgElement.style.margin = '2px';
+                    imgElement.style.border = '1px solid #ccc';
+                    imgElement.style.objectFit = 'cover';
+                    imagePreviewContainerAdmin.appendChild(imgElement);
+                });
+            } catch (error) {
+                console.error("Error reading image files:", error);
+                alert("មានបញ្ហាក្នុងការអានរូបភាពខ្លះ។");
+            }
+
+            if (selectedImagesBase64Admin.length > 0) {
+                imagePreviewContainerAdmin.style.display = 'flex';
+                removeAllImagesAdminButton.style.display = 'inline-block';
+            } else {
+                imagePreviewContainerAdmin.style.display = 'none';
+                removeAllImagesAdminButton.style.display = 'none';
+                if (!allFilesValid) imageInputAdmin.value = ""; // Clear input if all selected were invalid
+            }
+        });
+
+        removeAllImagesAdminButton.addEventListener('click', function() {
+            imageInputAdmin.value = "";
+            selectedImagesBase64Admin = [];
+            imagePreviewContainerAdmin.innerHTML = '';
+            imagePreviewContainerAdmin.style.display = 'none';
+            removeAllImagesAdminButton.style.display = 'none';
+        });
+    }
+
 
     if (sendMessageButtonAdmin) {
         sendMessageButtonAdmin.addEventListener('click', () => {
@@ -416,19 +497,23 @@ if (imageInputAdmin && imagePreviewAdmin && removeImageAdminButton) {
             const content = messageInputAdmin.value.trim();
             const recipientId = messageRecipientAdminIdInput.value;
             if (!recipientId) { if(messageErrorAdmin) messageErrorAdmin.textContent = 'សូមជ្រើសរើសអ្នកទទួលសារពីបញ្ជី។'; return; }
-            if (!content && !selectedImageBase64Admin) {
+
+            if (!content && selectedImagesBase64Admin.length === 0) {
                 if(messageErrorAdmin) messageErrorAdmin.textContent = 'ខ្លឹមសារសារ ឬរូបភាពមិនអាចទទេបានទេ។'; return;
             }
             const newMessage = {
                 id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, from: adminId, to: recipientId,
-                content: content, imageContent: selectedImageBase64Admin, timestamp: new Date().toISOString(), readByReceiver: false
+                content: content,
+                imageContent: selectedImagesBase64Admin.length > 0 ? [...selectedImagesBase64Admin] : null, // Send array or null
+                timestamp: new Date().toISOString(), readByReceiver: false
             };
             let messages = getMessages(); messages.push(newMessage); saveMessages(messages);
+
             messageInputAdmin.value = '';
             if (imageInputAdmin) imageInputAdmin.value = '';
-            if (imagePreviewAdmin) imagePreviewAdmin.style.display = 'none';
-            if (removeImageAdminButton) removeImageAdminButton.style.display = 'none';
-            selectedImageBase64Admin = null;
+            if (imagePreviewContainerAdmin) { imagePreviewContainerAdmin.innerHTML = ''; imagePreviewContainerAdmin.style.display = 'none';}
+            if (removeAllImagesAdminButton) removeAllImagesAdminButton.style.display = 'none';
+            selectedImagesBase64Admin = [];
             if(messageErrorAdmin) messageErrorAdmin.textContent = '';
             displayAdminChatHistory(recipientId);
         });
@@ -708,8 +793,6 @@ if (imageInputAdmin && imagePreviewAdmin && removeImageAdminButton) {
         Object.keys(educationStatsAdmin).forEach(key => {
             const spanIdTotal = `edu-level-${key.toLowerCase().replace(/[^a-z0-9]/gi, '-').replace(/[^a-z0-9-]/gi, '')}-admin`;
             const spanIdFemale = `edu-level-${key.toLowerCase().replace(/[^a-z0-9]/gi, '-').replace(/[^a-z0-9-]/gi, '')}-female-admin`;
-            // A more robust way to map keys to span IDs might be needed if keys don't directly map
-            // For example, "លើសបរិញ្ញាបត្រ" maps to "postgraduate" spans
             if (key === "មិនបានសិក្សា") { if(eduLevelUneducatedAdminSpan) eduLevelUneducatedAdminSpan.textContent = educationStatsAdmin[key].total; if(eduLevelUneducatedFemaleAdminSpan) eduLevelUneducatedFemaleAdminSpan.textContent = educationStatsAdmin[key].female;}
             else if (key === "បឋមសិក្សា") { if(eduLevelPrimaryAdminSpan) eduLevelPrimaryAdminSpan.textContent = educationStatsAdmin[key].total; if(eduLevelPrimaryFemaleAdminSpan) eduLevelPrimaryFemaleAdminSpan.textContent = educationStatsAdmin[key].female; }
             else if (key === "អនុវិទ្យាល័យ") { if(eduLevelLowerSecondaryAdminSpan) eduLevelLowerSecondaryAdminSpan.textContent = educationStatsAdmin[key].total; if(eduLevelLowerSecondaryFemaleAdminSpan) eduLevelLowerSecondaryFemaleAdminSpan.textContent = educationStatsAdmin[key].female; }
