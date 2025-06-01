@@ -90,6 +90,29 @@
         </div>
         <hr>
 
+        <!-- Password Reset Requests Section -->
+        <h2>សំណើសុំប្តូរលេខសម្ងាត់មេភូមិ</h2>
+        <div id="password-reset-requests-section">
+            <table id="reset-requests-table">
+                <thead>
+                    <tr>
+                        <th>ID សំណើ</th>
+                        <th>ឈ្មោះភូមិ</th>
+                        <th>លេខទូរស័ព្ទ</th>
+                        <th>មូលហេតុ</th>
+                        <th>ពេលវេលាស្នើ</th>
+                        <th>ស្ថានភាព</th>
+                        <th>សកម្មភាព</th>
+                    </tr>
+                </thead>
+                <tbody id="reset-requests-tbody">
+                    <tr><td colspan="7" style="text-align:center;">កំពុងទាញយកសំណើ...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <hr>
+
+
         <h2>មើល/ស្វែងរកទិន្នន័យគ្រួសារ</h2>
          <label for="village-select">ជ្រើសរើសភូមិ (ដើម្បីមើលខាងក្រោម ឬស្វែងរក):</label>
          <select id="village-select"><option value="">-- ជ្រើសរើសភូមិ --</option></select>
@@ -172,7 +195,6 @@
             <div id="message-composer-admin" style="display:none;">
                 <input type="hidden" id="message-recipient-admin-id">
                 <textarea id="message-input-admin" placeholder="វាយសាររបស់អ្នកនៅទីនេះ..."></textarea>
-                <!-- Image Input and Preview for Admin -->
                 <div style="margin-top: 5px; margin-bottom: 5px;">
                     <label for="image-input-admin" class="action-button" style="background-color: #6c757d; padding: 5px 10px; font-size: 0.9em; display: inline-block; cursor:pointer;">ជ្រើសរើសរូបភាព (ច្រើន)</label>
                     <input type="file" id="image-input-admin" accept="image/*" style="display: none;" multiple>
@@ -184,6 +206,25 @@
                 <button id="send-message-button-admin" style="margin-top: 10px; width: 100%;">ផ្ញើ</button>
             </div>
             <p id="message-error-admin" class="error-message"></p>
+        </div>
+    </div>
+
+    <!-- Modal for Admin to Set New Password for Village Chief -->
+    <div id="admin-set-new-password-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-set-new-password-modal">×</span>
+            <h2>កំណត់លេខសម្ងាត់ថ្មីសម្រាប់ភូមិ <span id="set-password-village-name"></span></h2>
+            <form id="admin-set-new-password-form">
+                <input type="hidden" id="set-password-request-id">
+                <input type="hidden" id="set-password-for-village">
+                <label for="admin-new-village-password">លេខសម្ងាត់ថ្មី:</label>
+                <input type="password" id="admin-new-village-password" required minlength="6">
+                <label for="admin-confirm-new-village-password">បញ្ជាក់លេខសម្ងាត់ថ្មី:</label>
+                <input type="password" id="admin-confirm-new-village-password" required>
+                <button type="submit">រក្សាទុកលេខសម្ងាត់ថ្មី</button>
+                <p id="set-new-password-error" class="error-message"></p>
+                <p id="set-new-password-success" class="success-message"></p>
+            </form>
         </div>
     </div>
 
