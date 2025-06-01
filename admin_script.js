@@ -111,11 +111,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const removeAllImagesAdminButton = document.getElementById('remove-all-images-admin');
     let selectedImagesBase64Admin = [];
 
+    // NEW: Password Reset DOM References
+    const passwordResetRequestsTbody = document.getElementById('reset-requests-tbody');
+    const adminSetNewPasswordModal = document.getElementById('admin-set-new-password-modal');
+    const closeSetNewPasswordModalButton = document.getElementById('close-set-new-password-modal');
+    const adminSetNewPasswordForm = document.getElementById('admin-set-new-password-form');
+    const setPasswordVillageNameSpan = document.getElementById('set-password-village-name');
+    const setPasswordRequestIdInput = document.getElementById('set-password-request-id');
+    const setPasswordForVillageInput = document.getElementById('set-password-for-village');
+    const adminNewVillagePasswordInput = document.getElementById('admin-new-village-password');
+    const adminConfirmNewVillagePasswordInput = document.getElementById('admin-confirm-new-village-password');
+    const setNewPasswordErrorMsg = document.getElementById('set-new-password-error');
+    const setNewPasswordSuccessMsg = document.getElementById('set-new-password-success');
+
 
     const MAX_MEMBERS_EDIT = 9;
     const { jsPDF } = window.jspdf;
 
-    const khmerOSBattambangBase64 = 'YOUR_KHMER_OS_BATTAMBANG_BASE64_STRING_HERE'; // Ensure this is populated
+    const khmerOSBattambangBase64 = 'YOUR_KHMER_OS_BATTAMBANG_BASE64_STRING_HERE';
     const FONT_FILENAME_VFS = "KhmerOSBattambang-Regular.ttf";
     const FONT_NAME_JSPDF = "KhmerOSBattambangAdmin";
     let khmerFontForAdminPDFLoaded = false;
@@ -162,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const VILLAGE_DATA_KEY = 'villageData_v2';
     const ACTIVITY_LOG_KEY = 'activityLog_v2';
     const MESSAGES_KEY = 'villageMessages_v1';
+    const PASSWORD_RESET_REQUESTS_KEY = 'passwordResetRequests_v1';
 
     const getRegisteredVillages = () => JSON.parse(localStorage.getItem(VILLAGES_KEY) || '{}');
     const getVillageDataStorage = () => JSON.parse(localStorage.getItem(VILLAGE_DATA_KEY) || '{}');
@@ -169,6 +183,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveRegisteredVillages = (villages) => localStorage.setItem(VILLAGES_KEY, JSON.stringify(villages));
     const getMessages = () => { try { return JSON.parse(localStorage.getItem(MESSAGES_KEY) || '[]'); } catch (e) { console.error("Error parsing messages:", e); return []; }};
     const saveMessages = (messages) => localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages));
+    const getPasswordResetRequests = () => {
+        const requests = localStorage.getItem(PASSWORD_RESET_REQUESTS_KEY);
+        try { const parsed = JSON.parse(requests); return Array.isArray(parsed) ? parsed : [];}
+        catch (e) { console.error("Error parsing password reset requests",e); return []; }
+    };
+    const savePasswordResetRequests = (requests) => {
+        if (Array.isArray(requests)) localStorage.setItem(PASSWORD_RESET_REQUESTS_KEY, JSON.stringify(requests));
+    };
 
     const assetFieldDefinitions = [
         {id: 'largeTrucks', label: 'រថយន្ដធំ', type: 'number'}, {id: 'smallCars', label: 'រថយន្តតូច', type: 'number'},
@@ -305,12 +327,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const images = Array.isArray(msg.imageContent) ? msg.imageContent : [msg.imageContent];
                 if (images.length > 0) {
                     const imageGalleryDiv = document.createElement('div');
-                    imageGalleryDiv.classList.add('image-gallery-container'); // Use class for styling
+                    imageGalleryDiv.classList.add('image-gallery-container');
 
                     images.forEach(imgBase64 => {
                         const imgElement = document.createElement('img');
-                        imgElement.src = imgBase64;
+                        imgElement.src = imgBase64; // This is the original image for display in chat
                         imgElement.alt = "រូបភាពដែលបានផ្ញើ";
+                        // CSS styles this via .message-bubble img
                         imgElement.onclick = () => {
                             const modalImg = document.createElement('div');
                             modalImg.style.position = 'fixed';
@@ -412,6 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateAdminUnreadCount();
     };
 
+    // Event listener for image input - ADMIN
     if (imageInputAdmin && imagePreviewContainerAdmin && removeAllImagesAdminButton) {
         imageInputAdmin.addEventListener('change', async function(event) {
             const files = event.target.files;
@@ -422,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
             imagePreviewContainerAdmin.innerHTML = '';
 
             let allFilesValid = true;
-            const newImagePromises = [];
+            const imageProcessingPromises = [];
 
             for (const file of files) {
                 if (file.size > 5 * 1024 * 1024) { // 5MB limit
@@ -430,31 +454,64 @@ document.addEventListener('DOMContentLoaded', () => {
                     allFilesValid = false;
                     continue;
                 }
-                newImagePromises.push(
+
+                imageProcessingPromises.push(
                     new Promise((resolve, reject) => {
                         const reader = new FileReader();
-                        reader.onload = function(e) {
-                            resolve({ name: file.name, base64: e.target.result });
+                        reader.onload = function(e_reader) {
+                            const originalBase64 = e_reader.target.result;
+
+                            const img = new Image();
+                            img.onload = function() {
+                                const previewCanvas = document.createElement('canvas');
+                                const previewCtx = previewCanvas.getContext('2d');
+                                let sourceX, sourceY, sourceWidth, sourceHeight;
+                                const smallerDim = Math.min(img.width, img.height);
+
+                                sourceWidth = smallerDim;
+                                sourceHeight = smallerDim;
+                                sourceX = (img.width - smallerDim) / 2;
+                                sourceY = (img.height - smallerDim) / 2;
+
+                                const previewDisplaySize = 80;
+                                previewCanvas.width = previewDisplaySize;
+                                previewCanvas.height = previewDisplaySize;
+                                previewCtx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, previewDisplaySize, previewDisplaySize);
+                                const previewCroppedBase64 = previewCanvas.toDataURL(file.type);
+
+                                resolve({
+                                    name: file.name,
+                                    originalBase64: originalBase64,
+                                    previewBase64: previewCroppedBase64
+                                });
+                            };
+                            img.onerror = function() {
+                                console.error("Error loading image for preview processing:", file.name);
+                                reject(new Error("Could not load image for preview: " + file.name));
+                            };
+                            img.src = originalBase64;
                         }
-                        reader.onerror = reject;
+                        reader.onerror = function() {
+                            console.error("FileReader error for:", file.name);
+                            reject(new Error("FileReader error for: " + file.name));
+                        };
                         reader.readAsDataURL(file);
                     })
                 );
             }
 
             try {
-                const newImageData = await Promise.all(newImagePromises);
-                newImageData.forEach(imgData => {
-                    selectedImagesBase64Admin.push(imgData.base64);
+                const processedImagesData = await Promise.all(imageProcessingPromises);
+                processedImagesData.forEach(imgData => {
+                    selectedImagesBase64Admin.push(imgData.originalBase64);
                     const imgElement = document.createElement('img');
-                    imgElement.src = imgData.base64;
+                    imgElement.src = imgData.previewBase64;
                     imgElement.alt = imgData.name;
-                    // Style applied by CSS: #image-preview-container-admin img
                     imagePreviewContainerAdmin.appendChild(imgElement);
                 });
             } catch (error) {
-                console.error("Error reading image files:", error);
-                alert("មានបញ្ហាក្នុងការអានរូបភាពខ្លះ។");
+                console.error("Error processing some images for admin:", error);
+                alert("មានបញ្ហាក្នុងការកែច្នៃរូបភាពខ្លះ។");
             }
 
             if (selectedImagesBase64Admin.length > 0) {
@@ -463,7 +520,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 imagePreviewContainerAdmin.style.display = 'none';
                 removeAllImagesAdminButton.style.display = 'none';
-                if (!allFilesValid) imageInputAdmin.value = "";
+                if (!allFilesValid && imageProcessingPromises.length === 0) {
+                    imageInputAdmin.value = "";
+                }
             }
         });
 
@@ -561,52 +620,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const printSingleFamilyDataToPDF = async (familyData, villageName) => {
         if (!familyData) { alert("មិនមានទិន្នន័យគ្រួសារសម្រាប់បោះពុម្ពទេ។"); return; }
         const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-        await loadKhmerFont(doc); // Ensure this is your admin-specific font loading
+        await loadKhmerFont(doc);
 
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
-        const margin = 15; // General margin for content
-        const photoWidth = 30; // 4cm
-        const photoHeight = 40; // 6cm
-        const photoX = pageWidth - margin - photoWidth; // X position for the photo (right aligned with margin)
-        const photoY = margin; // Y position for the photo (top aligned with margin)
+        const margin = 15;
+        const photoWidth = 30; // 3cm
+        const photoHeight = 40; // 4cm
+        const photoX = pageWidth - margin - photoWidth;
+        const photoY = margin;
 
         let yPosition = margin;
 
-        // Function to draw photo if exists (useful for multi-page)
         const drawPhotoIfExists = () => {
-            if (familyData.familyPhoto) { // Check if the familyData object has the photo
+            if (familyData.familyPhoto) {
                 try {
-                    let imgFormat = 'JPEG'; // Default format
+                    let imgFormat = 'JPEG';
                     try {
                         const imgProps = doc.getImageProperties(familyData.familyPhoto);
                         imgFormat = imgProps.fileType;
                     } catch (e) {
-                        console.warn("Admin PDF: Could not detect image properties for family photo, defaulting. Error:", e);
                         if (familyData.familyPhoto.startsWith('data:image/png')) imgFormat = 'PNG';
                     }
                     doc.addImage(familyData.familyPhoto, imgFormat, photoX, photoY, photoWidth, photoHeight);
                 } catch (e) {
-                    console.error("Admin PDF: Error adding/re-adding family photo to PDF:", e);
+                    console.error("Admin PDF: Error adding/re-adding family photo:", e);
                 }
             }
         };
 
-        drawPhotoIfExists(); // Draw on the first page
+        drawPhotoIfExists();
 
         doc.setFontSize(16); doc.setTextColor(0, 0, 0);
         doc.text(`បញ្ជីទិន្នន័យគ្រួសារ (Admin View)`, pageWidth / 2, yPosition, { align: 'center' });
         yPosition += 7 * 1.5;
 
-        // Ensure yPosition for the first text block is below the photo if photo is taller
-        const photoBottomYWithBuffer = photoY + photoHeight + 5; // 5mm buffer
+        const photoBottomYWithBuffer = photoY + photoHeight + 5;
         if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer) {
             yPosition = photoBottomYWithBuffer;
         }
 
         const textContentX = margin;
-        // Adjust textContentMaxWidth if photo is present, to avoid text going under the photo
-        const textContentMaxWidth = familyData.familyPhoto ? (photoX - margin - 5) : (pageWidth - margin * 2); // 5mm gap from photo
+        const textContentMaxWidth = familyData.familyPhoto ? (photoX - margin - 5) : (pageWidth - margin * 2);
+
 
         doc.setFontSize(12);
         let textLines;
@@ -633,7 +689,6 @@ document.addEventListener('DOMContentLoaded', () => {
             doc.text(textLines, textContentX, yPosition);
             yPosition += 7 * textLines.length;
         }
-
         if (familyData.lastModifiedByAdmin) {
             textLines = doc.splitTextToSize(`កែសម្រួលចុងក្រោយដោយ Admin: ${familyData.lastModifiedByAdmin} (${familyData.lastModifiedDate ? new Date(familyData.lastModifiedDate).toLocaleString('km-KH', { day:'2-digit', month:'2-digit', year:'numeric', hour: '2-digit', minute:'2-digit', hour12: true }) : 'N/A'})`, textContentMaxWidth);
             doc.text(textLines, textContentX, yPosition);
@@ -654,8 +709,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentY > pageHeight - margin - spaceNeeded) {
                 doc.addPage();
                 await loadKhmerFont(doc);
-                drawPhotoIfExists(); // Redraw photo on new page
-                // If photo is very tall, ensure y starts below it on new page too
+                drawPhotoIfExists();
                 let newY = margin;
                 if (familyData.familyPhoto && newY < photoBottomYWithBuffer) {
                     newY = photoBottomYWithBuffer;
@@ -665,13 +719,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return currentY;
         };
 
-        yPosition = await checkPageBreakAdmin(yPosition, 30); // Check space before "Members" title
-
-        // Adjust yPosition again if it's still overlapping where the photo might be (e.g. if title was short)
+        yPosition = await checkPageBreakAdmin(yPosition, 30);
         if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer) {
              yPosition = photoBottomYWithBuffer;
         }
-
 
         yPosition += 7 * 0.5;
         doc.setFontSize(13); doc.text("សមាជិកគ្រួសារ:", textContentX, yPosition); yPosition += 7;
@@ -687,14 +738,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0], font: FONT_NAME_JSPDF, fontSize: 8, halign: 'center' },
                 bodyStyles: { font: FONT_NAME_JSPDF, fontSize: 7.5, cellPadding: 1.5, },
                 columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 7: { cellWidth: 15 }, 8: { cellWidth: 15 }, 9: { cellWidth: 12, halign: 'center'}, 10: {cellWidth: 12, halign: 'center'} },
-                margin: { left: margin, right: margin }, // Use general margin for table
-                tableWidth: 'auto', // Let table decide its width based on content and available space
+                margin: { left: margin, right: margin },
+                tableWidth: 'auto',
                 didDrawPage: async function (data) {
                     await loadKhmerFont(doc);
-                     if (data.pageNumber > 0) { // Check if it's a new page created by autoTable
+                     if (data.pageNumber > 0) {
                         drawPhotoIfExists();
                     }
-                    // yPosition will be updated by autoTable.lastAutoTable.finalY after this
                 }
             });
             yPosition = doc.lastAutoTable.finalY + 7;
@@ -703,7 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         yPosition = await checkPageBreakAdmin(yPosition, 30);
-         if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer) { // Check again after potential page break
+         if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer) {
              yPosition = photoBottomYWithBuffer;
         }
 
@@ -711,23 +761,23 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.setFontSize(13); doc.text("ទ្រព្យសម្បត្តិ និងអាជីវកម្ម:", textContentX, yPosition); yPosition += 7; doc.setFontSize(10);
         let hasAssets = false;
         if (familyData.assets && typeof familyData.assets === 'object' && Object.keys(familyData.assets).length > 0) {
-            const assetContentWidthPage = pageWidth - (margin * 2); // Assets text can use full width below header/photo area
+            const assetContentFullWidth = pageWidth - (margin * 2);
             for (const def of assetFieldDefinitions) {
                 const assetValue = familyData.assets[def.id];
                 if (assetValue !== undefined && assetValue !== null && String(assetValue).trim() !== "" && String(assetValue).trim() !== "0") {
                     yPosition = await checkPageBreakAdmin(yPosition, 10);
-                     if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer) { // Re-check on new page
+                     if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer && doc.internal.getCurrentPageInfo().pageNumber > 1) {
                          yPosition = photoBottomYWithBuffer;
                     }
                     const textToPrintAsset = `  • ${def.label}: ${assetValue}`;
-                    const textLinesAssets = doc.splitTextToSize(textToPrintAsset, assetContentWidthPage - 8); // Small indent for bullet
+                    const textLinesAssets = doc.splitTextToSize(textToPrintAsset, assetContentFullWidth - 8);
                     doc.text(textLinesAssets, textContentX + 2, yPosition); yPosition += (7 - 2) * textLinesAssets.length; hasAssets = true;
                 }
             }
         }
         if (!hasAssets) {
             yPosition = await checkPageBreakAdmin(yPosition, 10);
-            if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer) {
+            if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer && doc.internal.getCurrentPageInfo().pageNumber > 1) {
                  yPosition = photoBottomYWithBuffer;
             }
             doc.text("  មិនមានទ្រព្យសម្បត្តិ/អាជីវកម្ម។", textContentX + 2, yPosition); yPosition += 7;
@@ -943,9 +993,6 @@ document.addEventListener('DOMContentLoaded', () => {
         editFamilyHeadNameInput.value = familyData.familyName || "";
         editFamilyHeadPhoneAdminInput.value = familyData.headOfHouseholdPhone || "";
 
-        // Note: Admin edit modal does not currently have family photo editing.
-        // If it were to be added, similar logic to dashboard.js's openEditFamilyModal for photo would be needed here.
-
         editFamilyMembersContainer.innerHTML = '';
         if (familyData.members && Array.isArray(familyData.members) && familyData.members.length > 0) {
             familyData.members.forEach((member, index) => {
@@ -1008,7 +1055,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 lastModifiedByAdmin: adminUsernameFromSession, lastModifiedDate: new Date().toISOString(),
                 entryDate: originalFamilyDataForLog ? originalFamilyDataForLog.entryDate : new Date().toISOString(),
                 enteredBy: originalFamilyDataForLog ? originalFamilyDataForLog.enteredBy : `Admin: ${adminUsernameFromSession}`,
-                familyPhoto: originalFamilyDataForLog ? originalFamilyDataForLog.familyPhoto : null // Preserve existing photo if admin doesn't edit it
+                familyPhoto: originalFamilyDataForLog ? originalFamilyDataForLog.familyPhoto : null
             };
 
             const memberEntriesFromForm = editFamilyMembersContainer.querySelectorAll('.member-entry'); let editFormValidationError = false;
@@ -1037,7 +1084,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (allDataToSave.hasOwnProperty(villageOfFamily) && Array.isArray(allDataToSave[villageOfFamily])) {
                 const familyIndex = allDataToSave[villageOfFamily].findIndex(f => f.familyId === familyIdToUpdate);
                 if (familyIndex > -1) {
-                    // Preserve original photo if admin form doesn't allow changing it directly
                     if (!updatedFamilyPayload.hasOwnProperty('familyPhoto') && allDataToSave[villageOfFamily][familyIndex].familyPhoto) {
                         updatedFamilyPayload.familyPhoto = allDataToSave[villageOfFamily][familyIndex].familyPhoto;
                     }
@@ -1076,10 +1122,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (closeEditFamilyModalButton && editFamilyModal) { closeEditFamilyModalButton.onclick = () => { editFamilyModal.style.display = 'none'; };}
-    window.onclick = (event) => {
-        if (event.target === editFamilyModal && editFamilyModal) { editFamilyModal.style.display = 'none';}
-        if (event.target === messageModalAdmin && messageModalAdmin) { messageModalAdmin.style.display = 'none'; updateAdminUnreadCount(); }
-    };
+    window.addEventListener('click', (event) => {
+        if (event.target === editFamilyModal && editFamilyModal) {
+            editFamilyModal.style.display = 'none';
+        }
+        if (event.target === messageModalAdmin && messageModalAdmin) {
+            messageModalAdmin.style.display = 'none';
+            updateAdminUnreadCount();
+        }
+        if (event.target === adminSetNewPasswordModal && adminSetNewPasswordModal) {
+            adminSetNewPasswordModal.style.display = 'none';
+        }
+    });
 
     const deleteFamilyDataForAdmin = (villageOfFamily, familyIdToDelete, familyNameToConfirm = '') => {
         const confirmMsg = familyNameToConfirm ? `តើអ្នកពិតជាចង់លុបទិន្នន័យគ្រួសារ "${familyNameToConfirm}" (ID: ${familyIdToDelete}) ពីភូមិ "${villageOfFamily}" មែនទេ? ការលុបនេះមិនអាចយកមកវិញបានទេ!` : `តើអ្នកពិតជាចង់លុបទិន្នន័យគ្រួសារ ID: ${familyIdToDelete} ពីភូមិ "${villageOfFamily}" មែនទេ? ការលុបនេះមិនអាចយកមកវិញបានទេ!`;
@@ -1153,6 +1207,131 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // --- Password Reset Request Handling ---
+    const loadPasswordResetRequests = () => {
+        if (!passwordResetRequestsTbody) {
+            // console.warn("Password reset table body not found."); // Optional: for debugging
+            return;
+        }
+        passwordResetRequestsTbody.innerHTML = '';
+        const requests = getPasswordResetRequests().sort((a,b) => new Date(b.requestTime) - new Date(a.requestTime));
+
+        if (requests.length === 0) {
+            passwordResetRequestsTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">មិនមានសំណើសុំប្តូរលេខសម្ងាត់ទេ។</td></tr>';
+            return;
+        }
+
+        requests.forEach(req => {
+            const row = passwordResetRequestsTbody.insertRow();
+            row.insertCell().textContent = req.requestId.slice(-6);
+            row.insertCell().textContent = req.villageName;
+            row.insertCell().textContent = req.phone;
+            row.insertCell().textContent = req.reason || 'N/A';
+            row.insertCell().textContent = new Date(req.requestTime).toLocaleString('km-KH');
+            const statusCell = row.insertCell();
+            statusCell.textContent = req.status === 'pending' ? 'រង់ចាំ' : (req.status === 'approved' ? 'បានអនុម័ត' : (req.status === 'rejected' ? 'បានបដិសេធ' : req.status));
+            if (req.status === 'approved') statusCell.style.color = 'green';
+            if (req.status === 'rejected' || req.status === 'error_setting_password') statusCell.style.color = 'red';
+
+
+            const actionCell = row.insertCell();
+            if (req.status === 'pending') {
+                const approveButton = document.createElement('button');
+                approveButton.textContent = 'អនុម័ត';
+                approveButton.classList.add('action-button-approve');
+                approveButton.style.backgroundColor = '#28a745';
+                approveButton.onclick = () => openSetNewPasswordModal(req);
+                actionCell.appendChild(approveButton);
+
+                const rejectButton = document.createElement('button');
+                rejectButton.textContent = 'បដិសេធ';
+                rejectButton.classList.add('action-button-reject');
+                rejectButton.style.backgroundColor = '#dc3545';
+                rejectButton.style.marginLeft = '5px';
+                rejectButton.onclick = () => handlePasswordResetRequest(req.requestId, 'rejected');
+                actionCell.appendChild(rejectButton);
+            } else {
+                actionCell.textContent = '-';
+            }
+        });
+    };
+
+    const openSetNewPasswordModal = (request) => {
+        if (!adminSetNewPasswordModal || !setPasswordVillageNameSpan || !setPasswordRequestIdInput || !setPasswordForVillageInput) return;
+        setPasswordVillageNameSpan.textContent = request.villageName;
+        setPasswordRequestIdInput.value = request.requestId;
+        setPasswordForVillageInput.value = request.villageName;
+        if(adminSetNewPasswordForm) adminSetNewPasswordForm.reset();
+        if(setNewPasswordErrorMsg) setNewPasswordErrorMsg.textContent = '';
+        if(setNewPasswordSuccessMsg) setNewPasswordSuccessMsg.textContent = '';
+        adminSetNewPasswordModal.style.display = 'block';
+    };
+
+    const handlePasswordResetRequest = (requestId, newStatus, newPassword = null) => {
+        let requests = getPasswordResetRequests();
+        const requestIndex = requests.findIndex(r => r.requestId === requestId);
+
+        if (requestIndex === -1) {
+            alert("រកមិនឃើញសំណើទេ។");
+            return;
+        }
+
+        requests[requestIndex].status = newStatus;
+        requests[requestIndex].resolvedTime = new Date().toISOString();
+        requests[requestIndex].resolvedBy = adminUsernameFromSession;
+
+        if (newStatus === 'approved' && newPassword) {
+            const registeredVillages = getRegisteredVillages();
+            const villageName = requests[requestIndex].villageName;
+            if (registeredVillages[villageName]) {
+                registeredVillages[villageName].password = newPassword;
+                saveRegisteredVillages(registeredVillages);
+            } else {
+                console.error(`Error: Village ${villageName} not found in registration list during password reset.`);
+                alert(`មានបញ្ហា៖ រកមិនឃើញភូមិ ${villageName} ក្នុងបញ្ជីចុះឈ្មោះទេ។ មិនអាចប្តូរលេខសម្ងាត់បានទេ។`);
+                requests[requestIndex].status = 'error_setting_password';
+            }
+        }
+        savePasswordResetRequests(requests);
+        loadPasswordResetRequests();
+        if (adminSetNewPasswordModal) adminSetNewPasswordModal.style.display = 'none';
+    };
+
+
+    if (adminSetNewPasswordForm) {
+        adminSetNewPasswordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(setNewPasswordErrorMsg) setNewPasswordErrorMsg.textContent = '';
+            if(setNewPasswordSuccessMsg) setNewPasswordSuccessMsg.textContent = '';
+
+            const requestId = setPasswordRequestIdInput.value;
+            const newPassword = adminNewVillagePasswordInput.value;
+            const confirmPassword = adminConfirmNewVillagePasswordInput.value;
+
+            if (newPassword.length < 6) {
+                if(setNewPasswordErrorMsg) setNewPasswordErrorMsg.textContent = 'លេខសម្ងាត់ថ្មីត្រូវមានយ៉ាងតិច ៦ តួអក្សរ។';
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                if(setNewPasswordErrorMsg) setNewPasswordErrorMsg.textContent = 'លេខសម្ងាត់ថ្មី និងការបញ្ជាក់មិនដូចគ្នាទេ។';
+                return;
+            }
+
+            handlePasswordResetRequest(requestId, 'approved', newPassword);
+            if(setNewPasswordSuccessMsg) setNewPasswordSuccessMsg.textContent = 'កំណត់លេខសម្ងាត់ថ្មីបានជោគជ័យ!';
+             setTimeout(() => {
+                if (adminSetNewPasswordModal) adminSetNewPasswordModal.style.display = 'none';
+                if(setNewPasswordSuccessMsg) setNewPasswordSuccessMsg.textContent = '';
+            }, 2000);
+        });
+    }
+
+    if (closeSetNewPasswordModalButton && adminSetNewPasswordModal) {
+        closeSetNewPasswordModalButton.onclick = () => { adminSetNewPasswordModal.style.display = 'none'; };
+    }
+    // --- End of Password Reset Handling ---
+
+
     if (villageSelect) {
         villageSelect.addEventListener('change', (e) => {
             const selectedVillage = e.target.value; if(searchFamilyInput) searchFamilyInput.value = '';
@@ -1161,6 +1340,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (logoutButton) { logoutButton.addEventListener('click', () => { sessionStorage.clear(); window.location.href = 'index.html'; }); }
 
+    // Initial Load Functions
     if (typeof loadRegisteredVillagesList === 'function') loadRegisteredVillagesList();
     if (typeof calculateAdminSummary === 'function') calculateAdminSummary();
     const initialVillage = villageSelect ? villageSelect.value : null;
@@ -1168,4 +1348,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof loadFamilyDataForSelectedVillageAdmin === 'function') loadFamilyDataForSelectedVillageAdmin(initialVillage, initialSearch);
     if (typeof loadAndDisplayActivityLog === 'function') loadAndDisplayActivityLog();
     if (typeof updateAdminUnreadCount === 'function') updateAdminUnreadCount();
+    if (typeof loadPasswordResetRequests === 'function') loadPasswordResetRequests();
 });
