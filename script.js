@@ -2,24 +2,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginSection = document.getElementById('login-section');
     const villageRegisterSection = document.getElementById('village-register-section');
     const adminRegisterSection = document.getElementById('admin-register-section');
+    const forgotPasswordSection = document.getElementById('forgot-password-section'); // NEW
+
     const showVillageRegisterLink = document.getElementById('show-village-register');
     const showAdminRegisterLink = document.getElementById('show-admin-register');
     const adminSetupLinkContainer = document.getElementById('admin-setup-link-container');
     const showLoginFromVillageLink = document.getElementById('show-login-from-village');
     const showLoginFromAdminLink = document.getElementById('show-login-from-admin');
+    const showForgotPasswordLink = document.getElementById('show-forgot-password'); // NEW
+    const showLoginFromForgotLink = document.getElementById('show-login-from-forgot'); // NEW
+
     const loginForm = document.getElementById('login-form');
     const villageRegisterForm = document.getElementById('village-register-form');
     const adminRegisterForm = document.getElementById('admin-register-form');
+    const forgotPasswordForm = document.getElementById('forgot-password-form'); // NEW
+
     const loginErrorMsg = document.getElementById('login-error');
     const villageRegisterErrorMsg = document.getElementById('village-register-error');
     const villageRegisterSuccessMsg = document.getElementById('village-register-success');
     const adminRegisterErrorMsg = document.getElementById('admin-register-error');
     const adminRegisterSuccessMsg = document.getElementById('admin-register-success');
+    const forgotPasswordErrorMsg = document.getElementById('forgot-password-error'); // NEW
+    const forgotPasswordSuccessMsg = document.getElementById('forgot-password-success'); // NEW
 
     const ADMIN_ACCOUNT_KEY = 'adminAccount_v2';
     const VILLAGES_KEY = 'registeredVillages_v2';
     const VILLAGE_DATA_KEY = 'villageData_v2';
-    const VILLAGE_ACCESS_LOG_KEY = 'villageAccessLog_v2'; // Key for access log
+    const VILLAGE_ACCESS_LOG_KEY = 'villageAccessLog_v2';
+    const PASSWORD_RESET_REQUESTS_KEY = 'passwordResetRequests_v1'; // NEW KEY for requests
 
     const getAdminAccount = () => {
         const account = localStorage.getItem(ADMIN_ACCOUNT_KEY);
@@ -42,27 +52,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveVillageDataStorage = (data) => {
          if (typeof data === 'object' && data !== null) localStorage.setItem(VILLAGE_DATA_KEY, JSON.stringify(data));
     };
+    // NEW: Functions for password reset requests
+    const getPasswordResetRequests = () => {
+        const requests = localStorage.getItem(PASSWORD_RESET_REQUESTS_KEY);
+        try { const parsed = JSON.parse(requests); return Array.isArray(parsed) ? parsed : [];}
+        catch (e) { console.error("Error parsing password reset requests",e); return []; }
+    };
+    const savePasswordResetRequests = (requests) => {
+        if (Array.isArray(requests)) localStorage.setItem(PASSWORD_RESET_REQUESTS_KEY, JSON.stringify(requests));
+    };
+
 
     if (!getAdminAccount() && adminSetupLinkContainer) {
         adminSetupLinkContainer.style.display = 'block';
     }
 
     const showOnly = (sectionToShow) => {
-        [loginSection, villageRegisterSection, adminRegisterSection].forEach(section => {
+        [loginSection, villageRegisterSection, adminRegisterSection, forgotPasswordSection].forEach(section => { // Added forgotPasswordSection
             if (section) section.style.display = (section === sectionToShow) ? 'block' : 'none';
         });
-        [loginErrorMsg, villageRegisterErrorMsg, villageRegisterSuccessMsg, adminRegisterErrorMsg, adminRegisterSuccessMsg].forEach(msg => {
+        [loginErrorMsg, villageRegisterErrorMsg, villageRegisterSuccessMsg, adminRegisterErrorMsg, adminRegisterSuccessMsg, forgotPasswordErrorMsg, forgotPasswordSuccessMsg].forEach(msg => { // Added forgot password messages
             if(msg) msg.textContent = '';
         });
         if(loginForm) loginForm.reset();
         if(villageRegisterForm) villageRegisterForm.reset();
         if(adminRegisterForm) adminRegisterForm.reset();
+        if(forgotPasswordForm) forgotPasswordForm.reset(); // NEW
     };
 
     if(showVillageRegisterLink) showVillageRegisterLink.addEventListener('click', (e) => { e.preventDefault(); showOnly(villageRegisterSection); });
     if(showAdminRegisterLink) showAdminRegisterLink.addEventListener('click', (e) => { e.preventDefault(); showOnly(adminRegisterSection); });
     if(showLoginFromVillageLink) showLoginFromVillageLink.addEventListener('click', (e) => { e.preventDefault(); showOnly(loginSection); });
     if(showLoginFromAdminLink) showLoginFromAdminLink.addEventListener('click', (e) => { e.preventDefault(); showOnly(loginSection); });
+    if(showForgotPasswordLink) showForgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); showOnly(forgotPasswordSection); }); // NEW
+    if(showLoginFromForgotLink) showLoginFromForgotLink.addEventListener('click', (e) => { e.preventDefault(); showOnly(loginSection); }); // NEW
+
 
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
@@ -89,7 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('loggedInVillage', usernameOrVillage);
                 sessionStorage.removeItem('loggedInUsername');
 
-                // Log Village Chief Access
                 let accessLog = [];
                 const storedLog = localStorage.getItem(VILLAGE_ACCESS_LOG_KEY);
                 if (storedLog) {
@@ -141,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
             villages[villageName] = {
                 phone: phone,
                 password: password,
-                canEditData: false
+                canEditData: false // Default permission
             };
             saveRegisteredVillages(villages);
             const villageData = getVillageDataStorage();
@@ -188,5 +211,57 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { showOnly(loginSection); }, 2500);
         });
     }
+
+    // NEW: Forgot Password Form Logic
+    if (forgotPasswordForm) {
+        forgotPasswordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(forgotPasswordErrorMsg) forgotPasswordErrorMsg.textContent = '';
+            if(forgotPasswordSuccessMsg) forgotPasswordSuccessMsg.textContent = '';
+
+            const villageName = document.getElementById('forgot-village-name').value.trim();
+            const phone = document.getElementById('forgot-village-phone').value.trim();
+            const reason = document.getElementById('forgot-reason').value.trim();
+
+            if (!villageName || !phone) {
+                if(forgotPasswordErrorMsg) forgotPasswordErrorMsg.textContent = 'សូមបញ្ចូលឈ្មោះភូមិ និងលេខទូរស័ព្ទ។';
+                return;
+            }
+
+            const registeredVillages = getRegisteredVillages();
+            if (!registeredVillages.hasOwnProperty(villageName)) {
+                if(forgotPasswordErrorMsg) forgotPasswordErrorMsg.textContent = `មិនមានភូមិឈ្មោះ "${villageName}" ក្នុងប្រព័ន្ធទេ។`;
+                return;
+            }
+
+            if (registeredVillages[villageName].phone !== phone) {
+                if(forgotPasswordErrorMsg) forgotPasswordErrorMsg.textContent = 'លេខទូរស័ព្ទមិនត្រឹមត្រូវសម្រាប់ភូមិនេះទេ។';
+                return;
+            }
+
+            let requests = getPasswordResetRequests();
+            const existingRequest = requests.find(req => req.villageName === villageName && req.status === 'pending');
+            if (existingRequest) {
+                if(forgotPasswordErrorMsg) forgotPasswordErrorMsg.textContent = 'សំណើសុំប្តូរលេខសម្ងាត់សម្រាប់ភូមិនេះត្រូវបានផ្ញើរួចហើយ។ សូមរង់ចាំការឆ្លើយតបពី Admin។';
+                return;
+            }
+
+            const newRequest = {
+                requestId: `req_${Date.now()}`,
+                villageName: villageName,
+                phone: phone,
+                reason: reason,
+                requestTime: new Date().toISOString(),
+                status: 'pending'
+            };
+            requests.push(newRequest);
+            savePasswordResetRequests(requests);
+
+            if(forgotPasswordSuccessMsg) forgotPasswordSuccessMsg.textContent = 'សំណើសុំប្តូរលេខសម្ងាត់ត្រូវបានផ្ញើដោយជោគជ័យ។ Admin នឹងធ្វើការពិនិត្យ។';
+            forgotPasswordForm.reset();
+            setTimeout(() => { showOnly(loginSection); }, 3000);
+        });
+    }
+
     showOnly(loginSection);
 });
