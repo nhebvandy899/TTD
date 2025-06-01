@@ -22,6 +22,7 @@
                 <button type="submit">ចូលប្រើ</button>
                 <p id="login-error" class="error-message"></p>
             </form>
+            <p><a href="#" id="show-forgot-password">ភ្លេចលេខសម្ងាត់?</a></p>
             <p>មិនទាន់មានគណនីមេភូមិ? <a href="#" id="show-village-register">ចុះឈ្មោះមេភូមិនៅទីនេះ</a></p>
             <p id="admin-setup-link-container" style="display:none;">
                 <a href="#" id="show-admin-register">បង្កើតគណនី Admin ដំបូង</a>
@@ -63,6 +64,24 @@
             </form>
              <p>មានគណនីហើយ? <a href="#" id="show-login-from-admin">ចូលប្រើវិញ</a></p>
         </div>
+
+        <!-- Forgot Password Request Form -->
+        <div id="forgot-password-section" style="display: none;">
+            <h2>ស្នើសុំប្តូរលេខសម្ងាត់</h2>
+            <form id="forgot-password-form">
+                <label for="forgot-village-name">ឈ្មោះភូមិរបស់អ្នក:</label>
+                <input type="text" id="forgot-village-name" name="villageName" required>
+                <label for="forgot-village-phone">លេខទូរស័ព្ទដែលបានចុះឈ្មោះ:</label>
+                <input type="tel" id="forgot-village-phone" name="phone" required>
+                <label for="forgot-reason">មូលហេតុខ្លីៗ (បើមាន):</label>
+                <textarea id="forgot-reason" name="reason" rows="3"></textarea>
+                <button type="submit">ផ្ញើសំណើ</button>
+                <p id="forgot-password-error" class="error-message"></p>
+                <p id="forgot-password-success" class="success-message"></p>
+            </form>
+            <p><a href="#" id="show-login-from-forgot">ត្រឡប់ទៅចូលប្រើវិញ</a></p>
+        </div>
+
     </div>
     <script src="script.js"></script>
 </body>
