@@ -4,7 +4,7 @@ body {font-family: 'Khmer OS Siemreap', Arial, sans-serif; background-color: #f4
 h1, h2, h3 {color: #333; text-align: center; margin-bottom: 20px;}
 label {display: block; margin-bottom: 5px; font-weight: bold; color: #555;}
 input[type="text"], input[type="password"], input[type="tel"], input[type="date"], input[type="number"], textarea, select {width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: 'Khmer OS Siemreap', Arial, sans-serif;}
-select {background-color: white; appearance: none;}
+select {background-color: white; appearance: none;} /* Consider select2 or chosen for better select UX */
 textarea {resize: vertical;}
 button {background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-family: 'Khmer OS Siemreap', Arial, sans-serif; transition: background-color 0.3s ease;}
 button:hover {background-color: #0056b3;}
@@ -235,24 +235,24 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 }
 .message-timestamp {
     font-size: 0.75em;
-    color: #e0e0e0;
+    color: #e0e0e0; /* Light for sent messages */
     display: block;
     margin-top: 2px;
     text-align: right;
 }
 .message-bubble.received .message-timestamp {
-    color: #777;
+    color: #777; /* Darker for received messages */
     text-align: left;
 }
 .message-sender-name {
     font-size: 0.8em;
     font-weight: bold;
     margin-bottom: 2px;
-    color: #555;
+    color: #555; /* Default sender name color */
 }
 .message-bubble.sent .message-sender-name {
     text-align: right;
-    color: #cce5ff;
+    color: #cce5ff; /* Lighter sender name for sent bubble */
 }
 .message-bubble.received .message-sender-name {
     text-align: left;
@@ -264,7 +264,7 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
     box-sizing: border-box;
     margin-bottom: 10px;
 }
-#village-unread-count { /* For village dashboard if using text button for mail */
+#village-unread-count {
     background-color: #dc3545;
     color: white;
     border-radius: 50%;
@@ -272,7 +272,7 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
     font-size: 0.8em;
     vertical-align: super;
 }
-.action-button.message-village-button { /* Specific for "ផ្ញើសារ" button in admin village list */
+.action-button.message-village-button {
     background-color: #17a2b8;
 }
 .action-button.message-village-button:hover {
@@ -281,10 +281,10 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 
 /* Styles for Image in Chat Bubble & File Input Label */
 .message-bubble img { /* Style for images within chat bubbles (thumbnails) */
-    max-width: 100px; /* Max width for thumbnails in chat */
-    max-height: 100px; /* Max height for thumbnails in chat */
+    max-width: 100px;
+    max-height: 100px;
     border-radius: 5px;
-    margin: 2px; /* Spacing if multiple images */
+    margin: 2px;
     display: inline-block;
     cursor: pointer;
     border: 1px solid #eee;
@@ -297,9 +297,9 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
     flex-wrap: wrap;
     gap: 5px;
     margin-top: 5px;
-    min-height: 30px; /* Ensure it has some height even when empty */
-    border: 1px dashed #ccc; /* Optional: border for the preview area */
-    padding: 5px; /* Optional: padding for the preview area */
+    min-height: 30px;
+    border: 1px dashed #ccc;
+    padding: 5px;
 }
 #image-preview-container-admin img,
 #image-preview-container-village img { /* Style for image previews in composer */
@@ -311,7 +311,7 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 }
 
 
-label.action-button { /* General style for labels acting as buttons */
+label.action-button {
     display: inline-block;
     padding: 5px 10px;
     font-size: 0.9em;
@@ -327,20 +327,20 @@ label.action-button { /* General style for labels acting as buttons */
     padding: 10px;
     margin-top: 10px;
     min-height: 100px;
-    display: flex; /* Changed to flex for better alignment */
-    flex-direction: column; /* Stack image and button vertically */
-    align-items: flex-start; /* Align items to the start (left) */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
-.image-preview-box img { /* This is for #family-photo-preview and #edit-family-photo-preview-admin */
+.image-preview-box img {
     max-width: 150px;
     max-height: 150px;
-    display: block; /* Make it a block to take up full width available to it */
-    margin-bottom: 10px; /* Space between image and remove button */
-    border: 1px solid #ddd; /* Add a border to the preview image */
+    display: block;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
 }
 
-.remove-image-button-style { /* For family photo remove buttons */
+.remove-image-button-style {
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
@@ -354,8 +354,61 @@ label.action-button { /* General style for labels acting as buttons */
     background-color: #f1b0b7;
 }
 
-/* Ensure preview containers in modals/forms are initially hidden correctly */
 #family-photo-preview-container,
 #edit-family-photo-preview-container-admin {
-    display: none; /* Initially hidden, JS will show if there's an image */
+    display: none;
+}
+
+/* NEW Styles for Password Reset Section */
+#password-reset-requests-section {
+    margin-bottom: 20px;
+    background-color: #f0f8ff; /* Light blue background */
+    padding: 15px;
+    border: 1px solid #cce5ff; /* Blue border */
+    border-radius: 5px;
+}
+#password-reset-requests-section h2 {
+    color: #004085; /* Darker blue for heading */
+    text-align: left;
+    margin-top: 0;
+}
+#reset-requests-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+#reset-requests-table th,
+#reset-requests-table td {
+    border: 1px solid #b8daff; /* Slightly darker blue for table borders */
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+#reset-requests-table th {
+    background-color: #cce5ff; /* Lighter blue for table header */
+    font-weight: bold;
+}
+#reset-requests-table td button {
+    padding: 4px 8px;
+    font-size: 0.9em;
+    margin-right: 5px;
+    color: white;
+    border: none;
+    border-radius: 3px;
+}
+#reset-requests-table .action-button-approve {
+    background-color: #28a745;
+}
+#reset-requests-table .action-button-approve:hover {
+    background-color: #218838;
+}
+#reset-requests-table .action-button-reject {
+    background-color: #dc3545;
+}
+#reset-requests-table .action-button-reject:hover {
+    background-color: #c82333;
+}
+
+#admin-set-new-password-modal .modal-content {
+    max-width: 500px;
 }
