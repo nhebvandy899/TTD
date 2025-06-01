@@ -107,9 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Image related DOM elements for Admin
     const imageInputAdmin = document.getElementById('image-input-admin');
-    const imagePreviewContainerAdmin = document.getElementById('image-preview-container-admin'); // Updated
-    const removeAllImagesAdminButton = document.getElementById('remove-all-images-admin'); // Updated
-    let selectedImagesBase64Admin = []; // Updated: To store multiple selected image data for admin
+    const imagePreviewContainerAdmin = document.getElementById('image-preview-container-admin');
+    const removeAllImagesAdminButton = document.getElementById('remove-all-images-admin');
+    let selectedImagesBase64Admin = [];
 
 
     const MAX_MEMBERS_EDIT = 9;
@@ -305,20 +305,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const images = Array.isArray(msg.imageContent) ? msg.imageContent : [msg.imageContent];
                 if (images.length > 0) {
                     const imageGalleryDiv = document.createElement('div');
-                    imageGalleryDiv.style.display = 'flex';
-                    imageGalleryDiv.style.flexWrap = 'wrap';
-                    imageGalleryDiv.style.gap = '5px';
-                    imageGalleryDiv.style.marginTop = (msg.content && msg.content.trim() !== "") ? '5px' : '0';
+                    imageGalleryDiv.classList.add('image-gallery-container'); // Use class for styling
 
                     images.forEach(imgBase64 => {
                         const imgElement = document.createElement('img');
                         imgElement.src = imgBase64;
-                        imgElement.style.maxWidth = '100px';
-                        imgElement.style.maxHeight = '100px';
-                        imgElement.style.borderRadius = '5px';
-                        imgElement.style.border = '1px solid #ddd';
                         imgElement.alt = "រូបភាពដែលបានផ្ញើ";
-                        imgElement.style.cursor = 'pointer';
                         imgElement.onclick = () => {
                             const modalImg = document.createElement('div');
                             modalImg.style.position = 'fixed';
@@ -420,14 +412,12 @@ document.addEventListener('DOMContentLoaded', () => {
         updateAdminUnreadCount();
     };
 
-    // Event listener for image input - ADMIN
     if (imageInputAdmin && imagePreviewContainerAdmin && removeAllImagesAdminButton) {
         imageInputAdmin.addEventListener('change', async function(event) {
             const files = event.target.files;
             if (!files || files.length === 0) {
                 return;
             }
-            // Clear previous selections when new files are chosen
             selectedImagesBase64Admin = [];
             imagePreviewContainerAdmin.innerHTML = '';
 
@@ -459,11 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const imgElement = document.createElement('img');
                     imgElement.src = imgData.base64;
                     imgElement.alt = imgData.name;
-                    imgElement.style.maxWidth = '80px';
-                    imgElement.style.maxHeight = '80px';
-                    imgElement.style.margin = '2px';
-                    imgElement.style.border = '1px solid #ccc';
-                    imgElement.style.objectFit = 'cover';
+                    // Style applied by CSS: #image-preview-container-admin img
                     imagePreviewContainerAdmin.appendChild(imgElement);
                 });
             } catch (error) {
@@ -477,7 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 imagePreviewContainerAdmin.style.display = 'none';
                 removeAllImagesAdminButton.style.display = 'none';
-                if (!allFilesValid) imageInputAdmin.value = ""; // Clear input if all selected were invalid
+                if (!allFilesValid) imageInputAdmin.value = "";
             }
         });
 
@@ -504,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newMessage = {
                 id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, from: adminId, to: recipientId,
                 content: content,
-                imageContent: selectedImagesBase64Admin.length > 0 ? [...selectedImagesBase64Admin] : null, // Send array or null
+                imageContent: selectedImagesBase64Admin.length > 0 ? [...selectedImagesBase64Admin] : null,
                 timestamp: new Date().toISOString(), readByReceiver: false
             };
             let messages = getMessages(); messages.push(newMessage); saveMessages(messages);
@@ -575,50 +561,189 @@ document.addEventListener('DOMContentLoaded', () => {
     const printSingleFamilyDataToPDF = async (familyData, villageName) => {
         if (!familyData) { alert("មិនមានទិន្នន័យគ្រួសារសម្រាប់បោះពុម្ពទេ។"); return; }
         const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-        await loadKhmerFont(doc); let yPosition = 15; const lineHeight = 7; const indent = 15;
-        const pageWidth = doc.internal.pageSize.getWidth(); const contentWidth = pageWidth - (indent * 2);
+        await loadKhmerFont(doc); // Ensure this is your admin-specific font loading
+
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 15; // General margin for content
+        const photoWidth = 30; // 4cm
+        const photoHeight = 40; // 6cm
+        const photoX = pageWidth - margin - photoWidth; // X position for the photo (right aligned with margin)
+        const photoY = margin; // Y position for the photo (top aligned with margin)
+
+        let yPosition = margin;
+
+        // Function to draw photo if exists (useful for multi-page)
+        const drawPhotoIfExists = () => {
+            if (familyData.familyPhoto) { // Check if the familyData object has the photo
+                try {
+                    let imgFormat = 'JPEG'; // Default format
+                    try {
+                        const imgProps = doc.getImageProperties(familyData.familyPhoto);
+                        imgFormat = imgProps.fileType;
+                    } catch (e) {
+                        console.warn("Admin PDF: Could not detect image properties for family photo, defaulting. Error:", e);
+                        if (familyData.familyPhoto.startsWith('data:image/png')) imgFormat = 'PNG';
+                    }
+                    doc.addImage(familyData.familyPhoto, imgFormat, photoX, photoY, photoWidth, photoHeight);
+                } catch (e) {
+                    console.error("Admin PDF: Error adding/re-adding family photo to PDF:", e);
+                }
+            }
+        };
+
+        drawPhotoIfExists(); // Draw on the first page
+
         doc.setFontSize(16); doc.setTextColor(0, 0, 0);
-        doc.text(`បញ្ជីទិន្នន័យគ្រួសារ (Admin View)`, pageWidth / 2, yPosition, { align: 'center' }); yPosition += lineHeight * 1.5;
-        doc.setFontSize(12); doc.text(`ឈ្មោះមេគ្រួសារ: ${familyData.familyName || 'N/A'}`, indent, yPosition); yPosition += lineHeight;
-        doc.text(`ភូមិ: ${villageName || 'N/A'}`, indent, yPosition); yPosition += lineHeight;
-        try { doc.text(`កាលបរិច្ឆេទបញ្ចូល: ${new Date(familyData.entryDate).toLocaleDateString('km-KH', { day: '2-digit', month: 'long', year: 'numeric' })}`, indent, yPosition);}
-        catch { doc.text(`កាលបរិច្ឆេទបញ្ចូល: មិនត្រឹមត្រូវ`, indent, yPosition);} yPosition += lineHeight;
-        if (familyData.headOfHouseholdPhone) { doc.text(`លេខទូរស័ព្ទមេគ្រួសារ: ${familyData.headOfHouseholdPhone}`, indent, yPosition); yPosition += lineHeight;}
-        if (familyData.lastModifiedByAdmin) { doc.text(`កែសម្រួលចុងក្រោយដោយ Admin: ${familyData.lastModifiedByAdmin} (${familyData.lastModifiedDate ? new Date(familyData.lastModifiedDate).toLocaleString('km-KH', { day:'2-digit', month:'2-digit', year:'numeric', hour: '2-digit', minute:'2-digit', hour12: true }) : 'N/A'})`, indent, yPosition); yPosition += lineHeight;}
-        else if (familyData.lastModifiedBy) { doc.text(`កែសម្រួលចុងក្រោយដោយ: ${familyData.lastModifiedBy} (${familyData.lastModifiedDate ? new Date(familyData.lastModifiedDate).toLocaleString('km-KH', { day:'2-digit', month:'2-digit', year:'numeric', hour: '2-digit', minute:'2-digit', hour12: true }) : 'N/A'})`, indent, yPosition); yPosition += lineHeight;}
-        if (familyData.enteredBy){ doc.text(`បានបញ្ចូលដោយ: ${familyData.enteredBy}`, indent, yPosition); yPosition += lineHeight;}
-        yPosition += lineHeight * 0.5; doc.setFontSize(13); doc.text("សមាជិកគ្រួសារ:", indent, yPosition); yPosition += lineHeight;
+        doc.text(`បញ្ជីទិន្នន័យគ្រួសារ (Admin View)`, pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 7 * 1.5;
+
+        // Ensure yPosition for the first text block is below the photo if photo is taller
+        const photoBottomYWithBuffer = photoY + photoHeight + 5; // 5mm buffer
+        if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer) {
+            yPosition = photoBottomYWithBuffer;
+        }
+
+        const textContentX = margin;
+        // Adjust textContentMaxWidth if photo is present, to avoid text going under the photo
+        const textContentMaxWidth = familyData.familyPhoto ? (photoX - margin - 5) : (pageWidth - margin * 2); // 5mm gap from photo
+
+        doc.setFontSize(12);
+        let textLines;
+
+        textLines = doc.splitTextToSize(`ឈ្មោះមេគ្រួសារ: ${familyData.familyName || 'N/A'}`, textContentMaxWidth);
+        doc.text(textLines, textContentX, yPosition);
+        yPosition += 7 * textLines.length;
+
+        textLines = doc.splitTextToSize(`ភូមិ: ${villageName || 'N/A'}`, textContentMaxWidth);
+        doc.text(textLines, textContentX, yPosition);
+        yPosition += 7 * textLines.length;
+
+        try {
+            textLines = doc.splitTextToSize(`កាលបរិច្ឆេទបញ្ចូល: ${new Date(familyData.entryDate).toLocaleDateString('km-KH', { day: '2-digit', month: 'long', year: 'numeric' })}`, textContentMaxWidth);
+            doc.text(textLines, textContentX, yPosition);
+        } catch {
+            textLines = doc.splitTextToSize(`កាលបរិច្ឆេទបញ្ចូល: មិនត្រឹមត្រូវ`, textContentMaxWidth);
+            doc.text(textLines, textContentX, yPosition);
+        }
+        yPosition += 7 * textLines.length;
+
+        if (familyData.headOfHouseholdPhone) {
+            textLines = doc.splitTextToSize(`លេខទូរស័ព្ទមេគ្រួសារ: ${familyData.headOfHouseholdPhone}`, textContentMaxWidth);
+            doc.text(textLines, textContentX, yPosition);
+            yPosition += 7 * textLines.length;
+        }
+
+        if (familyData.lastModifiedByAdmin) {
+            textLines = doc.splitTextToSize(`កែសម្រួលចុងក្រោយដោយ Admin: ${familyData.lastModifiedByAdmin} (${familyData.lastModifiedDate ? new Date(familyData.lastModifiedDate).toLocaleString('km-KH', { day:'2-digit', month:'2-digit', year:'numeric', hour: '2-digit', minute:'2-digit', hour12: true }) : 'N/A'})`, textContentMaxWidth);
+            doc.text(textLines, textContentX, yPosition);
+            yPosition += 7 * textLines.length;
+        } else if (familyData.lastModifiedBy) {
+             textLines = doc.splitTextToSize(`កែសម្រួលចុងក្រោយដោយ: ${familyData.lastModifiedBy} (${familyData.lastModifiedDate ? new Date(familyData.lastModifiedDate).toLocaleString('km-KH', { day:'2-digit', month:'2-digit', year:'numeric', hour: '2-digit', minute:'2-digit', hour12: true }) : 'N/A'})`, textContentMaxWidth);
+            doc.text(textLines, textContentX, yPosition);
+            yPosition += 7 * textLines.length;
+        }
+        if (familyData.enteredBy){
+            textLines = doc.splitTextToSize(`បានបញ្ចូលដោយ: ${familyData.enteredBy}`, textContentMaxWidth);
+            doc.text(textLines, textContentX, yPosition);
+            yPosition += 7 * textLines.length;
+        }
+
+
+        const checkPageBreakAdmin = async (currentY, spaceNeeded = 20) => {
+            if (currentY > pageHeight - margin - spaceNeeded) {
+                doc.addPage();
+                await loadKhmerFont(doc);
+                drawPhotoIfExists(); // Redraw photo on new page
+                // If photo is very tall, ensure y starts below it on new page too
+                let newY = margin;
+                if (familyData.familyPhoto && newY < photoBottomYWithBuffer) {
+                    newY = photoBottomYWithBuffer;
+                }
+                return newY;
+            }
+            return currentY;
+        };
+
+        yPosition = await checkPageBreakAdmin(yPosition, 30); // Check space before "Members" title
+
+        // Adjust yPosition again if it's still overlapping where the photo might be (e.g. if title was short)
+        if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer) {
+             yPosition = photoBottomYWithBuffer;
+        }
+
+
+        yPosition += 7 * 0.5;
+        doc.setFontSize(13); doc.text("សមាជិកគ្រួសារ:", textContentX, yPosition); yPosition += 7;
+
         if (familyData.members && familyData.members.length > 0) {
             const memberTableHeaders = ["ល.រ", "ឈ្មោះ", "ភេទ", "ថ្ងៃខែឆ្នាំកំណើត", "ខេត្តកំណើត", "កម្រិតវប្បធម៌", "មុខរបរ", "លេខអត្ត.", "លេខការិ.", "ចំណាកស្រុកក្នុង", "ចំណាកស្រុកក្រៅ"];
             const memberTableBody = familyData.members.map((member, index) => [index + 1, member.name || 'N/A', member.gender || 'N/A', member.dob ? new Date(member.dob).toLocaleDateString('km-KH', {day:'2-digit', month:'2-digit', year:'numeric'}) : 'N/A', member.birthProvince || 'N/A', member.educationLevel || 'N/A', member.occupation || 'N/A', member.nationalId || 'N/A', member.electionOfficeId || 'N/A', member.internalMigration === 'បាទ' ? 'បាទ' : 'ទេ', member.externalMigration === 'បាទ' ? 'បាទ' : 'ទេ']);
-            doc.autoTable({ startY: yPosition, head: [memberTableHeaders], body: memberTableBody, theme: 'grid', headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0], font: FONT_NAME_JSPDF, fontSize: 8, halign: 'center' }, bodyStyles: { font: FONT_NAME_JSPDF, fontSize: 7.5, cellPadding: 1.5, }, columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 7: { cellWidth: 15 }, 8: { cellWidth: 15 }, 9: { cellWidth: 12, halign: 'center'}, 10: {cellWidth: 12, halign: 'center'} }, margin: { left: indent, right: indent }, tableWidth: 'auto', didDrawPage: async function (data) { await loadKhmerFont(doc); }});
-            yPosition = doc.lastAutoTable.finalY + lineHeight;
-        } else { doc.setFontSize(10); doc.text("មិនមានសមាជិកគ្រួសារ។", indent + 5, yPosition); yPosition += lineHeight;}
-        yPosition += lineHeight * 0.5;
-        if (yPosition > doc.internal.pageSize.getHeight() - 40) { doc.addPage(); yPosition = 15; await loadKhmerFont(doc);}
-        doc.setFontSize(13); doc.text("ទ្រព្យសម្បត្តិ និងអាជីវកម្ម:", indent, yPosition); yPosition += lineHeight; doc.setFontSize(10);
+            doc.autoTable({
+                startY: yPosition,
+                head: [memberTableHeaders],
+                body: memberTableBody,
+                theme: 'grid',
+                headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0], font: FONT_NAME_JSPDF, fontSize: 8, halign: 'center' },
+                bodyStyles: { font: FONT_NAME_JSPDF, fontSize: 7.5, cellPadding: 1.5, },
+                columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 7: { cellWidth: 15 }, 8: { cellWidth: 15 }, 9: { cellWidth: 12, halign: 'center'}, 10: {cellWidth: 12, halign: 'center'} },
+                margin: { left: margin, right: margin }, // Use general margin for table
+                tableWidth: 'auto', // Let table decide its width based on content and available space
+                didDrawPage: async function (data) {
+                    await loadKhmerFont(doc);
+                     if (data.pageNumber > 0) { // Check if it's a new page created by autoTable
+                        drawPhotoIfExists();
+                    }
+                    // yPosition will be updated by autoTable.lastAutoTable.finalY after this
+                }
+            });
+            yPosition = doc.lastAutoTable.finalY + 7;
+        } else {
+            doc.setFontSize(10); doc.text("មិនមានសមាជិកគ្រួសារ។", textContentX + 5, yPosition); yPosition += 7;
+        }
+
+        yPosition = await checkPageBreakAdmin(yPosition, 30);
+         if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer) { // Check again after potential page break
+             yPosition = photoBottomYWithBuffer;
+        }
+
+        yPosition += 7 * 0.5;
+        doc.setFontSize(13); doc.text("ទ្រព្យសម្បត្តិ និងអាជីវកម្ម:", textContentX, yPosition); yPosition += 7; doc.setFontSize(10);
         let hasAssets = false;
         if (familyData.assets && typeof familyData.assets === 'object' && Object.keys(familyData.assets).length > 0) {
+            const assetContentWidthPage = pageWidth - (margin * 2); // Assets text can use full width below header/photo area
             for (const def of assetFieldDefinitions) {
                 const assetValue = familyData.assets[def.id];
                 if (assetValue !== undefined && assetValue !== null && String(assetValue).trim() !== "" && String(assetValue).trim() !== "0") {
-                    if (yPosition > doc.internal.pageSize.getHeight() - 20) { doc.addPage(); yPosition = 15; await loadKhmerFont(doc); doc.setFontSize(10);}
-                    const textToPrint = `  • ${def.label}: ${assetValue}`;
-                    const textLines = doc.splitTextToSize(textToPrint, contentWidth - 8);
-                    doc.text(textLines, indent + 2, yPosition); yPosition += (lineHeight - 2) * textLines.length; hasAssets = true;
+                    yPosition = await checkPageBreakAdmin(yPosition, 10);
+                     if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer) { // Re-check on new page
+                         yPosition = photoBottomYWithBuffer;
+                    }
+                    const textToPrintAsset = `  • ${def.label}: ${assetValue}`;
+                    const textLinesAssets = doc.splitTextToSize(textToPrintAsset, assetContentWidthPage - 8); // Small indent for bullet
+                    doc.text(textLinesAssets, textContentX + 2, yPosition); yPosition += (7 - 2) * textLinesAssets.length; hasAssets = true;
                 }
             }
         }
-        if (!hasAssets) { if (yPosition > doc.internal.pageSize.getHeight() - 20) { doc.addPage(); yPosition = 15; await loadKhmerFont(doc); doc.setFontSize(10);} doc.text("  មិនមានទ្រព្យសម្បត្តិ/អាជីវកម្ម។", indent + 2, yPosition); yPosition += lineHeight;}
+        if (!hasAssets) {
+            yPosition = await checkPageBreakAdmin(yPosition, 10);
+            if (familyData.familyPhoto && yPosition < photoBottomYWithBuffer) {
+                 yPosition = photoBottomYWithBuffer;
+            }
+            doc.text("  មិនមានទ្រព្យសម្បត្តិ/អាជីវកម្ម។", textContentX + 2, yPosition); yPosition += 7;
+        }
+
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i); await loadKhmerFont(doc); doc.setFontSize(9); doc.setTextColor(100);
-            doc.text(`ទំព័រ ${i} នៃ ${pageCount}`, pageWidth - indent, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
-            doc.text(`បោះពុម្ពថ្ងៃទី: ${new Date().toLocaleDateString('km-KH', {day:'2-digit', month:'long', year:'numeric'})} (Admin: ${adminUsernameFromSession})`, indent, doc.internal.pageSize.getHeight() - 10);
+            doc.setPage(i);
+            doc.setFontSize(9); doc.setTextColor(100);
+            doc.text(`ទំព័រ ${i} នៃ ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+            doc.text(`បោះពុម្ពថ្ងៃទី: ${new Date().toLocaleDateString('km-KH', {day:'2-digit', month:'long', year:'numeric'})} (Admin: ${adminUsernameFromSession})`, margin, pageHeight - 10);
         }
         doc.save(`Admin-ទិន្នន័យគ្រួសារ-${familyData.familyName || familyData.familyId}.pdf`);
         alert("ការបង្កើត PDF បានបញ្ចប់។ សូមពិនិត្យមើលឯកសារដែលបានទាញយក។");
     };
+
 
     const renderFamilyCardForAdmin = (familyData, containerElement, villageContextName) => {
          if (!familyCardTemplate || !familyCardTemplate.content) {console.error("Admin: Family card template or content missing"); return;}
@@ -742,7 +867,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const calculateAdminSummary = () => {
-        if (!totalVillagesAdminSpan || /* ... other span checks ... */ !eduLevelOtherFemaleAdminSpan ) { console.warn("Admin Dashboard: One or more summary span elements are missing."); return; }
+        if (!totalVillagesAdminSpan || !totalFamiliesAdminSpan /* ... other essential span checks ... */ ) {
+            console.warn("Admin Dashboard: One or more summary span elements are missing. Calculation aborted.");
+            return;
+        }
         const allVillageData = getVillageDataStorage();
         let totalFamiliesAll = 0, totalPeopleAll = 0, totalFemalesAll = 0, totalInternalMigrantsAll = 0, totalExternalMigrantsAll = 0, femaleInternalMigrantsAll = 0, femaleExternalMigrantsAll = 0;
         let villageCount = Object.keys(getRegisteredVillages()).length;
@@ -791,8 +919,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ageGroup25_35_AdminSpan.textContent = count25_35_All; ageGroup25_35_Female_AdminSpan.textContent = count25_35_Female_All; ageGroup36_45_AdminSpan.textContent = count36_45_All; ageGroup36_45_Female_AdminSpan.textContent = count36_45_Female_All;
         ageGroup46_60_AdminSpan.textContent = count46_60_All; ageGroup46_60_Female_AdminSpan.textContent = count46_60_Female_All; ageGroup61_Plus_AdminSpan.textContent = count61_Plus_All; ageGroup61_Plus_Female_AdminSpan.textContent = count61_Plus_Female_All;
         Object.keys(educationStatsAdmin).forEach(key => {
-            const spanIdTotal = `edu-level-${key.toLowerCase().replace(/[^a-z0-9]/gi, '-').replace(/[^a-z0-9-]/gi, '')}-admin`;
-            const spanIdFemale = `edu-level-${key.toLowerCase().replace(/[^a-z0-9]/gi, '-').replace(/[^a-z0-9-]/gi, '')}-female-admin`;
             if (key === "មិនបានសិក្សា") { if(eduLevelUneducatedAdminSpan) eduLevelUneducatedAdminSpan.textContent = educationStatsAdmin[key].total; if(eduLevelUneducatedFemaleAdminSpan) eduLevelUneducatedFemaleAdminSpan.textContent = educationStatsAdmin[key].female;}
             else if (key === "បឋមសិក្សា") { if(eduLevelPrimaryAdminSpan) eduLevelPrimaryAdminSpan.textContent = educationStatsAdmin[key].total; if(eduLevelPrimaryFemaleAdminSpan) eduLevelPrimaryFemaleAdminSpan.textContent = educationStatsAdmin[key].female; }
             else if (key === "អនុវិទ្យាល័យ") { if(eduLevelLowerSecondaryAdminSpan) eduLevelLowerSecondaryAdminSpan.textContent = educationStatsAdmin[key].total; if(eduLevelLowerSecondaryFemaleAdminSpan) eduLevelLowerSecondaryFemaleAdminSpan.textContent = educationStatsAdmin[key].female; }
@@ -807,9 +933,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const openEditFamilyModalForAdmin = (villageNameCtx, familyId, familyData) => {
         if (!familyData || typeof familyData !== 'object') { alert("ទិន្នន័យគ្រួសារមិនត្រឹមត្រូវដើម្បីកែសម្រួល។"); return; }
-        if (!editFamilyModal || /* ... other element checks ... */ !editMemberTemplateAdmin || !editMemberTemplateAdmin.content) { alert("មានបញ្ហាក្នុងការបើកទម្រង់កែសម្រួល (Elements/Template ខ្វះ)។"); return; }
-        editFamilyIdInput.value = familyData.familyId || familyId; editFamilyVillageInput.value = villageNameCtx || "";
-        editFamilyHeadNameInput.value = familyData.familyName || ""; editFamilyHeadPhoneAdminInput.value = familyData.headOfHouseholdPhone || "";
+        if (!editFamilyModal || !editFamilyIdInput || !editFamilyVillageInput || !editFamilyHeadNameInput ||
+            !editFamilyHeadPhoneAdminInput || !editFamilyMembersContainer || !editFamilyAssetsContainer ||
+            !editMemberTemplateAdmin || !editMemberTemplateAdmin.content) {
+            alert("មានបញ្ហាក្នុងការបើកទម្រង់កែសម្រួល (Elements/Template ខ្វះ)។"); return;
+        }
+        editFamilyIdInput.value = familyData.familyId || familyId;
+        editFamilyVillageInput.value = villageNameCtx || "";
+        editFamilyHeadNameInput.value = familyData.familyName || "";
+        editFamilyHeadPhoneAdminInput.value = familyData.headOfHouseholdPhone || "";
+
+        // Note: Admin edit modal does not currently have family photo editing.
+        // If it were to be added, similar logic to dashboard.js's openEditFamilyModal for photo would be needed here.
+
         editFamilyMembersContainer.innerHTML = '';
         if (familyData.members && Array.isArray(familyData.members) && familyData.members.length > 0) {
             familyData.members.forEach((member, index) => {
@@ -866,12 +1002,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!villageOfFamily) { if(editFamilyErrorAdmin) editFamilyErrorAdmin.textContent = "មិនអាចកំណត់ភូមិសម្រាប់កែប្រែបានទេ។"; return;}
             const allVillageData = getVillageDataStorage();
             const originalFamilyDataForLog = JSON.parse(JSON.stringify( (allVillageData[villageOfFamily] || []).find(f => f.familyId === familyIdToUpdate) || null));
+
             const updatedFamilyPayload = {
                 familyId: familyIdToUpdate, familyName: updatedHeadName, headOfHouseholdPhone: updatedPhone, members: [], assets: {},
                 lastModifiedByAdmin: adminUsernameFromSession, lastModifiedDate: new Date().toISOString(),
                 entryDate: originalFamilyDataForLog ? originalFamilyDataForLog.entryDate : new Date().toISOString(),
-                enteredBy: originalFamilyDataForLog ? originalFamilyDataForLog.enteredBy : `Admin: ${adminUsernameFromSession}`
+                enteredBy: originalFamilyDataForLog ? originalFamilyDataForLog.enteredBy : `Admin: ${adminUsernameFromSession}`,
+                familyPhoto: originalFamilyDataForLog ? originalFamilyDataForLog.familyPhoto : null // Preserve existing photo if admin doesn't edit it
             };
+
             const memberEntriesFromForm = editFamilyMembersContainer.querySelectorAll('.member-entry'); let editFormValidationError = false;
             for (const memberDiv of memberEntriesFromForm) {
                 const nameInput = memberDiv.querySelector('.member-name-edit'); const name = nameInput ? nameInput.value.trim() : '';
@@ -898,6 +1037,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (allDataToSave.hasOwnProperty(villageOfFamily) && Array.isArray(allDataToSave[villageOfFamily])) {
                 const familyIndex = allDataToSave[villageOfFamily].findIndex(f => f.familyId === familyIdToUpdate);
                 if (familyIndex > -1) {
+                    // Preserve original photo if admin form doesn't allow changing it directly
+                    if (!updatedFamilyPayload.hasOwnProperty('familyPhoto') && allDataToSave[villageOfFamily][familyIndex].familyPhoto) {
+                        updatedFamilyPayload.familyPhoto = allDataToSave[villageOfFamily][familyIndex].familyPhoto;
+                    }
                     updatedFamilyPayload.entryDate = allDataToSave[villageOfFamily][familyIndex].entryDate;
                     if(!updatedFamilyPayload.enteredBy && allDataToSave[villageOfFamily][familyIndex].enteredBy) { updatedFamilyPayload.enteredBy = allDataToSave[villageOfFamily][familyIndex].enteredBy; }
                     allDataToSave[villageOfFamily][familyIndex] = updatedFamilyPayload; saveVillageDataStorage(allDataToSave);
