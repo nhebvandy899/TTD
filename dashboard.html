@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Khmer+OS+Siemreap&display=swap" rel="stylesheet">
 
+    <!-- Cropper.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+
     <!-- jsPDF Core Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- jsPDF AutoTable Plugin -->
@@ -17,8 +20,7 @@
         <header class="dashboard-header">
             <h1 id="dashboard-title">ផ្ទាំងគ្រប់គ្រងទិន្នន័យភូមិ</h1>
             <div>
-                <!-- NEWER Icon Mailbox Button for Village Chief -->
-                <button id="village-bell-mailbox-button" class="icon-button" title="ប្រអប់សារ" style="margin-right: 10px; position: relative; display: none;"> <!-- Initially hidden, JS will show if not admin viewing -->
+                <button id="village-bell-mailbox-button" class="icon-button" title="ប្រអប់សារ" style="margin-right: 10px; position: relative; display: none;">
                     <img src="new-chat-icon.png" alt="ប្រអប់សារ" style="width: 24px; height: 24px; vertical-align: middle;">
                     <span id="village-unread-bell-count" class="unread-badge">0</span>
                 </button>
@@ -60,12 +62,12 @@
 
             <hr style="margin: 15px 0; border-color: #ddd;">
             <p style="font-weight:bold; color: #0056b3; margin-top:10px;">ស្ថិតិកម្រិតវប្បធម៌ (ភូមិ <span class="current-village-name-dynamic"></span>):</p>
-            <!----p>  មិនបានសិក្សា: <span id="edu-level-uneducated-village">0</span> នាក់ (ស្រី: <span id="edu-level-uneducated-female-village">0</span>)</p---->
+            <!---p>  មិនបានសិក្សា: <span id="edu-level-uneducated-village">0</span> នាក់ (ស្រី: <span id="edu-level-uneducated-female-village">0</span>)</p---->
             <p>  បឋមសិក្សា (ថ្នាក់ទី ១-៦): <span id="edu-level-primary-village">0</span> នាក់ (ស្រី: <span id="edu-level-primary-female-village">0</span>)</p>
             <p>  អនុវិទ្យាល័យ (ថ្នាក់ទី ៧-៩): <span id="edu-level-lower-secondary-village">0</span> នាក់ (ស្រី: <span id="edu-level-lower-secondary-female-village">0</span>)</p>
             <p>  វិទ្យាល័យ (ថ្នាក់ទី ១០-១២): <span id="edu-level-high-school-village">0</span> នាក់ (ស្រី: <span id="edu-level-high-school-female-village">0</span>)</p>
             <p>  បរិញ្ញាបត្រ: <span id="edu-level-bachelor-village">0</span> នាក់ (ស្រី: <span id="edu-level-bachelor-female-village">0</span>)</p>
-            <!---p>  ជំនាញ: <span id="edu-level-skill-village">0</span> នាក់ (ស្រី: <span id="edu-level-skill-female-village">0</span>)</p---->
+            <!----p>  ជំនាញ: <span id="edu-level-skill-village">0</span> នាក់ (ស្រី: <span id="edu-level-skill-female-village">0</span>)</p---->
             <p>  អនុបណ្ឌិត: <span id="edu-level-postgraduate-village">0</span> នាក់ (ស្រី: <span id="edu-level-postgraduate-female-village">0</span>)</p>
             <p>  ផ្សេងៗ: <span id="edu-level-other-village">0</span> នាក់ (ស្រី: <span id="edu-level-other-female-village">0</span>)</p>
         </div>
@@ -91,11 +93,10 @@
                     <input type="tel" id="family-head-phone" placeholder="092893535">
                 </fieldset>
 
-                <!-- MODIFIED: Family Photo Input Section -->
                 <fieldset id="family-photo-section">
                     <legend>រូបថតគ្រួសារ (បើមាន)</legend>
-                    <label for="family-photo-input">ជ្រើសរើសរូបថត (១សន្លឹក, ទំហំតូចជាង 5MB):</label>
-                    <input type="file" id="family-photo-input" accept="image/*">
+                    <label for="family-photo-input" class="action-button" style="background-color: #007bff; display: inline-block; margin-bottom:10px;">ជ្រើសរើសរូបថតគ្រួសារ</label>
+                    <input type="file" id="family-photo-input" accept="image/*" style="display:none;">
                     <div id="family-photo-preview-container" class="image-preview-box" style="margin-top: 10px; min-height:100px; border:1px dashed #ccc; padding:5px; display:none;">
                         <img id="family-photo-preview" src="#" alt="រូបថតគ្រួសារ Preview" style="max-width: 150px; max-height: 150px; display: block; margin-bottom: 5px; border: 1px solid #ddd;">
                         <button type="button" id="remove-family-photo-button" class="remove-image-button-style" style="display:none;">ដករូបថត</button>
@@ -185,17 +186,15 @@
                     <input type="tel" id="edit-family-head-phone-admin">
                 </fieldset>
 
-                <!-- MODIFIED: Edit Family Photo Section -->
                 <fieldset id="edit-family-photo-section-admin">
                     <legend>កែសម្រួលរូបថតគ្រួសារ</legend>
-                    <label for="edit-family-photo-input-admin">ជ្រើសរើសរូបថតថ្មី (១សន្លឹក, ទំហំតូចជាង 5MB):</label>
-                    <input type="file" id="edit-family-photo-input-admin" accept="image/*">
+                    <label for="edit-family-photo-input-admin" class="action-button" style="background-color: #007bff; display: inline-block; margin-bottom:10px;">ជ្រើសរើសរូបថតថ្មី</label>
+                    <input type="file" id="edit-family-photo-input-admin" accept="image/*" style="display:none;">
                     <div id="edit-family-photo-preview-container-admin" class="image-preview-box" style="margin-top: 10px; min-height:100px; border:1px dashed #ccc; padding:5px; display:none;">
                         <img id="edit-family-photo-preview-admin" src="#" alt="រូបថតគ្រួសារ Preview" style="max-width: 150px; max-height: 150px; display: block; margin-bottom: 5px; border: 1px solid #ddd;">
                     </div>
                      <button type="button" id="remove-current-family-photo-button-admin" class="remove-image-button-style" style="display:none; margin-top:5px;">ដករូបថតបច្ចុប្បន្ន</button>
                 </fieldset>
-
 
                 <fieldset id="edit-family-members-section-admin">
                     <legend>សមាជិកគ្រួសារ (កែសម្រួល)</legend>
@@ -217,6 +216,21 @@
         </div>
     </div>
 
+    <!-- Cropper Modal -->
+    <div id="cropper-modal" class="modal" style="padding-top:10px;">
+        <div class="modal-content" style="max-width: 700px;"> <!-- Increased max-width for better cropper view -->
+            <span class="close-button" id="close-cropper-modal">×</span>
+            <h2>កាត់តម្រឹមរូបភាព</h2>
+            <div class="cropper-container"> <!-- Ensure this div has dimensions for Cropper.js to initialize into -->
+                <img id="image-to-crop" src="#" alt="រូបភាពសម្រាប់កាត់"> <!-- Cropper.js will replace this or use it -->
+            </div>
+            <div style="text-align: center; margin-top:15px;">
+                <button id="crop-image-button" class="action-button" style="background-color: #28a745;">យល់ព្រម កាត់តម្រឹម</button>
+                <button id="cancel-crop-button" class="action-button" style="background-color: #6c757d; margin-left:10px;">បោះបង់</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Village Message Modal -->
     <div id="message-modal-village" class="modal">
         <div class="modal-content message-modal-content">
@@ -227,7 +241,6 @@
             </div>
             <div id="message-composer-village">
                 <textarea id="message-input-village" placeholder="វាយសាររបស់អ្នកទៅ រដ្ឋបាលឃុំទួលពង្រ..."></textarea>
-                <!-- Image Input and Preview for Village -->
                 <div style="margin-top: 5px; margin-bottom: 5px;">
                     <label for="image-input-village" class="action-button" style="background-color: #6c757d; padding: 5px 10px; font-size: 0.9em; display: inline-block; cursor:pointer;">ជ្រើសរើសរូបភាព (ច្រើន)</label>
                     <input type="file" id="image-input-village" accept="image/*" style="display: none;" multiple>
@@ -245,9 +258,16 @@
 
     <template id="family-card-template">
         <div class="family-card">
-            <h3 class="family-card-name"></h3>
-            <p class="family-card-phone" style="font-size:0.9em; color:#555;"></p>
-            <p class="family-card-entry-date"></p>
+            <div class="family-card-header">
+                <div class="family-card-info">
+                    <h3 class="family-card-name"></h3>
+                    <p class="family-card-phone" style="font-size:0.9em; color:#555; margin-bottom: 5px;"></p>
+                    <p class="family-card-entry-date"></p>
+                </div>
+                <div class="family-card-photo-container">
+                    <img src="#" alt="រូបថតគ្រួសារ" class="family-card-photo" style="display:none;">
+                </div>
+            </div>
             <h4>សមាជិក (<span class="family-member-count"></span>)</h4>
             <table class="members-table">
                 <thead><tr><th>ឈ្មោះ</th><th>ភេទ</th><th>ថ្ងៃខែឆ្នាំកំណើត</th><th>ខេត្តកំណើត</th><th>កម្រិតវប្បធម៌</th><th>មុខរបរ</th><th>លេខ<br>អត្ត-<br>សញ្ញាណ-<br>ប័ណ្ណ</th><th>លេខ<br>ការិយា-<br>ល័យ<br>បោះឆ្នោត</th><th>ចំណាក-<br>ស្រុក-<br>ក្នុង</th><th>ចំណាក-<br>ស្រុក-<br>ក្រៅ</th></tr></thead>
@@ -259,6 +279,7 @@
                 <button class="edit-family-button action-button">កែសម្រួល</button>
                 <button class="delete-family-button action-button">លុប</button>
                 <button class="print-family-button-village action-button" style="background-color: #17a2b8; display:none;">បោះពុម្ពគ្រួសារនេះ</button>
+                <button class="print-family-button action-button" style="background-color: #17a2b8; display:none;">បោះពុម្ពគ្រួសារនេះ (Admin)</button>
             </div>
         </div>
     </template>
@@ -299,6 +320,8 @@
         </div>
     </template>
 
+    <!-- Cropper.js JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <!-- Your custom dashboard script - This should be at the end of the body -->
     <script src="dashboard.js"></script>
 </body>
