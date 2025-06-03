@@ -331,9 +331,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     images.forEach(imgBase64 => {
                         const imgElement = document.createElement('img');
-                        imgElement.src = imgBase64; // This is the original image for display in chat
+                        imgElement.src = imgBase64;
                         imgElement.alt = "រូបភាពដែលបានផ្ញើ";
-                        // CSS styles this via .message-bubble img
                         imgElement.onclick = () => {
                             const modalImg = document.createElement('div');
                             modalImg.style.position = 'fixed';
@@ -435,7 +434,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateAdminUnreadCount();
     };
 
-    // Event listener for image input - ADMIN
     if (imageInputAdmin && imagePreviewContainerAdmin && removeAllImagesAdminButton) {
         imageInputAdmin.addEventListener('change', async function(event) {
             const files = event.target.files;
@@ -449,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const imageProcessingPromises = [];
 
             for (const file of files) {
-                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                if (file.size > 5 * 1024 * 1024) {
                     alert(`រូបភាព "${file.name}" ធំពេក! ( > 5MB)។ វានឹងមិនត្រូវបានបន្ថែមទេ។`);
                     allFilesValid = false;
                     continue;
@@ -460,7 +458,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         const reader = new FileReader();
                         reader.onload = function(e_reader) {
                             const originalBase64 = e_reader.target.result;
-
                             const img = new Image();
                             img.onload = function() {
                                 const previewCanvas = document.createElement('canvas');
@@ -625,8 +622,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         const margin = 15;
-        const photoWidth = 30; // 3cm
-        const photoHeight = 40; // 4cm
+        const photoWidth = 30;
+        const photoHeight = 40;
         const photoX = pageWidth - margin - photoWidth;
         const photoY = margin;
 
@@ -796,54 +793,96 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     const renderFamilyCardForAdmin = (familyData, containerElement, villageContextName) => {
-         if (!familyCardTemplate || !familyCardTemplate.content) {console.error("Admin: Family card template or content missing"); return;}
-         const cardClone = familyCardTemplate.content.cloneNode(true); const familyCard = cardClone.querySelector('.family-card');
-         if (!familyCard) {console.error("Admin: '.family-card' missing in template"); return;}
-         familyCard.dataset.familyId = familyData.familyId; familyCard.dataset.village = villageContextName;
-         familyCard.querySelector('.family-card-name').textContent = `${familyData.familyName || 'N/A'} (ភូមិ ${villageContextName})`;
-         try { familyCard.querySelector('.family-card-entry-date').textContent = `កាលបរិច្ឆេទបញ្ចូល: ${new Date(familyData.entryDate).toLocaleDateString('km-KH', { day: '2-digit', month: 'short', year: 'numeric' })}`;}
-         catch { familyCard.querySelector('.family-card-entry-date').textContent = `កាលបរិច្ឆេទបញ្ចូល: មិនត្រឹមត្រូវ`; }
-         const membersTableBody = familyCard.querySelector('.members-table tbody'); let familyMemberCount = 0;
-         if (familyData.members && Array.isArray(familyData.members)) {
-             familyMemberCount = familyData.members.length; membersTableBody.innerHTML = '';
-             if (familyMemberCount > 0) {
-                familyData.members.forEach(member => {
-                    const row = membersTableBody.insertRow();
-                    row.insertCell().textContent = member.name || 'N/A'; row.insertCell().textContent = member.gender || 'N/A';
-                    row.insertCell().textContent = member.dob ? new Date(member.dob).toLocaleDateString('km-KH', {day:'2-digit',month:'2-digit',year:'numeric'}) : 'N/A';
-                    row.insertCell().textContent = member.birthProvince || 'N/A'; row.insertCell().textContent = member.educationLevel || 'N/A';
-                    row.insertCell().textContent = member.occupation || 'N/A'; row.insertCell().textContent = member.nationalId || 'N/A';
-                    row.insertCell().textContent = member.electionOfficeId || 'N/A'; row.insertCell().textContent = member.internalMigration || 'N/A';
-                    row.insertCell().textContent = member.externalMigration || 'N/A';
+        if (!familyCardTemplate || !familyCardTemplate.content) {console.error("Admin: Family card template or content missing"); return;}
+        const cardClone = familyCardTemplate.content.cloneNode(true);
+        const familyCard = cardClone.querySelector('.family-card');
+        if (!familyCard) {console.error("Admin: '.family-card' missing in template"); return;}
+
+        familyCard.dataset.familyId = familyData.familyId;
+        familyCard.dataset.village = villageContextName;
+
+        familyCard.querySelector('.family-card-name').textContent = `${familyData.familyName || 'N/A'} (ភូមិ ${villageContextName})`;
+        try {
+            familyCard.querySelector('.family-card-entry-date').textContent = `កាលបរិច្ឆេទបញ្ចូល: ${new Date(familyData.entryDate).toLocaleDateString('km-KH', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+        } catch {
+            familyCard.querySelector('.family-card-entry-date').textContent = `កាលបរិច្ឆេទបញ្ចូល: មិនត្រឹមត្រូវ`;
+        }
+
+        const phoneElAdmin = familyCard.querySelector('.family-card-phone');
+        if (phoneElAdmin) {
+            if (familyData.headOfHouseholdPhone) {
+                phoneElAdmin.textContent = `ទូរស័ព្ទ: ${familyData.headOfHouseholdPhone}`;
+                phoneElAdmin.style.display = 'block';
+            } else {
+                phoneElAdmin.style.display = 'none';
+            }
+        }
+
+        const photoImgAdmin = familyCard.querySelector('.family-card-photo');
+        const photoContainerAdmin = familyCard.querySelector('.family-card-photo-container');
+        if (photoImgAdmin && photoContainerAdmin) {
+            if (familyData.familyPhoto) {
+                photoImgAdmin.src = familyData.familyPhoto;
+                photoImgAdmin.style.display = 'block';
+                photoContainerAdmin.style.display = 'flex';
+            } else {
+                photoImgAdmin.style.display = 'none';
+                photoContainerAdmin.style.display = 'none';
+            }
+        }
+        const printBtnVillageElAdmin = familyCard.querySelector('.print-family-button-village');
+        if(printBtnVillageElAdmin) printBtnVillageElAdmin.style.display = 'none';
+
+
+        const membersTableBody = familyCard.querySelector('.members-table tbody');
+        let familyMemberCount = 0;
+        if (familyData.members && Array.isArray(familyData.members)) {
+            familyMemberCount = familyData.members.length;
+            membersTableBody.innerHTML = '';
+            if (familyMemberCount > 0) {
+               familyData.members.forEach(member => {
+                   const row = membersTableBody.insertRow();
+                   row.insertCell().textContent = member.name || 'N/A'; row.insertCell().textContent = member.gender || 'N/A';
+                   row.insertCell().textContent = member.dob ? new Date(member.dob).toLocaleDateString('km-KH', {day:'2-digit',month:'2-digit',year:'numeric'}) : 'N/A';
+                   row.insertCell().textContent = member.birthProvince || 'N/A'; row.insertCell().textContent = member.educationLevel || 'N/A';
+                   row.insertCell().textContent = member.occupation || 'N/A'; row.insertCell().textContent = member.nationalId || 'N/A';
+                   row.insertCell().textContent = member.electionOfficeId || 'N/A'; row.insertCell().textContent = member.internalMigration || 'N/A';
+                   row.insertCell().textContent = member.externalMigration || 'N/A';
+               });
+            } else { membersTableBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">មិនមានសមាជិកគ្រួសារ។</td></tr>';}
+        } else if (membersTableBody) { membersTableBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">មិនមានព័ត៌មានសមាជិក។</td></tr>';}
+        const memberCountEl = familyCard.querySelector('.family-member-count'); if(memberCountEl) memberCountEl.textContent = familyMemberCount;
+
+        const assetsDiv = familyCard.querySelector('.assets-details');
+        if (assetsDiv) {
+            assetsDiv.innerHTML = ''; let hasAssets = false;
+            if (familyData.assets && typeof familyData.assets === 'object') {
+                assetFieldDefinitions.forEach(def => {
+                   const assetValue = familyData.assets[def.id];
+                   if (assetValue !== undefined && assetValue !== null && String(assetValue).trim() !== "" && String(assetValue).trim() !== "0") {
+                        const p = document.createElement('p'); p.innerHTML = `<strong>${def.label}:</strong> ${assetValue}`; assetsDiv.appendChild(p); hasAssets = true;
+                    }
                 });
-             } else { membersTableBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">មិនមានសមាជិកគ្រួសារ។</td></tr>';}
-         } else if (membersTableBody) { membersTableBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">មិនមានព័ត៌មានសមាជិក។</td></tr>';}
-         const memberCountEl = familyCard.querySelector('.family-member-count'); if(memberCountEl) memberCountEl.textContent = familyMemberCount;
-         const assetsDiv = familyCard.querySelector('.assets-details');
-         if (assetsDiv) {
-             assetsDiv.innerHTML = ''; let hasAssets = false;
-             if (familyData.assets && typeof familyData.assets === 'object') {
-                 assetFieldDefinitions.forEach(def => {
-                    const assetValue = familyData.assets[def.id];
-                    if (assetValue !== undefined && assetValue !== null && String(assetValue).trim() !== "" && String(assetValue).trim() !== "0") {
-                         const p = document.createElement('p'); p.innerHTML = `<strong>${def.label}:</strong> ${assetValue}`; assetsDiv.appendChild(p); hasAssets = true;
-                     }
-                 });
-             }
-             if (!hasAssets) assetsDiv.innerHTML = '<p><em>មិនមានទ្រព្យសម្បត្តិ/អាជីវកម្ម។</em></p>';
-         }
-         const actionsDiv = familyCard.querySelector('.family-card-actions');
-         if (actionsDiv) {
-             actionsDiv.style.display = 'block';
-             const editBtn = actionsDiv.querySelector('.edit-family-button');
-             const deleteBtn = actionsDiv.querySelector('.delete-family-button');
-             const printBtn = actionsDiv.querySelector('.print-family-button');
-             if (editBtn) editBtn.onclick = () => openEditFamilyModalForAdmin(villageContextName, familyData.familyId, familyData);
-             if (deleteBtn) deleteBtn.onclick = () => deleteFamilyDataForAdmin(villageContextName, familyData.familyId, familyData.familyName);
-             if (printBtn) printBtn.onclick = () => printSingleFamilyDataToPDF(familyData, villageContextName);
-         }
-         containerElement.appendChild(cardClone);
-    };
+            }
+            if (!hasAssets) assetsDiv.innerHTML = '<p><em>មិនមានទ្រព្យសម្បត្តិ/អាជីវកម្ម។</em></p>';
+        }
+
+        const actionsDiv = familyCard.querySelector('.family-card-actions');
+        if (actionsDiv) {
+            actionsDiv.style.display = 'block';
+            const editBtn = actionsDiv.querySelector('.edit-family-button');
+            const deleteBtn = actionsDiv.querySelector('.delete-family-button');
+            const printBtnAdmin = actionsDiv.querySelector('.print-family-button');
+
+            if (editBtn) editBtn.onclick = () => openEditFamilyModalForAdmin(villageContextName, familyData.familyId, familyData);
+            if (deleteBtn) deleteBtn.onclick = () => deleteFamilyDataForAdmin(villageContextName, familyData.familyId, familyData.familyName);
+            if (printBtnAdmin) {
+                printBtnAdmin.style.display = 'inline-block';
+                printBtnAdmin.onclick = () => printSingleFamilyDataToPDF(familyData, villageContextName);
+            }
+        }
+        containerElement.appendChild(cardClone);
+   };
 
     const loadFamilyDataForSelectedVillageAdmin = (villageName, searchTerm = '') => {
          if (!familyListContainerAdmin || !selectedVillageNameH3 || !noFamilyDataMessageAdmin) { console.warn("Admin: Family display/message elements are missing."); return;}
@@ -1210,7 +1249,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Password Reset Request Handling ---
     const loadPasswordResetRequests = () => {
         if (!passwordResetRequestsTbody) {
-            // console.warn("Password reset table body not found."); // Optional: for debugging
             return;
         }
         passwordResetRequestsTbody.innerHTML = '';
@@ -1331,6 +1369,133 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // --- End of Password Reset Handling ---
 
+    // --- Data Upload to API (Chunking Example) ---
+    const UPLOAD_CHUNK_SIZE = 50;
+    const FAMILY_DATA_UPLOAD_ENDPOINT = 'YOUR_API_ENDPOINT_HERE/admin/upload-families'; // <- IMPORTANT: REPLACE THIS
+
+    async function submitLargeDatasetInChunks(largeDataset, chunkSize, apiEndpoint) {
+        const totalChunks = Math.ceil(largeDataset.length / chunkSize);
+        console.log(`Total items to upload: ${largeDataset.length}, Chunk size: ${chunkSize}, Total chunks: ${totalChunks}`);
+        // UI: Show progress bar container, set initial progress to 0%
+
+        for (let i = 0; i < totalChunks; i++) {
+            const start = i * chunkSize;
+            const end = start + chunkSize;
+            const chunk = largeDataset.slice(start, end);
+
+            console.log(`Submitting chunk ${i + 1} of ${totalChunks} (items ${start + 1} to ${Math.min(end, largeDataset.length)})`);
+            // UI: Update progress text/bar: `Uploading chunk ${i + 1}/${totalChunks}...`
+
+            try {
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // 'Authorization': `Bearer ${yourAuthToken}` // If your API needs auth
+                    },
+                    body: JSON.stringify(chunk)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                    console.error(`Error submitting chunk ${i + 1}: ${response.status} - ${errorData.message || 'Unknown server error'}`);
+                    alert(`មានបញ្ហាក្នុងការបញ្ជូនដុំទិន្នន័យទី ${i + 1} (Server Error: ${response.status}). សូមពិនិត្យ Console សម្រាប់ព័ត៌មានលម្អិត។`);
+                    // UI: Show error, potentially offer retry for this chunk or stop
+                    return false;
+                }
+
+                const result = await response.json();
+                console.log(`Chunk ${i + 1} submitted successfully:`, result);
+                // UI: Update progress bar
+
+            } catch (error) {
+                console.error(`Network or other error submitting chunk ${i + 1}:`, error);
+                alert(`មានបញ្ហា Network ពេលបញ្ជូនដុំទិន្នន័យទី ${i + 1}។ សូមពិនិត្យការតភ្ជាប់របស់អ្នក ហើយព្យាយាមម្តងទៀត។`);
+                // UI: Show error, potentially offer retry
+                return false;
+            }
+        }
+        console.log("All chunks submitted successfully to API!");
+        alert("ទិន្នន័យគ្រួសារទាំងអស់ត្រូវបានបញ្ជូនទៅកាន់ API ដោយជោគជ័យ!");
+        // UI: Show completion, hide progress bar
+        return true;
+    }
+
+    async function uploadAllFamilyDataToAPI() {
+        if (FAMILY_DATA_UPLOAD_ENDPOINT === 'YOUR_API_ENDPOINT_HERE/admin/upload-families') {
+            alert("សូមកំណត់ API Endpoint សម្រាប់ Upload ទិន្នន័យជាមុនសិន (FAMILY_DATA_UPLOAD_ENDPOINT) នៅក្នុង admin_script.js។");
+            return;
+        }
+
+        const allVillageData = getVillageDataStorage();
+        let allFamilies = [];
+
+        for (const villageName in allVillageData) {
+            if (allVillageData.hasOwnProperty(villageName) && Array.isArray(allVillageData[villageName])) {
+                allVillageData[villageName].forEach(family => {
+                    allFamilies.push({ ...family, villageName: villageName });
+                });
+            }
+        }
+
+        if (allFamilies.length === 0) {
+            alert("មិនមានទិន្នន័យគ្រួសារក្នុង Local Storage សម្រាប់ Upload ទេ។");
+            return;
+        }
+
+        const confirmation = confirm(`តើអ្នកពិតជាចង់ Upload ទិន្នន័យគ្រួសារចំនួន ${allFamilies.length} ទៅកាន់ Server មែនទេ? \n\nចំណាំ៖ សូមប្រាកដថាអ្នកបាន Backup ទិន្នន័យ Local Storage របស់អ្នកជាមុន ប្រសិនបើចាំបាច់។`);
+        if (!confirmation) {
+            return;
+        }
+
+        // Example: document.getElementById('upload-all-data-button').disabled = true;
+        // Example: document.getElementById('upload-progress-bar').style.width = '0%';
+        // Example: document.getElementById('upload-status-message').textContent = 'កំពុងរៀបចំ Upload...';
+
+        const success = await submitLargeDatasetInChunks(allFamilies, UPLOAD_CHUNK_SIZE, FAMILY_DATA_UPLOAD_ENDPOINT);
+
+        // Example: document.getElementById('upload-all-data-button').disabled = false;
+
+        if (success) {
+            console.log("Successfully uploaded all family data to API.");
+            // Consider what to do next:
+            // 1. Inform the user.
+            // 2. Optionally, offer to clear local storage (with another confirmation).
+            //    const clearLocal = confirm("Upload ជោគជ័យ! តើអ្នកចង់សម្អាតទិន្នន័យ Local Storage ឬទេ?");
+            //    if (clearLocal) {
+            //        localStorage.removeItem(VILLAGE_DATA_KEY); // Or specific village data if API confirms per village
+            //        alert("Local storage data has been cleared.");
+            //        location.reload(); // Refresh to reflect empty state or synced state
+            //    }
+        } else {
+            console.error("Failed to upload all family data to API.");
+            // User would have been alerted about the specific chunk failure.
+            // Example: document.getElementById('upload-status-message').textContent = 'Upload បរាជ័យ។';
+        }
+    }
+
+    // To use this, you would add a button to your admin_dashboard.html:
+    // e.g., after the "កំណត់ត្រាសកម្មភាពមេភូមិ" section:
+    // <hr>
+    // <h2>បញ្ជូនទិន្នន័យទៅកាន់ Server</h2>
+    // <div style="padding:15px; background-color:#f9f9f9; border:1px solid #eee; border-radius:5px;">
+    //     <p>ចុចប៊ូតុងខាងក្រោមដើម្បី Upload ទិន្នន័យគ្រួសារទាំងអស់ពី Local Storage ទៅកាន់ប្រព័ន្ធ Server កណ្ដាល។</p>
+    //     <button id="upload-all-data-button" style="background-color:#17a2b8;">Upload ទិន្នន័យទាំងអស់</button>
+    //     <div id="upload-status-message" style="margin-top:10px;"></div>
+    //      <!-- Optional progress bar
+    //      <div style="width: 100%; background-color: #ddd; margin-top:5px; border-radius:3px;">
+    //          <div id="upload-progress-bar" style="width: 0%; height: 20px; background-color: #4CAF50; text-align: center; line-height: 20px; color: white; border-radius:3px;">0%</div>
+    //      </div>
+    //      -->
+    // </div>
+    // <hr>
+    // And then uncomment the following lines to attach the event listener:
+
+    // const uploadAllDataButton = document.getElementById('upload-all-data-button');
+    // if (uploadAllDataButton) {
+    //     uploadAllDataButton.addEventListener('click', uploadAllFamilyDataToAPI);
+    // }
+    // --- End of Data Upload to API ---
 
     if (villageSelect) {
         villageSelect.addEventListener('change', (e) => {
