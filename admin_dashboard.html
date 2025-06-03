@@ -90,7 +90,6 @@
         </div>
         <hr>
 
-        <!-- Password Reset Requests Section -->
         <h2>សំណើសុំប្តូរលេខសម្ងាត់មេភូមិ</h2>
         <div id="password-reset-requests-section">
             <table id="reset-requests-table">
@@ -166,6 +165,10 @@
                     <label for="edit-family-head-phone-admin">លេខទូរស័ព្ទមេគ្រួសារ:</label>
                     <input type="tel" id="edit-family-head-phone-admin">
                 </fieldset>
+                <!-- Admin Edit Modal does not currently have family photo editing field.
+                     If needed, it would be similar to dashboard.html's edit modal.
+                     For now, Admin PDF print will pick up existing photo if set by village chief.
+                -->
                 <fieldset id="edit-family-members-section-admin">
                     <legend>សមាជិកគ្រួសារ (កែសម្រួល)</legend>
                     <div id="edit-family-members-container-admin">
@@ -231,7 +234,16 @@
 
     <template id="family-card-template">
         <div class="family-card">
-            <h3 class="family-card-name"></h3><p class="family-card-entry-date"></p>
+            <div class="family-card-header">
+                <div class="family-card-info">
+                    <h3 class="family-card-name"></h3>
+                    <p class="family-card-phone" style="font-size:0.9em; color:#555; margin-bottom: 5px;"></p>
+                    <p class="family-card-entry-date"></p>
+                </div>
+                <div class="family-card-photo-container">
+                    <img src="#" alt="រូបថតគ្រួសារ" class="family-card-photo" style="display:none;">
+                </div>
+            </div>
             <h4>សមាជិក (<span class="family-member-count"></span>)</h4>
             <table class="members-table">
                 <thead><tr><th>ឈ្មោះ</th><th>ភេទ</th><th>ថ្ងៃខែឆ្នាំកំណើត</th><th>ខេត្តកំណើត</th><th>កម្រិតវប្បធម៌</th><th>មុខរបរ</th><th>លេខ<br>អត្ត-<br>សញ្ញាណ-<br>ប័ណ្ណ</th><th>លេខ<br>ការិយា-<br>ល័យ<br>បោះឆ្នោត</th><th>ចំណាក-<br>ស្រុក-<br>ក្នុង</th><th>ចំណាក-<br>ស្រុក-<br>ក្រៅ</th></tr></thead>
@@ -243,6 +255,8 @@
                 <button class="edit-family-button action-button">កែសម្រួល</button>
                 <button class="delete-family-button action-button">លុប</button>
                 <button class="print-family-button action-button" style="background-color: #17a2b8;">បោះពុម្ពគ្រួសារនេះ</button>
+                <!-- This button is specific to dashboard.js and will be hidden here by default by its own logic -->
+                <button class="print-family-button-village action-button" style="background-color: #17a2b8; display:none;">បោះពុម្ពគ្រួសារនេះ</button>
             </div>
         </div>
     </template>
