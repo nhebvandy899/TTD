@@ -4,7 +4,7 @@ body {font-family: 'Khmer OS Siemreap', Arial, sans-serif; background-color: #f4
 h1, h2, h3 {color: #333; text-align: center; margin-bottom: 20px;}
 label {display: block; margin-bottom: 5px; font-weight: bold; color: #555;}
 input[type="text"], input[type="password"], input[type="tel"], input[type="date"], input[type="number"], textarea, select {width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: 'Khmer OS Siemreap', Arial, sans-serif;}
-select {background-color: white; appearance: none;} /* Consider select2 or chosen for better select UX */
+select {background-color: white; appearance: none;}
 textarea {resize: vertical;}
 button {background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-family: 'Khmer OS Siemreap', Arial, sans-serif; transition: background-color 0.3s ease;}
 button:hover {background-color: #0056b3;}
@@ -95,7 +95,51 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 /* Family List and Card Styles */
 #family-list-container, #family-list-container-admin {margin-top: 20px;}
 .family-card {background-color: #fff; border: 1px solid #ddd; border-radius: 5px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);}
-.family-card h3 {margin-top: 0; color: #0056b3; text-align: left; font-size: 1.3em;}
+
+.family-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.family-card-info {
+    flex-grow: 1;
+}
+
+.family-card-photo-container {
+    width: 100px;
+    height: 120px;
+    margin-left: 20px;
+    border: 1px solid #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background-color: #f9f9f9;
+}
+
+.family-card-photo {
+    display: none;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+}
+
+.family-card h3.family-card-name {
+    margin-top: 0;
+    color: #0056b3;
+    text-align: left;
+    font-size: 1.3em;
+    margin-bottom: 5px;
+}
+.family-card p.family-card-phone {
+    font-size: 0.9em;
+    color: #555;
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
 .family-card-entry-date {font-size: 0.85em; color: #666; margin-bottom: 10px;}
 .family-card h4 {margin-top: 15px; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; text-align: left; font-size: 1.1em;}
 .family-card .members-table {width: 100%; border-collapse: collapse; font-size: 0.85em; margin-bottom: 10px; table-layout: auto;}
@@ -235,24 +279,24 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
 }
 .message-timestamp {
     font-size: 0.75em;
-    color: #e0e0e0; /* Light for sent messages */
+    color: #e0e0e0;
     display: block;
     margin-top: 2px;
     text-align: right;
 }
 .message-bubble.received .message-timestamp {
-    color: #777; /* Darker for received messages */
+    color: #777;
     text-align: left;
 }
 .message-sender-name {
     font-size: 0.8em;
     font-weight: bold;
     margin-bottom: 2px;
-    color: #555; /* Default sender name color */
+    color: #555;
 }
 .message-bubble.sent .message-sender-name {
     text-align: right;
-    color: #cce5ff; /* Lighter sender name for sent bubble */
+    color: #cce5ff;
 }
 .message-bubble.received .message-sender-name {
     text-align: left;
@@ -279,8 +323,7 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
     background-color: #138496;
 }
 
-/* Styles for Image in Chat Bubble & File Input Label */
-.message-bubble img { /* Style for images within chat bubbles (thumbnails) */
+.message-bubble img {
     max-width: 100px;
     max-height: 100px;
     border-radius: 5px;
@@ -290,7 +333,13 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
     border: 1px solid #eee;
     object-fit: cover;
 }
-/* Container for multiple image previews in chat composer */
+.message-bubble .image-gallery-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+}
+
 #image-preview-container-admin,
 #image-preview-container-village {
     display: flex;
@@ -302,7 +351,7 @@ hr {margin: 30px 0; border: 0; border-top: 1px solid #eee;}
     padding: 5px;
 }
 #image-preview-container-admin img,
-#image-preview-container-village img { /* Style for image previews in composer */
+#image-preview-container-village img {
     max-width: 80px;
     max-height: 80px;
     border-radius: 3px;
@@ -321,13 +370,12 @@ label.action-button {
     color: white;
 }
 
-/* Styles for single family photo preview in forms */
 .image-preview-box {
     border: 1px dashed #ccc;
     padding: 10px;
     margin-top: 10px;
     min-height: 100px;
-    display: flex;
+    display: none; /* Initially hidden by default */
     flex-direction: column;
     align-items: flex-start;
 }
@@ -338,6 +386,7 @@ label.action-button {
     display: block;
     margin-bottom: 10px;
     border: 1px solid #ddd;
+    object-fit: cover;
 }
 
 .remove-image-button-style {
@@ -354,21 +403,16 @@ label.action-button {
     background-color: #f1b0b7;
 }
 
-#family-photo-preview-container,
-#edit-family-photo-preview-container-admin {
-    display: none;
-}
-
-/* NEW Styles for Password Reset Section */
+/* Password Reset Request Table */
 #password-reset-requests-section {
     margin-bottom: 20px;
-    background-color: #f0f8ff; /* Light blue background */
+    background-color: #f0f8ff;
     padding: 15px;
-    border: 1px solid #cce5ff; /* Blue border */
+    border: 1px solid #cce5ff;
     border-radius: 5px;
 }
 #password-reset-requests-section h2 {
-    color: #004085; /* Darker blue for heading */
+    color: #004085;
     text-align: left;
     margin-top: 0;
 }
@@ -379,13 +423,13 @@ label.action-button {
 }
 #reset-requests-table th,
 #reset-requests-table td {
-    border: 1px solid #b8daff; /* Slightly darker blue for table borders */
+    border: 1px solid #b8daff;
     padding: 8px 10px;
     text-align: left;
     vertical-align: top;
 }
 #reset-requests-table th {
-    background-color: #cce5ff; /* Lighter blue for table header */
+    background-color: #cce5ff;
     font-weight: bold;
 }
 #reset-requests-table td button {
@@ -396,19 +440,25 @@ label.action-button {
     border: none;
     border-radius: 3px;
 }
-#reset-requests-table .action-button-approve {
-    background-color: #28a745;
-}
-#reset-requests-table .action-button-approve:hover {
-    background-color: #218838;
-}
-#reset-requests-table .action-button-reject {
-    background-color: #dc3545;
-}
-#reset-requests-table .action-button-reject:hover {
-    background-color: #c82333;
-}
+
 
 #admin-set-new-password-modal .modal-content {
     max-width: 500px;
+}
+
+/* Cropper Modal Styles */
+#cropper-modal .modal-content {
+    max-width: 700px;
+}
+.cropper-container {
+    width: 100%;
+    /* max-height: 50vh; Ensure this is commented out or large enough */
+    margin-bottom: 15px;
+}
+/* Ensure the image to be cropped takes up available space */
+#image-to-crop {
+    display: block;
+    max-width: 100%; /* Cropper.js needs this */
+    /* Optionally, set a max-height for the cropper's image element container if it's too large */
+    /* max-height: 400px; */
 }
